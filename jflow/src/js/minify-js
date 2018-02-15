@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# First install Node/npm:
+#       sudo apt install npm
+#       sudo ln -s /usr/bin/nodejs /usr/bin/node
+#
+# Then, install uglifyJS2 (https://github.com/mishoo/UglifyJS2):
+#       sudo npm install uglify-js -g
+
+uglifyjs --compress --mangle -o jflow.min.js -- jquery.tmpl.min.js jquery.validate.js jquery.ui.widget.js jquery.iframe-transport.js jquery.fileupload.js jquery.fileupload-process.js jquery.fileupload-validate.js cytoscape-2.3.7.js cytoscape.js-panzoom.js dagre.js handsontable.full.min.js jQueryFileTree.min.js jflow-browser.js jflow-activewf.js jflow-availablewf.js jflow-wfoutputs.js jflow-wfform-rules.js jflow-wfform.js jflow-wfstatus.js bootstrap-datepicker.js

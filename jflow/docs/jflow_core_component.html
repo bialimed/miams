@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown active">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li class="active"><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+	        	<li><a href="#what" class="active">What is a component</a></li>
+		        <li><a href="#component-architecture" >Where to add a new component</a></li>
+		        <li><a href="#component" >The Component class</a></li>
+		       	<li><a href="#define_parameters">Define parameters</a>
+			       	<ul class="nav nav-stacked">
+			       		<li><a href="#parameters">Parameters</a></li>
+			       		<li><a href="#input_parameters">Inputs</a></li>
+			       		<li><a href="#output_parameters">Outputs</a></li>
+	                </ul>
+                </li>
+				<li><a href="#process">Process</a>
+				  	<ul class="nav nav-stacked">
+				        <li><a href="#functions">Functions</a></li>
+						<li><a href="#abstractions">Abstractions</a></li>
+					</ul>
+				</li>
+				<li><a href="#other_methods">Other methods</a>
+				  	<ul class="nav nav-stacked">
+				        <li><a href="#pre_process">Pre process</a></li>
+						<li><a href="#post_process">Post process</a></li>
+						<li><a href="#get_resource">Get Resource</a></li>
+					</ul>	
+				</li>
+                <li><a href="#external_components" >External components</a></li>
+	        </ul>
+   	    </nav>
+   	 
+        <div class="col-xs-12 col-sm-9">
+        
+        	<section id="what" class="group">
+		    	<h1 class="page-header">What is a component</h1>
+	    		<p>A component is one or a collection of command lines, which can be external scripts or python code. In jflow, a component is represented by a 
+	    		Python class inerhiting from <code>jflow.component.Component</code>. It lists all the inputs, outputs and parameters required to run the 
+	    		command line(s) and defines its structure.</p>
+	    	</section>
+        	
+        	<section id="component-architecture" class="group">
+			    <h1 class="page-header">Where to add a new component</h1>
+		    	<p>New components must be added in a Python package. Two different location are possible in order to be imported by jflow: </p>
+		    	
+		    	<ul>
+		    		<li><code>workflows.components</code>: the component will be visible by all workflows,</li>
+		    		<li><code>workflows.myWorkflow.components</code>: the component will only be available for<code>myWorkflow</code>.</li>
+		    	</ul>
+				
+				<p>The following code represent the structure of the source, and the location where to add component packages.</p>
+
+		    	<pre class="pre-hl "><code class="ini">jflow/
+├── bin/
+├── docs/
+├── src/
+├── workflows/
+│   ├── myWorkflow/
+│   │   ├── components/          [ workflow specific components ]
+│   │   │   └── myComponent.py   [ the component code ]
+│   │   └── __init__.py
+│   ├── components/              [ general components ]
+│   │   ├── __init__.py
+│   │   └── myComponent.py       [ the component code ]
+│   ├── extparsers/
+│   ├── __init__.py
+│   ├── formats.py
+│   └── types.py
+├── applications.properties
+└── README</code></pre>
+		    </section>   
+     
+        	<section id="component" class="group">
+		    	<h1 class="page-header">The Component class</h1>
+		    	<p>In jflow, a component is a class defined in the <code>myComponent.py</code> file. In order to add a new component, the developper has to: </p>
+		    	<ul>
+		    		<li>implement a class inheriting from the <code>jflow.component.Component</code> class,</li>
+ 					<li>overload the <code>define_parameters()</code> method to add the component inputs, outputs and parameters,</li>
+ 					<li>overload the <code>process()</code> method to define the command line(s) structure.</li>
+ 				</ul>
+				<p>The class skeleton is given by</p>
+			    <div>
+			    	<pre class="pre-hl "><code class="python">from jflow.component import Component
+
+class MyComponent (Component):
+
+    def define_parameters(self, param1, param2, ...):
+        # define the parameters
+
+    def process(self):
+        # define the command line(s) structure</code></pre>
+			    </div>
+			</section>
+
+			<section id="define_parameters" class="group">
+		    	<h1 class="page-header">Define parameters</h1>
+				
+				<p>
+					The <code>define_parameters()</code> method is used to add component parameters, inputs and outputs. To do so, several methods are available. 
+					Once defined, the new parameters are available as object attibuts, thus they are accessible through <code>self.parameter_name</code>.
+				</p>
+
+				<p>
+					Several types of parameters can be added, all described in the following sections. All have two required positional 
+					arguments: <code>name</code> and <code>help</code>. The other arguments are optional and can be given to the method by using their 
+					keywords.
+				</p>
+
+	       		<div id="parameters" class="subgroup">
+					<h2>Parameters</h2>
+					<p>Parameters can be added to handle a single element or a list of elements. Thus, the <code>add_parameter()</code> method can be used to force 
+					the final user to provide one and only one value, where the <code>add_parameter_list()</code> method allows the final user to give as many values he 
+					wants.</p>
+						<h3>add_parameter()</h3>
+						<h4>Example</h4>
+						<p>
+							In the following example, a parameter named <code>sequencer</code> 
+							is added to the workflow. It has a list of choices and the default value is "HiSeq2000".
+						</p>
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_parameter("sequencer",
+    		   "The sequencer type.", 
+    		   choices = ["HiSeq2000", "ILLUMINA","SLX","SOLEXA","454","UNKNOWN"], 
+    		   default="HiSeq2000")</code></pre>
+				    	</div>
+			    	
+			    				<h4>Options</h4>					
+			    	
+			    					<p>There are two positional arguments: <code>name</code> and <code>help</code>. All other options are keyword options</p>
+							    	
+									<div class="table-responsive">
+										<table class="table table-bordered table-striped">
+											<thead>
+												<tr style="white-space:nowrap">
+													<th>Name</th>
+													<th>Type</th>
+													<th>Required</th>
+													<th >Default value</th>
+													<th>Description</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>name</td>
+													<td>string</td>
+													<td>true</td>
+													<td>None</td>
+													<td>The name of the parameter. The parameter value is accessible 
+														within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+												</tr>
+												
+												<tr>
+													<td>help</td>
+													<td>string</td>
+													<td>true</td>
+													<td>None</td>
+													<td>The parameter help message.</td>
+												</tr>
+											
+												<tr>
+													<td>default</td>
+													<td>-</td>
+													<td>false</td>
+													<td>None</td>
+													<td>The default parameter value. It's type depends on the parameter type.</td>
+												</tr>
+												
+												<tr>
+													<td>type</td>
+													<td>string</td>
+													<td>false</td>
+													<td>"str"</td>
+													<td>The parameter type. The value provided by the final user will be casted and checked against this type. 
+													All built-in Python types are available "int", "str", "float", "bool", "date", ... To create customized types, 
+													refere to the <a href="./jflow-type.html">Add a data type</a> documentation.</td>
+												</tr>
+												
+												<tr>
+													<td>choices</td>
+													<td>list</td>
+													<td>false</td>
+													<td>[]</td>
+													<td>A list of the allowed values.</td>
+												</tr>
+												
+												<tr>
+													<td>required</td>
+													<td>boolean</td>
+													<td>false</td>
+													<td>false</td>
+													<td>Wether or not the parameter can be ommitted.</td>
+												</tr>
+												
+												<tr>
+													<td>flag</td>
+													<td>string</td>
+													<td>false</td>
+													<td>None</td>
+													<td>The command line flag (if the value is None, the flag will be <code>--name</code>).</td>
+												</tr>
+												
+												<tr>
+													<td>group</td>
+													<td>string</td>
+													<td>false</td>
+													<td>"default"</td>
+													<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+												</tr>
+												
+												<tr>
+													<td>display_name</td>
+													<td>string</td>
+													<td>false</td>
+													<td>None</td>
+													<td>The parameter name that should be displayed on the final form.</td>
+												</tr>
+												
+												<tr>
+													<td>cmd_format</td>
+													<td>string</td>
+													<td>false</td>
+													<td>""</td>
+													<td>The command format is the parameter skeleton required to build the final command line.</td>
+												</tr>
+												
+												<tr>
+													<td>argpos</td>
+													<td>integer</td>
+													<td>false</td>
+													<td>-1</td>
+													<td>The parameter position in the command line.</td>
+												</tr>
+				
+											</tbody>
+										</table>
+									</div>
+					    <h3>add_parameter_list()</h3>
+					
+						<p>The <code>add_parameter_list()</code> method takes the same arguments as <code>add_parameter()</code>. However, adding this parameter,
+						the final user will be allowed to enter multiple values for this parameter and the object attribut <code>self.parameter_name</code> will be
+						settled as a Python list.</p>
+				</div>
+	       		
+	       		<div id="input_parameters" class="subgroup">
+					<h2>Inputs</h2>
+					
+					<p>Just like for parameters, inputs can be added to handle a single file or a list of files. Thus, the <code>add__input_file()</code> method can be used to force 
+					the component to take one and only one file, where the <code>add__input_file_list()</code> method allows the component to take as many files as possible.</p>
+					
+						<h3>add_input_file()</h3>
+							<h4>Example</h4>
+	       				<p>
+							In the following example, an input named <code>reads</code> 
+							is added to the workflow. The provided file is required and should be in fastq format. No file size limitation is specified. 
+						</p>
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_input_file_list("reads", 
+                         "Which read files should be used", 
+                         file_format="fastq", 
+                         required=True)</code></pre>
+				    	</div>
+							<h4>Options</h4>
+								
+								<p>There are two positional argument : <code>name</code> and <code>help</code>. All other options are keyword options. </p>
+                      
+								<div class="table-responsive">
+									<table class="table table-bordered table-striped">
+										<thead>
+											<tr style="white-space:nowrap">
+												<th>Name</th>
+												<th>Type</th>
+												<th>Required</th>
+												<th>Default value</th>
+												<th>Description</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>name</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The name of the parameter. The parameter value is accessible 
+													within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+											</tr>
+											
+											<tr>
+												<td>help</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The parameter help message.</td>
+											</tr>
+											
+											<tr>
+												<td>default</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The default path value.</td>
+											</tr>
+										
+											<tr>
+												<td>file_format</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"any"</td>
+												<td>The file format is checked before running the workflow. To create customized format, 
+													refere to the <a href="./jflow-format.html">Add a file format</a> documentation.</td>
+											</tr>
+											
+											<tr>
+												<td>type</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"inputfile"</td>
+												<td>The type can be "inputfile", "localfile", "urlfile" or "browsefile". An "inputfile" allows the 
+												final user to provide a "localfile" or an "urlfile" or a "browsefile". A "localfile" restricts the final
+												user to provide a path to a file visible by jflow. An "urlfile" only permits the final user to give an 
+												URL as input, where a "browsefile" force the final user to upload a file from its own computer. This last
+												option is only available from the GUI and is considered as a "localfile" from the command line. All the 
+												uploading process is handled by jflow.</td>
+											</tr>
+											
+											<tr>
+												<td>required</td>
+												<td>boolean</td>
+												<td>false</td>
+												<td>false</td>
+												<td>Wether or not the parameter can be ommitted.</td>
+											</tr>
+											
+											<tr>
+												<td>flag</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The command line flag (if the value is None, the flag will be <code>--name</code>).</td>
+											</tr>
+											
+											<tr>
+												<td>group</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"default"</td>
+												<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+											</tr>
+											
+											<tr>
+												<td>display_name</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The parameter name that should be displayed on the final form.</td>
+											</tr>
+												<tr>
+													<td>cmd_format</td>
+													<td>string</td>
+													<td>false</td>
+													<td>""</td>
+													<td>The command format is the parameter skeleton required to build the final command line.</td>
+												</tr>
+												
+												<tr>
+													<td>argpos</td>
+													<td>integer</td>
+													<td>false</td>
+													<td>-1</td>
+													<td>The parameter position in the command line.</td>
+												</tr>
+											
+										</tbody>
+									</table>
+								</div>
+					    
+					    
+					    <h3>add_input_file_list()</h3>
+					    
+						<p>This method takes the same arguments as <code>add_input_file()</code>. However, adding this parameter,
+						the component can take a list file files and the object attribut <code>self.parameter_name</code> will be
+						settled as a Python list.</p>
+
+					    <h3>add_input_directory()</h3>
+
+						<p>Input directories are similar to files.</p>
+
+						<h4>Example</h4>
+
+						<p>In the following example, an input directory named <code>reference</code> is added to the workflow. The
+						provided directory is required.</p>
+
+						<div>
+				    		<pre class="pre-hl "><code class="python">self.add_input_directory("reference",
+                         "Folder containing the reference genome",
+                         required=True)</code></pre>
+				    	</div>
+
+						<h4>Options</h4>
+
+								<p>There are two positional argument : <code>name</code> and <code>help</code>. All other options are keyword options. </p>
+
+								<div class="table-responsive">
+									<table class="table table-bordered table-striped">
+										<thead>
+											<tr style="white-space:nowrap">
+												<th>Name</th>
+												<th>Type</th>
+												<th>Required</th>
+												<th>Default value</th>
+												<th>Description</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>name</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The name of the parameter. The parameter value is accessible
+													within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+											</tr>
+
+											<tr>
+												<td>help</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The parameter help message.</td>
+											</tr>
+
+											<tr>
+												<td>default</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The default path value.</td>
+											</tr>
+
+											<tr>
+												<td>required</td>
+												<td>boolean</td>
+												<td>false</td>
+												<td>false</td>
+												<td>Wether or not the parameter can be ommitted.</td>
+											</tr>
+
+											<tr>
+												<td>flag</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The command line flag (if the value is None, the flag will be <code>--name</code>).</td>
+											</tr>
+
+											<tr>
+												<td>group</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"default"</td>
+												<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+											</tr>
+
+											<tr>
+												<td>display_name</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The parameter name that should be displayed on the final form.</td>
+											</tr>
+												<tr>
+													<td>cmd_format</td>
+													<td>string</td>
+													<td>false</td>
+													<td>""</td>
+													<td>The command format is the parameter skeleton required to build the final command line.</td>
+												</tr>
+
+												<tr>
+													<td>argpos</td>
+													<td>integer</td>
+													<td>false</td>
+													<td>-1</td>
+													<td>The parameter position in the command line.</td>
+												</tr>
+
+										</tbody>
+									</table>
+								</div>
+
+					<h3>add_input_object()</h3>
+
+					<p>Add a python object as input. The object is defined as a class inherited from object.</p>
+
+					<h4>Example</h4>
+					<p>Considering the following object:</p>
+					<pre class="pre-hl "><code class="python">
+class MyObject(object):
+
+    def __init__(self, value):
+        self.value = value
+
+    def add_five(self):
+        self.value = self.value + 5
+
+    def multiply_by_ten(self):
+        self.value = self.value * 10
+					</code></pre>
+
+					<p>We define this object and give it as a component argument. Into the component, the input is defined
+					like that:</p>
+					<pre class="pre-hl "><code class="python">self.add_input_object("i_object", "The input object to add 5", default=i_object)
+					</code></pre>
+
+					<p>Note: the object is accessible only into a python function loaded from an "add_python_execution".</p>
+
+					<h4>Options</h4>
+
+								<p>There are two positional argument : <code>name</code> and <code>help</code>. All other options are keyword options. </p>
+
+								<div class="table-responsive">
+									<table class="table table-bordered table-striped">
+										<thead>
+											<tr style="white-space:nowrap">
+												<th>Name</th>
+												<th>Type</th>
+												<th>Required</th>
+												<th>Default value</th>
+												<th>Description</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>name</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The name of the parameter. The parameter value is accessible
+													within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+											</tr>
+
+											<tr>
+												<td>help</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The parameter help message.</td>
+											</tr>
+
+											<tr>
+												<td>default</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The default object.</td>
+											</tr>
+
+											<tr>
+												<td>required</td>
+												<td>boolean</td>
+												<td>false</td>
+												<td>false</td>
+												<td>Wether or not the parameter can be ommitted.</td>
+											</tr>
+
+										</tbody>
+									</table>
+								</div>
+
+					<h3>add_input_object_list()</h3>
+
+					<p>This method takes the same arguments as <code>add_input_object()</code>. However, adding this parameter,
+						the component can take a list of objects and the object attribut <code>self.parameter_name</code> will be
+						settled as a Python list.</p>
+					
+				</div>
+	       		
+			       		
+				<div id="output_parameters" class="subgroup">
+					<h2>Outputs</h2>
+					
+					<p>Just like for inputs, outputs can be added to handle a single file or a list of files. Thus, the <code>add__input_file()</code> method can be used to force 
+					the component to produce one and only one file, where the <code>add__input_file_list()</code> method allows the component to produce as many files as possible.</p>
+
+						<h3>add_output_file()</h3>
+							<h4>Example</h4>
+	       				<p>
+							In the following example, an output named <code>databank</code> 
+							is defined. The process have to produce the file, otherwise the workflow will failed. The file written on the disk will be named
+							with the same name as the one stored in the variable <code>input_fasta</code>.
+						</p>
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_output_file("databank", 
+		     "The indexed databank", 
+		     filename=os.path.basename(input_fasta))</code></pre>
+				    	</div>
+							<h4>Options</h4>
+								
+								<p>The two positional arguments <code>name</code> and <code>help</code> are always present </p>
+                      
+								<div class="table-responsive">
+									<table class="table table-bordered table-striped">
+										<thead>
+											<tr style="white-space:nowrap">
+												<th>Name</th>
+												<th>Type</th>
+												<th>Required</th>
+												<th>Default value</th>
+												<th>Description</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>name</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The name of the parameter. The parameter value is accessible 
+													within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+											</tr>
+											
+											<tr>
+												<td>help</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The parameter help message.</td>
+											</tr>
+											
+											<tr>
+												<td>filename</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The expected name of the output file.</td>
+											</tr>
+										
+											<tr>
+												<td>file_format</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"any"</td>
+												<td>The file format is checked before running the workflow. To create customized format, 
+													refere to the <a href="./jflow-format.html">Add a file format</a> documentation.</td>
+											</tr>
+											
+											<tr>
+												<td>group</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"default"</td>
+												<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+											</tr>
+											
+											<tr>
+												<td>display_name</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The parameter name that should be displayed on the final form.</td>
+											</tr>
+												<tr>
+													<td>cmd_format</td>
+													<td>string</td>
+													<td>false</td>
+													<td>""</td>
+													<td>The command format is the parameter skeleton required to build the final command line.</td>
+												</tr>
+												
+												<tr>
+													<td>argpos</td>
+													<td>integer</td>
+													<td>false</td>
+													<td>-1</td>
+													<td>The parameter position in the command line.</td>
+												</tr>
+											
+										</tbody>
+									</table>
+								</div>
+					    
+					<h3>add_output_file_list()</h3>
+							<h4>Example</h4>
+	       				<p>
+							In the following example, an output named <code>sam_files</code> 
+							is defined. The files written on the disk will all have the pattern <code>{basename_woext}.sam</code> defined by the 
+							<code>self.reads</code> variable. The resulting list will gathers files with the same basename as <code>self.reads</code> but
+							with an extension substituted by ".sam". 
+						</p>
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_output_file_list("sam_files", 
+			  "The BWA output files", 
+			  pattern='{basename_woext}.sam', 
+			  items=self.reads)</code></pre>
+				    	</div>
+					
+							<h4>Options</h4>
+								
+								<p>The two positional arguments <code>name</code> and <code>help</code> are always present </p>
+                      
+							
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr style="white-space:nowrap">
+											<th>Name</th>
+											<th>Type</th>
+											<th>Required</th>
+											<th>Default value</th>
+											<th>Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>name</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The name of the parameter. The parameter value is accessible 
+												within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+										</tr>
+										
+										<tr>
+											<td>help</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The parameter help message.</td>
+										</tr>
+										
+										<tr>
+											<td>items</td>
+											<td>list</td>
+											<td>false</td>
+											<td>None</td>
+											<td>A list of element through which <code>add_output_file_list()</code> should iterate to produce the output
+											list.</td>
+										</tr>
+										
+										<tr>
+											<td>pattern</td>
+											<td>string</td>
+											<td>false</td>
+											<td>'{basename_woext}.out'</td>
+											<td>The pattern is used to produce the output list. <code>add_output_file_list()</code> maps the pattern on each <code>items</code>
+											to produce the final value.
+											The pattern can accepts these predefined values:
+												<ul>
+													<li><code>{fullpath}</code>, <code>{FULL}</code> for full input file path,</li>
+	       											<li><code>{basename}</code>, <code>{BASE}</code> for base input file name,</li>
+	       											<li><code>{fullpath_woext}</code>, <code>{FULLWE}</code> for full input file path without extension,</li>
+	       											<li><code>{basename_woext}</code>, <code>{BASEWE}</code> for base input file name without extension.</li>
+												</ul> 
+											</td>
+										</tr>
+										
+											<tr>
+												<td>file_format</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"any"</td>
+												<td>The file format is checked before running the workflow. To create customized format, 
+													refere to the <a href="./jflow-format.html">Add a file format</a> documentation.</td>
+											</tr>
+											
+											<tr>
+												<td>group</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"default"</td>
+												<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+											</tr>
+											
+											<tr>
+												<td>display_name</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The parameter name that should be displayed on the final form.</td>
+											</tr>
+												<tr>
+													<td>cmd_format</td>
+													<td>string</td>
+													<td>false</td>
+													<td>""</td>
+													<td>The command format is the parameter skeleton required to build the final command line.</td>
+												</tr>
+												
+												<tr>
+													<td>argpos</td>
+													<td>integer</td>
+													<td>false</td>
+													<td>-1</td>
+													<td>The parameter position in the command line.</td>
+												</tr>
+											
+									</tbody>
+								</table>
+							</div>
+						
+
+						<h3>add_output_file_endswith()</h3>
+						
+						<div class="alert alert-info" role="alert">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							This method should only be used with components producing unknown number of outputs (like some demultiplexing tools).
+						</div>
+						
+							<h4>Example</h4>
+	       				<p>
+							In the following example, an output named <code>sam_files</code> 
+							is defined. The list files will be made of all the files written on the disk with an extension equal to <code>.sam</code>. This is performed
+							at the end of the execution and can be useful when the component produces an unknown number of ouptut files.
+						</p>
+						
+						
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_output_file_endswith("sam_files", 
+			      "The BWA output files", 
+			      pattern='.sam')</code></pre>
+				    	</div>
+							<h4>Options</h4>
+						
+							<p>
+								This method is very different from
+								<code>add_output_file_list()</code> because it
+								should only be used when the number of output files returned by the component is unknown. Three options are required:
+								<code>name</code>, <code>help</code> and <code>pattern</code>.
+							</p>
+							
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr style="white-space:nowrap">
+											<th>Name</th>
+											<th>Type</th>
+											<th>Required</th>
+											<th>Default value</th>
+											<th>Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>name</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The name of the parameter. The parameter value is accessible 
+												within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+										</tr>
+										
+										<tr>
+											<td>help</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The parameter help message.</td>
+										</tr>
+										
+										
+										<tr>
+											<td>pattern</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The extension of the files to return.</td>
+										</tr>
+										
+										<tr>
+											<td>behaviour</td>
+											<td>string</td>
+											<td>false</td>
+											<td>"include"</td>
+											<td>How to process selected files. Other values than "include" mean that all files not ending with the pattern will be selected.</td>
+										</tr>
+										
+											<tr>
+												<td>file_format</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"any"</td>
+												<td>The file format is checked before running the workflow. To create customized format, 
+													refere to the <a href="./jflow-format.html">Add a file format</a> documentation.</td>
+											</tr>
+											
+											<tr>
+												<td>group</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"default"</td>
+												<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+											</tr>
+											
+											<tr>
+												<td>display_name</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The parameter name that should be displayed on the final form.</td>
+											</tr>
+												<tr>
+													<td>cmd_format</td>
+													<td>string</td>
+													<td>false</td>
+													<td>""</td>
+													<td>The command format is the parameter skeleton required to build the final command line.</td>
+												</tr>
+												
+												<tr>
+													<td>argpos</td>
+													<td>integer</td>
+													<td>false</td>
+													<td>-1</td>
+													<td>The parameter position in the command line.</td>
+												</tr>
+										
+									</tbody>
+								</table>
+							</div>
+
+
+
+						<h3>add_output_file_pattern()</h3>
+						
+						<div class="alert alert-info" role="alert">
+							<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+							This method should only be used with components producing unknown number of outputs (like some demultiplexing tools).
+						</div>
+						
+							<h4>Example</h4>
+	       				<p>
+							In the following example, an output named <code>sam_files</code> 
+							is defined. The list files will be made of all the files written on the disk with the pattern <code>*_R1.sam</code>. This is performed
+							at the end of the execution and can be useful when the component produces an unknown number of ouptut files.
+						</p>
+						
+						
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_output_file_pattern("sam_files", 
+			      "The BWA output files", 
+			      pattern='*_R1.sam')</code></pre>
+				    	</div>
+							<h4>Options</h4>
+						
+							<p>
+								This method is slightly different from
+								<code>add_output_file_endswith()</code> because it
+								returns all the file corresponding to the given pattern instead of only the extension. All the options are the same,
+								only <code>pattern</code> differs.
+							</p>
+							
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr style="white-space:nowrap">
+											<th>Name</th>
+											<th>Type</th>
+											<th>Required</th>
+											<th>Default value</th>
+											<th>Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>pattern</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The regepx string used to retrieve the ouput files. </td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+					<h3>add_output_object()</h3>
+					<h4>Example</h4>
+					<p>In the following example, an output named <code>o_object</code> is defined. The python function
+					defined for execution has to return a python object, which will be stored into this object.</p>
+					<pre class="pre-hl "><code class="python">self.add_output_object("o_object", "The output object")</code></pre>
+					<h4>Options</h4>
+					<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr style="white-space:nowrap">
+											<th>Name</th>
+											<th>Type</th>
+											<th>Required</th>
+											<th>Default value</th>
+											<th>Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>name</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The name of the output object.</td>
+										</tr>
+									</tbody>
+									<tbody>
+										<tr>
+											<td>help</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The description of the object.</td>
+										</tr>
+									</tbody>
+									<tbody>
+										<tr>
+											<td>required</td>
+											<td>bool</td>
+											<td>false</td>
+											<td>false</td>
+											<td>Is required.</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+					<h3>add_output_object_list()</h3>
+					<h4>Example</h4>
+					<p>In the following example, an output named <code>o_object</code> is defined. The python function defined
+					for execution has to return a list of python objects, with the exact numbers of items mentioned in the
+						argument <code>nb_items</code> (2 in this example).</p>
+					<pre class="pre-hl "><code class="python">self.add_output_object_list("o_object", "The output object", nb_items=2)</code></pre>
+					<h4>Options</h4>
+					<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr style="white-space:nowrap">
+											<th>Name</th>
+											<th>Type</th>
+											<th>Required</th>
+											<th>Default value</th>
+											<th>Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>name</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The name of the output object.</td>
+										</tr>
+									</tbody>
+									<tbody>
+										<tr>
+											<td>help</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The description of the object.</td>
+										</tr>
+									</tbody>
+									<tbody>
+										<tr>
+											<td>nb_items</td>
+											<td>int</td>
+											<td>true</td>
+											<td>0</td>
+											<td>Number of objects into the list.</td>
+										</tr>
+									</tbody>
+									<tbody>
+										<tr>
+											<td>required</td>
+											<td>bool</td>
+											<td>false</td>
+											<td>false</td>
+											<td>Is required.</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+
+				</div>
+				
+			</section>
+				    	
+	  		<section id="process" class="group">
+		    	<h1 class="page-header">Process</h1>
+		    	<p>The <code>process()</code> method is in charge to specify the executables used to process the data (a command 
+		    	line or a Python function) and to define the pattern of execution that determine how the functions are applied on the
+		    	data, what is named hereunder an abstraction. To build the process, jflow provides two main functions named 
+		    	<code>ShellFunction</code> and <code>PythonFunction</code> and two main abstractions: <code>Map</code> and 
+		    	<code>MultiMap</code>.</p>
+		    	
+		    	<div class="alert alert-info" role="alert">
+		    		<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" ></span>
+		    		Overloading <code>process()</code> can be omitted. Jflow offers, for components with easy command lines, 
+		    		an automatic built of the <code>process()</code> method. 
+		 		    In this case, options <code>argpos</code> and <code>cmd_format</code> must be provided by the developper for each parameter. 
+				    Also, two other methods of <code>jflow.component.Component</code> must be overloaded. <code>get_command()</code>, which must returns 
+				    the execution path and <code>get_abstraction()</code> which returns the abstraction name to use.
+				</div>
+				
+				<div id="functions" class="subgroup">
+				
+		    		<h2>Functions</h2>
+					<p>The two provided functions allows the developper to specify the executables used to process the data.</p>
+					
+					<h3>ShellFunction</h3>
+					<p>The <code>ShellFunction</code> can be called when the workflow requires to run an external command line. This function
+					allows to define the command line structure so jflow can build and run it automaticly on the final user inputs.</p>
+
+					<h4>Example</h4>
+					Considering the following <code>blastall</code> command line:
+					<pre class="pre-hl "><code class="ini">blastall -p [program_name] -i [query_file] -d [database] -o [file_out]</code></pre>
+					<p>When using a jflow function, the command format has to be given in order to set the inputs, outputs and arguments order.
+					Let's fix it at <code>cmd_format="{EXE} {IN} {OUT}"</code>, which is a classic value for this option. Doing so jflow will consider the following inputs and outputs order: 
+					<code>query_file</code>, <code>database</code> and then <code>file_out</code>. resulting to the following command structure:</p>
+					<pre class="pre-hl "><code class="ini">blastall -p [program_name] -i [$1] -d [$2] -o [$3]</code></pre>
+					
+		    		<p>The <code>ShellFunction</code> can then be applied as following:</p>
+		    		<pre class="pre-hl "><code class="python">blast = ShellFunction("blastall -p blastn -i $1 -d $2 -o $3", cmd_format="{EXE} {IN} {OUT}")</code></pre>
+		    		<p>And can be executed by calling the new created function</p>
+					<pre class="pre-hl "><code class="python">blast( inputs=[query_file, database], outputs=[file_out] )</code></pre>
+
+					<h4>Options</h4>
+					
+					<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr style="white-space:nowrap">
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>source</td>
+									<td>string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The command line structure defining inputs, outputs and arguments positions.</td>
+								</tr>
+								<tr>
+									<td>shell</td>
+									<td>string</td>
+									<td>false</td>
+									<td>"sh"</td>
+									<td>Which shell should be used to interpret the command line, the value can be "sh" | "ksh" | "bash" | "csh" | "tcsh".</td>
+								</tr>
+								<tr>
+									<td>cmd_format</td>
+									<td>string</td>
+									<td>false</td>
+									<td>'{EXE} {ARG} {IN} > {OUT}'</td>
+									<td>The <code>cmd_format</code> supports the following fields:
+										<ul>
+											<li><code>{executable}</code>, <code>{EXE}</code> for the path to the executable,</li>
+											<li><code>{inputs}</code>, <code>{IN}</code> for the inputs files,</li>
+											<li><code>{outputs}</code>, <code>{OUT}</code> for the output files,</li>
+											<li><code>{arguments}</code>, <code>{ARG}</code> for the arguments.</li>
+										</ul>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+		    		<h3>PythonFunction</h3>
+		    		
+					<p>The <code>PythonFunction</code> can be called when the workflow requires to run an internal Python function. This function
+					allows to define the way the function should be called so jflow can call and run it automaticly on the final user inputs.</p>
+
+					<h4>Example</h4>
+					<p>Considering a function named <code>fastq2fasta</code> defined by:</p>
+					<pre class="pre-hl "><code class="python">def fastq2fasta(fastq_file, fasta_file):
+    # python import lib goes here
+    import jflow.seqio as seqio
+    
+    # python code goes here</code></pre>
+					<p>When using a jflow function, the command format has to be given in order to set the inputs, outputs and arguments order.
+					Let's fix it at <code>cmd_format="{EXE} {IN} {OUT}"</code>, which is a classic value for this option. Doing so jflow will consider the following variables 
+					order to pass to the function: <code>fastq_file</code> and then <code>fasta_file</code>. The <code>PythonFunction</code> can be used as following:</p>
+		    		<pre class="pre-hl "><code class="python">fastq2a = PythonFunction(fastq2fasta, cmd_format="{EXE} {IN} {OUT}")</code></pre>
+		    		<p>And can be executed by calling the new created function</p>
+					<pre class="pre-hl "><code class="python">fasta2q( inputs=[fastq_file], outputs=[fasta_file] )</code></pre>
+
+					<h4>Options</h4>
+					
+					<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr style="white-space:nowrap">
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>function</td>
+									<td>function</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The Python function use to process the data.</td>
+								</tr>
+								<tr>
+									<td>add_path</td>
+									<td>string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>A path to a Python library required to run the function. This is useful in case the library is not
+									in the path and not visible by jflow.</td>
+								</tr>
+								<tr>
+									<td>cmd_format</td>
+									<td>string</td>
+									<td>false</td>
+									<td>'{EXE} {ARG} {IN} > {OUT}'</td>
+									<td>The <code>cmd_format</code> supports the following fields:
+										<ul>
+											<li><code>{executable}</code>, <code>{EXE}</code> for the path to the executable,</li>
+											<li><code>{inputs}</code>, <code>{IN}</code> for the inputs files,</li>
+											<li><code>{outputs}</code>, <code>{OUT}</code> for the output files,</li>
+											<li><code>{arguments}</code>, <code>{ARG}</code> for the arguments.</li>
+										</ul>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>		
+				
+				<div id="abstractions" class="subgroup">
+		    		<h2>Abstractions</h2>
+		    		<p>The abstraction allows to define the pattern of execution that determine how the functions (<code>ShellFunction</code>
+		    		or <code>PythonFunction</code>) are applied on the data.</p>
+		    	
+		    	<h3>__call__</h3>
+		    	<p>This first abstraction is executed when calling the <code>ShellFuntion</code> or the <code>PythonFunction</code>
+		    	as a basic Python function.</p>
+				<h4>Example</h4>
+		    	<pre class="pre-hl "><code class="python">fasta_trim = ShellFunction( "fastaTrim.pl --length 50 $1 > $2", cmd_format="{EXE} {IN} {OUT}" )
+fasta_trim( inputs="splA.fasta", outputs="splA_trim.fasta" )</code></pre>
+     			<p>This abstraction will lead to the execution of the following command line:</p>
+     			<pre class="pre-hl "><code class="ini">fastaTrim.pl --length 50 splA.fasta > splA_trim.fasta</code></pre>		
+		    	
+			    <h4>Options</h4>
+
+					<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr style="white-space:nowrap">
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>inputs</td>
+									<td>list | string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The input files list required to run the function.</td>
+								</tr>
+								<tr>
+									<td>outputs</td>
+									<td>list | string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>The output files list created by the function.</td>
+								</tr>
+								<tr>
+									<td>arguments</td>
+									<td>string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>The arguments to provide to the function.</td>
+								</tr>
+								<tr>
+									<td>includes</td>
+									<td>list | string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>Files to include for this task.</td>
+								</tr>
+								<tr>
+									<td>collect</td>
+									<td>boolean</td>
+									<td>false</td>
+									<td>false</td>
+									<td>Whether or not to mark files for garbage collection.</td>
+								</tr>
+								<tr>
+									<td>local</td>
+									<td>boolean</td>
+									<td>false</td>
+									<td>false</td>
+									<td>Whether or not to force local execution.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+		    	
+		    	<h3>Map</h3>
+		    	<p>The <code>Map</code> abstraction allows to map one input file list to one output file list.</p>
+				
+				<h4>Example</h4>
+		    	<pre class="pre-hl "><code class="python">fasta_list = ["splA.fasta", "splB.fasta", "splC.fasta"]
+out_list = ["splA_trim.fasta", "splB_trim.fasta", "splC_trim.fasta"]
+
+fasta_trim = ShellFunction( "fastaTrim.pl --length 50 $1 > $2", cmd_format="{EXE} {IN} {OUT}" )
+Map( fasta_trim, inputs=fasta_list, outputs=out_list )</code></pre>
+     			<p>This abstraction will lead to the execution of the following command lines:</p>
+     			<pre class="pre-hl "><code class="ini">fastaTrim.pl --length 50 splA.fasta > splA_trim.fasta
+fastaTrim.pl --length 50 splB.fasta > splB_trim.fasta
+fastaTrim.pl --length 50 splC.fasta > splC_trim.fasta</code></pre>			    
+			    
+			    <h4>Options</h4>
+					<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr style="white-space:nowrap">
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>function</td>
+									<td>function</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The <code>ShellFunction</code> or the <code>PythonFunction</code> to use to process the data.</td>
+								</tr>
+								<tr>
+									<td>inputs</td>
+									<td>list | string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The input files list required to run the function.</td>
+								</tr>
+								<tr>
+									<td>outputs</td>
+									<td>list | string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>The output files list created by the function.</td>
+								</tr>
+								<tr>
+									<td>includes</td>
+									<td>list | string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>Files to include for each task.</td>
+								</tr>
+								<tr>
+									<td>collect</td>
+									<td>boolean</td>
+									<td>false</td>
+									<td>false</td>
+									<td>Whether or not to mark files for garbage collection.</td>
+								</tr>
+								<tr>
+									<td>local</td>
+									<td>boolean</td>
+									<td>false</td>
+									<td>false</td>
+									<td>Whether or not to force local execution.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>	
+			    
+			    
+			    <h3>MultiMap</h3>
+			    <p>The <code>MultiMap</code> abstraction allows to map n input file lists to n output file lists, all of the same lenght.</p>
+			    
+			    <h4>Example</h4>
+			    <pre class="pre-hl "><code class="python">fastq_list = ["splA.fastq", "splB.fastq", "splC.fastq"]
+out_list = [ ["splA.fasta", "splA.qual"],
+             ["splB.fasta", "splB.qual"],
+             ["splC.fasta", "splC.qual"] ]
+
+fastq2fasta = ShellFunction( "fastq2fasta.py --input $1 --fasta $2 --qual $3", 
+                             cmd_format="{EXE} {IN} {OUT}" )
+MultiMap( fastq2fasta, inputs=fastq_list, outputs=out_list )</code></pre>
+     			<p>This abstraction will lead to the execution of the following command lines:</p>
+     			<pre class="pre-hl "><code class="ini">fastq2fasta.py --input splA.fastq --fasta splA.fasta --qual splA.qual
+fastq2fasta.py --input splB.fastq --fasta splB.fasta --qual splB.qual
+fastq2fasta.py --input splC.fastq --fasta splC.fasta --qual splC.qual</code></pre>
+			    
+			    <h4>Options</h4>
+					<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr style="white-space:nowrap">
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>function</td>
+									<td>function</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The <code>ShellFunction</code> or the <code>PythonFunction</code> to use to process the data.</td>
+								</tr>
+								<tr>
+									<td>inputs</td>
+									<td>list | string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The input files list required to run the function.</td>
+								</tr>
+								<tr>
+									<td>outputs</td>
+									<td>list | string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>The output files list created by the function.</td>
+								</tr>
+								<tr>
+									<td>includes</td>
+									<td>list | string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>Files to include for each task.</td>
+								</tr>
+								<tr>
+									<td>collect</td>
+									<td>boolean</td>
+									<td>false</td>
+									<td>false</td>
+									<td>Whether or not to mark files for garbage collection.</td>
+								</tr>
+								<tr>
+									<td>local</td>
+									<td>boolean</td>
+									<td>false</td>
+									<td>false</td>
+									<td>Whether or not to force local execution.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>	
+			</div>
+						    
+			</section>
+
+	  		<section id="other_methods" class="group">
+		    	<h1 class="page-header">Other methods</h1>
+				<div id="pre_process" class="subgroup">
+					<h2>Pre process</h2>
+					<p><code>pre_process()</code> is executed before running the <code>process</code> method. Unlike <code>process</code>, this method does not allow
+					to call a <code>ShellFunction</code> or a <code>PythonFunction</code>, but can be useful when implementing an application requiring to prepare some 
+					data before running the component (insert / recover information from a database, ...).</p>
+				</div>
+				<div id="post_process" class="subgroup">
+					<h2>Post process</h2>
+					<p><code>post_process()</code> is executed right after the <code>process</code> method and cannot be used to call a <code>ShellFunction</code> or a 
+					<code>PythonFunction</code>. This method can be useful to perform some database transactions and to synchronize data.</p>
+				</div>
+				<div id="get_resource" class="subgroup">
+					<h2>Get shared resources</h2>
+					<p>The method <code>get_resource()</code>, giving a specific resource, returns the defined value within the <code>resources</code> 
+					section of the jflow configuration file.</p>
+	   				<h3>Options</h3>
+	   				<p>There is one required argument : resource.</p>
+	   				<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>resource</td>
+									<td>string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The resource name for which is requested the configured value.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div id="get_cpu" class="subgroup">
+					<h2>Get cpu</h2>
+					<p><code>get_cpu()</code> return the cpu value of <code>batch_options</code> configuration for this component (available for <b>local and sge only</b>). 
+					This option is usefull to set software parameter that needs more than one CPU.</p> 
+					<p>For more information about how to configure a component see advanced configuration</p>
+				</div>
+				<div id="get_memory" class="subgroup">
+					<h2>Get memory</h2>
+					<p><code>get_memory()</code> return the memory value of <code>batch_options</code> configuration for this component (available for <b>local and sge only</b>). 
+					This option is usefull to set software parameter that needs specific value of memory.</p> 
+					<p>For more information about how to configure a component see advanced configuration</p>
+				</div>
+			</section>
+			
+			<section id="external_components" class="group">
+		    	<h1 class="page-header">External components</h1>
+		    	
+		    	<p>To ease the component creation step, jflow offers the possibility to create parsers by extending the <code>jflow.extparser.ExternalParser</code> class. 
+		    	The new component parser must be created in the <code>workflows.extparsers</code> package: </p>
+		    	
+		    			    	<pre class="pre-hl "><code class="ini">jflow/
+├── bin/
+├── docs/
+├── src/
+├── workflows/
+│   ├── components/ 
+│   ├── extparsers/
+│   │   ├── __init__.py
+│   │   ├── myParser.py   [ a new component parser ]
+│   │   └── mobyle.py     [ mobyle component parser ]
+│   ├── __init__.py
+│   ├── formats.py
+│   └── types.py
+├── applications.properties
+└── README</code></pre>
+		    	
+					<h2>The ExternalParser class</h2>
+					
+					<p>Jflow provides an abstract class <code>jflow.exparser.ExternalParser</code> that must be extended to define a parser
+					for external components. The function <code>parse()</code> must be overloaded and has to return a new component type definition.
+					Hereunder is the skeleton of the class:</p>
+				    	<pre class="pre-hl "><code class="python">class MyExternalParser(ExternalParser):
+
+    def parse(self, component_file):
+        # file parsing
+        # code ...
+    	
+        # use self.build_component() to return a new component definition
+        return self.build_component(component_name, fn_define_parameters, **kwargs)</code></pre>
+				
+				<p>The method <code>build_component()</code> must be used to return the new component type.The newly created component type must 
+				have a definition of <code>define_parameters()</code>. If the <code>process()</code> method is not redefined, the developper has to overload  
+				<code>get_abstraction()</code> and <code>get_command()</code>. See  <a href="#process">process</a> for more details.  </p>    
+    		 	<p>
+    		 	
+    		 	<div class="alert alert-info" role="alert">
+    		 		<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+			  		Jflow provides <code>extparsers.mobyle.MobyleParser</code> class as an example to integrate new external component parsers. Adding this class
+			  		the developper can add mobyle components, defined by an XML file, by copying the XML definition of the component in any jflow <code>components</code>
+			  		packages.
+    			</div>
+    			
+    				<h3>parse()</h3>  
+    				<p>The <code>parse()</code> function is the only function to implement. This function will be called by jflow
+    				and will be executed on any file present in jflow <code>components</code> packages not recognized as an internal 
+    				component. The function must return a type inheriting from <code>jflow.component.Component</code> what can easily 
+    				be done with the help of the <code>build_component()</code> method.</p>
+    				
+    				<h4>Example</h4>
+    				
+    				    				<pre class="pre-hl "><code class="python">class MobyleParser(ExternalParser):
+    
+    def parse(self, component_file):
+        parameters = []
+        parameters_names = []
+        tree = ET.parse(component_file)
+        root = tree.getroot()
+        
+        # get command string
+        command = root.findtext(".//head/command", None)
+        
+        # retrieve all parameters from xml file 
+        for parameterNode in root.findall('.//parameters/parameter[name]'):
+            attrs = parameterNode.attrib
+            param = self._parseParameter(parameterNode)
+            if param['name'] in parameters_names :
+                raise Exception('Duplicated parameter (%s)'%param['name'])
+            parameters.append(param)
+            parameters_names.append(param['name'])
+        
+        def  fn_get_command(self) :
+            # code
+        
+        def fn_get_abstraction(self) :
+            # code
+            
+        def fn_define_parameters(self, **kwargs):
+            # code
+        
+        # ...
+        return self.build_component(component_name, fn_define_parameters,
+               get_command = fn_get_command, get_abstraction = fn_get_abstraction)</code></pre>
+    				
+    				<h4>Options</h4>		
+    					<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr style="white-space:nowrap">
+										<th>Name</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Default value</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>component_file</td>
+										<td>string</td>
+										<td>true</td>
+										<td>None</td>
+										<td>The path to the file where the external component is defined.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+    					
+  					<h3>build_component()</h3>
+  					<p>The <code>build_component()</code> method is used to return a new class definition created using python <code>type()</code> method.</p>
+  					
+  					<h4>Example</h4>
+    					
+    					<p>In this example, the functions get_command and get_abstraction have been overloaded in the new component class.</p>
+    				
+    					<pre class="pre-hl "><code class="python">def parse(self, component_file):
+        
+    def  fn_get_command(self) :
+        # code
+        
+    def fn_get_abstraction(self) :
+        # code
+        
+    def fn_define_parameters(self):
+        # code
+    
+    # ...
+    return self.build_component(component_name, fn_define_parameters, 
+    get_command = fn_get_command, get_abstraction = fn_get_abstraction)</code></pre>
+    				
+    				<h4>Options</h4>
+	  					<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr style="white-space:nowrap">
+											<th>Name</th>
+											<th>Type</th>
+											<th>Required</th>
+											<th>Default value</th>
+											<th>Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>component_name</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The name of the newly craeted type.</td>
+										</tr>
+										
+										<tr>
+											<td>fn_define_parameters</td>
+											<td>callable</td>
+											<td>true</td>
+											<td>None</td>
+											<td>A callable which overload the  define_parameters function of component.</td>
+										</tr>
+										
+										<tr>
+											<td>**kwargs</td>
+											<td>any</td>
+											<td>false</td>
+											<td>None</td>
+											<td>Any other method or attribut that must be added or overloaded in this new class definition.</td>
+										</tr>
+										
+									</tbody>
+								</table>
+							</div>
+	    	</section>
+			
+		</div>
+	  </div>
+		
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+	  
+	</div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow</title>
+    
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li class="active"><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>	
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="row">
+	    <!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+	            <li><a href="#prerequists" class="active">Step #1</a></li>
+	            <li><a href="#downloadl">Step #2</a></li>
+	            <li><a href="#extract">Step #3</a></li>
+	            <li><a href="#configure">Step #4</a></li>
+	            <li><a href="#test">Step #5</a></li>
+	        </ul>
+   	    </nav>
+      
+        <div class="col-xs-12 col-sm-9">
+	  		<section id="prerequists">
+		    	<h1 class="page-header">Step #1 <small>prerequists</small></h1>
+			  	<ul>
+			  		<li><a target="_blank" href="https://www.python.org/">Python</a>: the supported versions are 3.2 or higher. 
+				  	<li><a target="_blank" href="http://www.cherrypy.org/">Cherrypy</a>: A Minimalist Python Web Framework (python module).</li>
+			  		<li><a target="_blank" href="http://www.cse.nd.edu/~ccl/software/makeflow/">Makeflow</a>: a workflow 
+			  		engine for executing large complex workflows on clusters, clouds, and grids. The supported version are v4.4.3 or higher.</li>
+			  	</ul>
+			</section>
+	  	
+		  		<section id="downloadl">
+			    	<h1 class="page-header">Step #2 <small>download the latest copy</small></h1>
+				  	<p>The latest version can be downloaded from the <a href="https://mulcyber.toulouse.inra.fr/frs/?group_id=186" target="_blank">download page</a>.</p>
+				</section>
+
+		  		<section id="extract">
+			    	<h1 class="page-header">Step #3 <small>extract the archive</small></h1>
+					<pre class="pre-hl "><code class="ini">[user@hostname:~] tar xzvf jflow_vx.x.tar.gz
+[user@hostname:~] cd jflow_vx.x</code></pre>
+				</section>
+
+		  		<section id="configure">
+			    	<h1 class="page-header">Step #4 <small>configure the application</small></h1>
+				  	<p>You must edit the <code>application.properties</code> file to configure the application.
+				  	Here under the required parameters, for advanced configuration please see
+				  	<a href="./jflow_advanced_configuration.html">this page</a>...</p>
+				  	<pre class="pre-hl "><code class="ini">[global]
+# uncomment and set if not in the PATH, should be version >= 4.4.3
+#makeflow = /usr/bin/makeflow
+# batch system type: local, condor, sge, moab, cluster, wq, hadoop, mpi-queue
+batch_system_type = local
+# add these options to all batch submit files
+batch_options = 
+# add these options to limit the number of jobs sumitted in parallel
+limit_submission = 100
+# on which socket host should run the web server
+server_socket_host = 127.0.0.1
+# on which socket port should run the web server
+server_socket_port = 8080
+
+[storage]
+# where should be written the log file
+log_file = /path/to/jflow.log
+# Where should the pipelines write results, should be accessible 
+# by all cluster nodes
+work_directory = /path/to/work
+# Where should the pipelines write temporary files, should be 
+# accessible by all cluster nodes
+tmp_directory = /path/to/tmp
+
+[softwares]
+# uncomment and set if not in the PATH
+#blastall = /usr/bin/blastall
+#formatdb = /usr/bin/formatdb
+#sfffile = /usr/bin/sfffile
+#fastqc = /usr/bin/fastqc
+#runAssembly = /usr/bin/runAssembly
+#bwa = /usr/bin/bwa
+#samtools = /usr/bin/samtools</code></pre>
+				</section>
+
+		  		<section id="test">
+			    	<h1 class="page-header">Step #5 <small>test your installation</small></h1>
+					<p>The application embed one website example, enter the following command lines to run the web server:</p>
+					<pre class="pre-hl "><code class="ini">[user@hostname:~] python bin/jflow_server.py --daemon</code></pre>
+					<p>And go on the <a href="./example1.html">example</a> web page. 
+					You should have the following display with the alignment workflow available and no actives workflows.</p>
+					<div class="bs-docs-example" style="text-align: center;">
+			  		<img width="75%" src="img/jflow-test.png" class="img-rounded">
+			  	</div> 
+			</section>
+				
+        </div><!--/span-->
+
+      </div><!--/row-->
+
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+
+	</div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+	
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+
+    <title>Jflow</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+	
+	<!-- jflow css -->
+	<!-- Production version-->
+	<link href="css/jflow.min.css" rel="stylesheet">
+	<!-- Development version
+	<link href="css/handsontable.full.min.css" rel="stylesheet">
+	<link href="css/cytoscape.js-panzoom.css" rel="stylesheet">
+	<link href="css/datepicker.css" rel="stylesheet">
+	<link href="css/jflow.css" rel="stylesheet">
+    <link href="css/jQueryFileTree.min.css" rel="stylesheet">-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li class="active"><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+ 
+    <div class="container theme-showcase" role="main">
+
+      <!-- Jumbotron -->
+      <div class="jumbotron">
+        <h1>Hello Jflow!</h1>
+        <p class="lead">This is a running example for a simple workflow manager website. Use it as a 
+        	starting point to create something more unique.</p>
+        <br/>
+		<div style="position:absolute;width:1025px;padding:0px 5px 0 5px;background-color:white;border:1px solid lightgrey;border-radius:5px;">
+			<span class="label label-primary" style="position:absolute;top:-10px;left:-10px">How to cite</span>
+		    <h6><b>Jérôme Mariette, Frédéric Escudié, Philippe Bardou, Ibouniyamine Nabihoudine, Céline Noirot, Marie-Stéphane Trotard, 
+		    	Christine Gaspin, Christophe Klopp. Jflow: a workflow management system for web applications. Bioinformatics. 
+		    	2015. doi 10.1093/bioinformatics/btv589. &nbsp;&nbsp; - &nbsp;&nbsp;
+				<a href="http://bioinformatics.oxfordjournals.org/content/early/2015/11/25/bioinformatics.btv589.full" target="_blank"> Abstract/FREE Full Text </a></b>
+			</h6>
+		</div>
+		<br/>
+      </div>
+    
+		<div class="row">
+	      	<div class="col-lg-6">
+				<h1 class="page-header">Available workflows <small>to run</small></h1>
+				<div id="available-workflows-list"></div>
+	      	</div>
+	      	<div class="col-lg-6">
+	      		<h1 class="page-header">Actives workflows <small>to monitor</small></h1>
+	      		<div id="active-workflows-list"></div>
+	      	</div>
+		</div>
+		
+		
+		<!-- setAndRunModal -->
+		<div id="setAndRunModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="setAndRunModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+						<h3 class="modal-title" id="setAndRunModalLabel"> </h3>
+					</div>
+					<div id="setAndRunModalBody" class="modal-body"> </div>
+					<div class="modal-footer">
+						<div class="btn-group">
+							<button id="reset_workflow" type="button" class="btn btn-default"><span class="glyphicon glyphicon-refresh"></span> Reset</button>
+							<button id="run_workflow" type="button" class="btn btn-primary"><span class="glyphicon glyphicon-cog"></span> Run</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<!-- statusModal -->
+		<div id="statusModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+						<h3 class="modal-title" id="statusModalLabel"> </h3>
+					</div>
+					<div id="statusModalBody" class="modal-body"> </div>
+					<div class="modal-footer">
+			    		<div class="btn-group">
+			    			<button id="refresh_workflow" class="btn btn-default status-panel"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
+			    			<button id="rerun_workflow" class="btn btn-primary status-panel"><span class="glyphicon glyphicon-cog"></span> ReRun</button>
+			    		</div>
+						<button id="output_workflow" type="button" class="btn btn-success status-panel"><span class="glyphicon glyphicon-chevron-right"></span> Output</button>
+						<button id="back_workflow" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-chevron-left"></span> Back</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	   
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+	    
+	</div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+	<!-- Production version-->
+    <script src='js/jflow.min.js' type='text/javascript'></script>
+
+	<!-- development version
+	<script src='js/jquery.tmpl.min.js' type='text/javascript'></script>
+	<script src='js/jquery.validate.js' type='text/javascript'></script>
+	<script src="js/jquery.ui.widget.js"></script>
+	<script src="js/jquery.iframe-transport.js"></script>
+	<script src="js/jquery.fileupload.js"></script>
+	<script src="js/jquery.fileupload-process.js"></script>
+	<script src="js/jquery.fileupload-validate.js"></script>
+	<script src='js/cytoscape-2.3.7.js' type='text/javascript'></script>
+	<script src='js/cytoscape.js-panzoom.js' type='text/javascript'></script>
+	<script src='js/dagre.js' type='text/javascript'></script>
+
+	<script src='js/handsontable.full.min.js' type='text/javascript'></script>
+
+    <script src="js/jQueryFileTree.min.js"></script>
+
+    <script src="js/jflow-browser.js"></script>
+	<script src='js/jflow-activewf.js' type='text/javascript'></script>
+	<script src='js/jflow-availablewf.js' type='text/javascript'></script>
+	<script src='js/jflow-wfoutputs.js' type='text/javascript'></script>
+    <script src='js/jflow-wfform-rules.js' type='text/javascript'></script>
+	<script src='js/jflow-wfform.js' type='text/javascript'></script>
+	<script src='js/jflow-wfstatus.js' type='text/javascript'></script>
+	<script src="js/bootstrap-datepicker.js"></script>-->
+
+	<script type="text/javascript">
+		$(document.body).on('shown.bs.modal', function () {
+		    $(this).find(".modal-body").animate({scrollTop: 0}, 0);
+		});
+	</script>
+    
+	<script type='text/javascript'>
+		
+		$(document).ready(function(){
+
+			/**
+			 * Use the plugins
+			 */
+			$("#available-workflows-list").availablewf();
+			
+			$("#available-workflows-list").on('select.availablewf', function(event, workflow) {
+				$('#setAndRunModal .modal-footer').show();
+				$('#setAndRunModalLabel').html(workflow["name"] + " <small>" + workflow["help"] + "</small>");
+			    $('#setAndRunModalBody').wfform({
+					workflowClass: workflow["class"],
+					displayRunButton: false,
+					displayResetButton: false
+			    });
+				$('#setAndRunModal').modal();
+			});
+			
+			$('#setAndRunModalBody').on('uploading.wfform', function(event, running_wf) {
+				$('#setAndRunModal .modal-footer').hide();
+			});
+			
+			$('#setAndRunModalBody').on('run.wfform', function(event, running_wf) {
+				$('#setAndRunModal').modal('hide');
+			    $('#statusModalLabel').html(running_wf["name"] + " <small>" + running_wf["id"] + "</small>");
+			    $('#statusModalBody').wfstatus({
+			    	workflowID: running_wf.id,
+			    	forceUsingWorkflow: running_wf
+			    });
+				$('#statusModal').modal();
+				$("#active-workflows-list").activewf('reload');
+				$("#output_workflow").unbind('click', outputWFHandler);
+				$("#output_workflow").bind('click', {"workflow_id": running_wf.id}, outputWFHandler);
+		    });
+		    
+			$("#refresh_workflow").click(function(){
+				$('#statusModalBody').wfstatus('reload');
+				$("#active-workflows-list").activewf('reload');
+			});
+			$("#rerun_workflow").click(function(){ $('#statusModalBody').wfstatus('rerun'); });
+		    $("#reset_workflow").click(function(){ $('#setAndRunModalBody').wfform('reset'); });
+		    $('#setAndRunModal').on('shown.bs.modal', function() {
+		    	$('#setAndRunModalBody').wfform('render');
+		    });
+		    $('#statusModal').on('shown.bs.modal', function() {
+		    	$('#statusModalBody').wfstatus('render');
+		    });
+  			$("#back_workflow").click(function(){
+  				$('#statusModalBody').wfstatus('reload');
+				$('#back_workflow').hide();
+				$('.status-panel').show();
+  			});
+		    $("#run_workflow").click(function(){
+		    	$('#setAndRunModalBody').wfform('run');
+		    	$('#back_workflow').hide();
+				$('.status-panel').show();
+		    });				
+		    function outputWFHandler(event) {
+				$('#statusModalBody').wfoutputs({
+					workflowID: event.data.workflow_id
+				})
+				$('#back_workflow').show();
+				$('.status-panel').hide();
+		    }
+		    $("#active-workflows-list").activewf();
+			$("#active-workflows-list").on("select.activewf", function(event, workflow) {
+				$('#statusModalLabel').html(workflow["name"] + " <small>" + workflow["id"] + "</small>");
+			    $('#statusModalBody').wfstatus({
+					workflowID: workflow.id
+			    });
+				$('#statusModal').modal();
+				$('#back_workflow').hide();
+				$('.status-panel').show();
+				$("#output_workflow").unbind('click', outputWFHandler);
+				$("#output_workflow").bind('click', {"workflow_id": workflow.id}, outputWFHandler);
+			});
+			 
+		}); 
+
+	</script>
+
+	</body>
+</html>

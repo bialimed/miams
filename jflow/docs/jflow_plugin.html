@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown active">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li class="active"><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="row">
+ 		<!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+		    	<li><a href="#plugin-insertion" class="active">Plugin insertion</a></li>
+				<li><a href="#availablewf">Available workflow</a>
+					<ul class="nav nav-stacked">
+			       		<li><a href="#availablewf_example">Example</a></li>
+			       		<li><a href="#availablewf_options">Options</a></li>
+			       		<li><a href="#availablewf_methods">Methods</a></li>
+	                    <li><a href="#availablewf_events">Events</a></li>
+	                </ul>
+				</li>
+				<li><a href="#activewf">Active workflow</a>
+					<ul class="nav nav-stacked">
+			       		<li><a href="#activewf_example">Example</a></li>
+			       		<li><a href="#activewf_options">Options</a></li>
+			       		<li><a href="#activewf_methods">Methods</a></li>
+	                    <li><a href="#activewf_events">Events</a></li>
+	                </ul>
+				</li>
+				<li><a href="#wfform">Workflow form</a>
+					<ul class="nav nav-stacked">
+			       		<li><a href="#wfform_example">Example</a></li>
+			       		<li><a href="#wfform_options">Options</a></li>
+			       		<li><a href="#wfform_methods">Methods</a></li>
+	                    <li><a href="#wfform_events">Events</a></li>
+	                </ul>
+				</li>
+				<li><a href="#wfstatus">Workflow status</a>
+					<ul class="nav nav-stacked">
+			       		<li><a href="#wfstatus_example">Example</a></li>
+			       		<li><a href="#wfstatus_options">Options</a></li>
+			       		<li><a href="#wfstatus_methods">Methods</a></li>
+	                </ul>
+				</li>
+				<li><a href="#wfoutputs">Workflow outputs</a>
+					<ul class="nav nav-stacked">
+			       		<li><a href="#wfoutputs_example">Example</a></li>
+			       		<li><a href="#wfoutputs_options">Options</a></li>
+			       		<li><a href="#wfoutputs_methods">Methods</a></li>
+	                </ul>
+				</li>
+	        </ul>
+   	    </nav>
+
+        <div class="col-xs-12 col-sm-9">
+          		<section id="plugin-insertion" class="group">
+          			<h1 class="page-header">Plugin insertion</h1>
+          			
+				  	<p>Jflow is a jQuery plugins and requires: </p>
+				  	<ul>
+				  		<li><a target="_blank" href="http://jquery.com/">jQuery v1.6.x or higher</a></li>
+				  		<li><a target="_blank" href="http://getbootstrap.com/">Bootstrap v3.3.x or higher</a></li>
+				  	</ul>
+				  	
+				  	<p>To use jflow, add the the following files to your WEB site: </p>
+				  	<ul>
+				  		<li><a target="_blank" href="../src/css/jflow.min.css">jflow.min.css</a></li>
+				  		<li><a target="_blank" href="../src/js/jflow.min.js">jflow.min.js</a></li>
+				  	</ul>
+
+				  	<p>Jflow provides different plugins to allow the developper to build easily his own WEB application.
+				  	The The following code presents an example of how to use the <code>availablewf</code> plugin:</p> 
+				  	<pre class="pre-hl "><code class="javascript">$(document).ready(function(){
+  $("#example").availablewf({
+  	serverURL: "http://localhost:8080",
+  });
+});</code></pre>
+				</section>
+		  		<section id="availablewf" class="group">
+				    <h1 class="page-header">Available workflows <small>availablewf()</small></h1>
+				    
+				    <p>The <code>availablewf()</code> plugin is in charge to display the list of all implemented workflows. This list
+				    can be filtered and its visualization can be customized.</p>
+				    
+					<div id="availablewf_example" class="subgroup">
+						<h2>Example</h2>
+						<div class="bs-docs-example" style="text-align: center;">
+			  				<img width="70%" src="img/availablewf.png" class="img-rounded">
+			  			</div> 
+					</div>
+
+					<div id="availablewf_options" class="subgroup">
+						<h2>Options</h2>
+						<p> Call <code>availablewf</code> with id <code>element</code> with a single line of JavaScript:
+				  		<pre class="pre-hl "><code class="javascript">$('#element').availablewf(options)</code></pre>
+						<p>Options can be passed via JavaScript.</p>
+							
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Default value</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>serverURL</td>
+										<td>path</td>
+										<td>false</td>
+										<td>http://localhost:8080</td>
+										<td>The remote URL pointing to the running jflow server.</td>
+									</tr>
+									<tr>
+										<td>template</td>
+										<td>string</td>
+										<td>false</td>
+										<td></td>
+										<td>Base HTML to use when creating the list of available workflows. The template will be injected into the defined element (<code>element</code>).</td>
+									</tr>
+									<tr>
+										<td>filters</td>
+										<td>list</td>
+										<td>false</td>
+										<td>[]</td>
+										<td>Defines the workflow classes that should not be displayed.</td>
+									</tr>
+									<tr>
+										<td>filter_groups</td>
+										<td>list</td>
+										<td>false</td>
+										<td>[]</td>
+										<td>Defines the workflow groups that should be filtered.</td>
+									</tr>
+									<tr>
+										<td>select</td>
+										<td>boolean</td>
+										<td>false</td>
+										<td>false</td>
+										<td>If true the workflows filtered using the filter_groups option will be displayed, if false they will not.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>				
+					</div>
+					
+					<div id="availablewf_methods" class="subgroup">
+						<h2>Methods</h2>
+						<h4>.availablewf('reload')</h4>
+						<p>Requests the jflow server to reload and refresh the workflow list.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').availablewf('reload')</code></pre>
+					</div>
+
+					<div id="availablewf_events" class="subgroup">
+						<h2>Events</h2>
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Event Type</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>select.availablewf</td>
+										<td>This event fires immediately when the user select a workflow on the list. The selected workflow
+										is given as parameter to the callback function.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						
+				  		<pre class="pre-hl "><code class="javascript">$('#element').on('select.availablewf', function (workflow) {
+  // do something…
+})</code></pre>
+					</div>
+				</section>
+
+		  		<section id="activewf" class="group">
+		  		    <h1 class="page-header">Active Workflows <small>activewf()</small></h1>
+		  		    
+		  		    <p>The <code>activewf()</code> plugin displays a table with all the executed workflows. It allows to monitor all the workflows
+		  		    and can be an enter point to monitor a specific workflow.</p>
+		  		    
+					<div id="activewf_example" class="subgroup">
+						<h2>Example</h2>
+						<div class="bs-docs-example" style="text-align: center;">
+			  				<img width="70%" src="img/activewf.png" class="img-rounded">
+			  			</div>
+					</div>
+
+					<div id="activewf_options" class="subgroup">
+						<h2>Options</h2>
+						<p> Call <code>activewf</code> with id <code>element</code> with a single line of JavaScript:
+				  		<pre class="pre-hl "><code class="javascript">$('#element').activewf(options)</code></pre>
+						<p>Options can be passed via JavaScript.</p>
+							
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Default value</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>serverURL</td>
+										<td>path</td>
+										<td>false</td>
+										<td>http://localhost:8080</td>
+										<td>The remote URL pointing to the running jflow server.</td>
+									</tr>
+									<tr>
+										<td>template</td>
+										<td>string</td>
+										<td>false</td>
+										<td><code>-</code></td>
+										<td>Base HTML to use when creating the list of active workflows. The template will be injected into the defined element (<code>element</code>).</td>
+									</tr>
+									<tr>
+										<td>metadataFilter</td>
+										<td>list</td>
+										<td>false</td>
+										<td>new Array()</td>
+										<td>Filter the displayed workflows by a list of metadata.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>				
+					</div>
+					
+					<div id="activewf_methods" class="subgroup">
+						<h2>Methods</h2>
+						<h4>.activewf('reload')</h4>
+						<p>Requests the jflow server to reload and refresh the active workflow list.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').activewf('reload')</code></pre>
+					</div>
+
+					<div id="activewf_events" class="subgroup">
+						<h2>Events</h2>
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Event Type</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>select.activewf</td>
+										<td>This event fires immediately when the user select a workflow on the list. The selected workflow
+										with an initialized status is given as parameter to the callback function.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						
+				  		<pre class="pre-hl "><code class="javascript">$('#element').on('select.activewf', function (workflow) {
+  // do something…
+})</code></pre>
+					</div>
+		  		    
+				</section>
+
+		  		<section id="wfform"  class="group">
+		  		    <h1 class="page-header">Workflow form <small>wfform()</small></h1>
+		  		    
+		  		    <p>The <code>wfform()</code> plugin builds the form the final user have to fill to run the workflow. The form can be
+		  		    customized and several user actions can be catched.</p>
+		  		    
+					<div id="wfform_example" class="subgroup">
+						<h2>Example</h2>
+						<div class="bs-docs-example" style="text-align: center;">
+			  				<img width="100%" src="img/wfform.png" class="img-rounded">
+			  			</div>
+					</div>
+
+					<div id="wfform_options" class="subgroup">
+						<h2>Options</h2>
+						<p> Call <code>wfform</code> with id <code>element</code> with a single line of JavaScript:
+				  		<pre class="pre-hl "><code class="javascript">$('#element').wfform(options)</code></pre>
+						<p>Options can be passed via JavaScript.</p>
+							
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Default value</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>serverURL</td>
+										<td>path</td>
+										<td>false</td>
+										<td>http://localhost:8080</td>
+										<td>The remote URL pointing to the running jflow server.</td>
+									</tr>
+									<tr>
+										<td>[*]Template</td>
+										<td>string</td>
+										<td>false</td>
+										<td><code>-</code></td>
+										<td><code>wfform</code> provides several templates for several types. As example, the <code>dateTemplate</code> is in charge to 
+										display a date type. The other available templates are <code>choiceTemplate</code>, <code>inputfileTemplate</code>,
+										<code>browsefileTemplate</code>, <code>regexpfilesTemplate</code>, <code>booleanTemplate</code>, <code>textTemplate</code>
+										and <code>progressTemplate</code>.</td>
+									</tr>
+									<tr>
+										<td>workflowClass</td>
+										<td>string</td>
+										<td>true</td>
+										<td>null</td>
+										<td>The workflow class name, as defined in the <code>Python class</code>, of the workflow to build.</td>
+									</tr>
+									<tr>
+										<td>displayRunButton</td>
+										<td>boolean</td>
+										<td>false</td>
+										<td>true</td>
+										<td>Should <code>wfform</code> display the button in charge to run the workflow.</td>
+									</tr>
+									<tr>
+										<td>displayResetButton</td>
+										<td>boolean</td>
+										<td>false</td>
+										<td>true</td>
+										<td>Should <code>wfform</code> display the button in charge to reset the workflow.</td>
+									</tr>
+									<tr>
+										<td>parameters</td>
+										<td>hashtable</td>
+										<td>false</td>
+										<td>{}</td>
+										<td>A hashtable fixing the value of the desired parameters defined by <code>{param:value}</code>. All the parameters with a fixed value
+										will be hidden from the form populated to the final user.</td>
+									</tr>
+									<tr>
+										<td>timer</td>
+										<td>number</td>
+										<td>false</td>
+										<td>2000</td>
+										<td>The time in milliseconds between 2 updates of <code>progressTemplate</code> displayed when files have to be uploaded.</td>
+									</tr>
+									<tr>
+										<td>forceIframeTransport</td>
+										<td>boolean</td>
+										<td>false</td>
+										<td>false</td>
+										<td>In case the application required cross-domain requests, the parameter should be settled to true.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>				
+					</div>
+					
+					<div id="wfform_methods" class="subgroup">
+						<h2>Methods</h2>
+						<h4>.wfform('reset')</h4>
+						<p>Resets all the form fields.
+						</p>
+				  		<pre class="pre-hl "><code class="javascript">$('#element').wfform('reset')</code></pre>
+						<h4>.wfform('run')</h4>
+						<p>Requests the jflow server to run the workflow with the specified parameters. Before submiting the workflow to the 
+						server, all the fields are checked. Once the workflow is launched on the server side, the event <code>run.wfform</code>
+						is triggered.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfform('run')</code></pre>
+						<h4>.wfform('render')</h4>
+						<p>Render the form. This method can be useful when the form is built within a hidden <code>$("#element")</code>. The function
+						allows to render all form components such as the <code>handsontable</code> displayed for <code>MultiParameterList</code>. 
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfform('render')</code></pre>
+						<h4>.wfform('load')</h4>
+						<p>Load the workflow information and display the corresponding form.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfform('load')</code></pre>
+					</div>
+
+
+					<div id="wfform_events" class="subgroup">
+						<h2>Events</h2>
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Event Type</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>uploaded.wfform</td>
+										<td>This event fires immediately when the files to upload are all uploaded.</td>
+									</tr>
+									<tr>
+										<td>run.wfform</td>
+										<td>This event is fired when the workflow has been launched on the server side.</td>
+									</tr>
+									<tr>
+										<td>uploading.wfform</td>
+										<td>This event is fired immediately when the upload of the files is started.</td>
+									</tr>
+									<tr>
+										<td>loaded.wfform</td>
+										<td>This event is fired when the workflow information have been retrieved from the server.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+				  		<pre class="pre-hl "><code class="javascript">$('#element').on('uploaded.wfform', function (workflow) {
+  // do something…
+})</code></pre>
+					</div>
+				</section>
+
+		  		<section id="wfstatus">
+				    <h1 class="page-header">Workflow status <small>wfstatus()</small></h1>
+				    
+				    <p>The <code>wfstatus()</code> plugin is used to display a workflow execution status. This plugin is able to 
+				    display the workflow status using a component list layout or using a graph layout. In both case each command
+				    lines run are monitored and an error report is provided if something wrong happends.</p>
+				    
+					<div id="wfstatus_example" class="subgroup">
+						<h2>Example</h2>
+						<div class="bs-docs-example" style="text-align: center;">
+			  				<img width="100%" src="img/wfstatus.png" class="img-rounded">
+			  			</div>
+					</div>
+
+					<div id="wfstatus_options" class="subgroup">
+						<h2>Options</h2>
+						<p> Call <code>wfstatus</code> with id <code>element</code> with a single line of JavaScript:
+				  		<pre class="pre-hl "><code class="javascript">$('#element').wfstatus(options)</code></pre>
+						<p>Options can be passed via JavaScript.</p>
+							
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Default value</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>serverURL</td>
+										<td>path</td>
+										<td>false</td>
+										<td>http://localhost:8080</td>
+										<td>The remote URL pointing to the running jflow server.</td>
+									</tr>
+									<tr>
+										<td>headTemplate</td>
+										<td>string</td>
+										<td>false</td>
+										<td><code>-</code></td>
+										<td>Base HTML to define the description of the workflow status.</td>
+									</tr>
+									<tr>
+										<td>listTemplate</td>
+										<td>string</td>
+										<td>false</td>
+										<td><code>-</code></td>
+										<td>Base HTML to define how to display the workflow monitoring when <code>display="list"</code>.</td>
+									</tr>
+									<tr>
+										<td>workflowID</td>
+										<td>number</td>
+										<td>true</td>
+										<td>null</td>
+										<td>Defines the workflow ID returned by the server once it is launched.</td>
+									</tr>
+									<tr>
+										<td>verbose</td>
+										<td>boolean</td>
+										<td>false</td>
+										<td>false</td>
+										<td>Should the error be verbose.</td>
+									</tr>
+									<tr>
+										<td>display</td>
+										<td>string</td>
+										<td>false</td>
+										<td>"graph"</td>
+										<td>How should be displayed the workflow status - "graph" | "list". When "graph" is specified, each components 
+										are represented by a node and a link between 2 nodes is displayed if a file outputed by a component is used as
+										input by the other one. "list" allows to represent each components by a progress bar.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>				
+					</div>
+					
+					<div id="wfstatus_methods" class="subgroup">
+						<h2>Methods</h2>
+						<h4>.wfstatus('reload')</h4>
+						<p>Requests the jflow server to reload and refresh the workflow status.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfstatus('reload')</code></pre>
+						<h4>.wfstatus('rerun')</h4>
+						<p>Requests the jflow server to rerun the workflow.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfstatus('rerun')</code></pre>
+						<h4>.wfstatus('render')</h4>
+						<p>Render the status. This method can be useful when the form is built within a hidden <code>$("#element")</code>. The function
+						allows to render the <code>cytoscape</code> graph.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfform('render')</code></pre>
+						<h4>.wfstatus('reset', component_name)</h4>
+						<p>Requests the jflow server to reset a specific component. The <code>component_name</code> variable should be given to the function.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfstatus('reset', component_name)</code></pre>
+					</div>
+					
+				</section>
+				
+				
+		  		<section id="wfoutputs">
+				    <h1 class="page-header">Workflow outputs <small>wfoutputs()</small></h1>
+				    
+				    <p>The <code>wfoutputs()</code> plugin displays all the generated outputs produced by the workflow execution
+				    and provides a link to download the resulting files.</p>
+				    
+					<div id="wfoutputs_example" class="subgroup">
+						<h2>Example</h2>
+						<div class="bs-docs-example" style="text-align: center;">
+			  				<img width="100%" src="img/wfoutputs.png" class="img-rounded">
+			  			</div>
+					</div>
+
+					<div id="wfoutputs_options" class="subgroup">
+						<h2>Options</h2>
+						<p> Call <code>wfoutputs</code> with id <code>element</code> with a single line of JavaScript:
+				  		<pre class="pre-hl "><code class="javascript">$('#element').wfoutputs(options)</code></pre>
+						<p>Options can be passed via JavaScript.</p>
+							
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Default value</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>serverURL</td>
+										<td>path</td>
+										<td>false</td>
+										<td>http://localhost:8080</td>
+										<td>The remote URL pointing to the running jflow server.</td>
+									</tr>
+									<tr>
+										<td>template</td>
+										<td>string</td>
+										<td>false</td>
+										<td><code>-</code></td>
+										<td>Base HTML to use when creating the list of workflow outputs. The template will be injected into the defined element (<code>element</code>).</td>
+									</tr>
+									<tr>
+										<td>logFile</td>
+										<td>list</td>
+										<td>false</td>
+										<td>[".stderr", ".stdout", ".log"]</td>
+										<td>Defines the extensions of all the log files.</td>
+									</tr>
+									<tr>
+										<td>workflowID</td>
+										<td>number</td>
+										<td>true</td>
+										<td>null</td>
+										<td>The ID of the workflow for which the outputs should be returned.</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>				
+					</div>
+					
+					<div id="wfoutputs_methods" class="subgroup">
+						<h2>Methods</h2>
+						<h4>.wfoutputs('reload')</h4>
+						<p>Requests the jflow server to reload and refresh the outputs list.
+						</p>
+						<pre class="pre-hl "><code class="javascript">$('#element').wfoutputs('reload')</code></pre>
+					</div>
+					
+				</section>
+
+		  	</div>
+		</div>
+		
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+      
+	</div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+	
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>

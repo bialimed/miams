@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow</title>
+    
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown active">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li class="active"><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="row">
+	    <!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+	        	<li><a href="#global" class="active">Global</a></li>
+	        	<li><a href="#email" >Email</a></li>
+	        	<li><a href="#storage" >Storage</a></li>
+	        	<li><a href="#softwares" >Softwares</a></li>
+	        	<li><a href="#components" >Components</a></li>
+	        	<li><a href="#workflows" >Workflows</a></li>
+	        	<li><a href="#resources" >Resources</a></li>
+	        </ul>
+   	    </nav>
+      
+        <div class="col-xs-12 col-sm-9">
+        
+       	<section id="global" class="group">
+		    	<h1 class="page-header">Global <small>section</small></h1>
+		    	
+		    	<p>
+		    		jflow WEB server and parameters can be defined in the global section. 
+		    	</p>
+		    	
+		    	<div class="table-responsive">
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Property</th>
+								<th>Default</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>makeflow</td>
+								<td>/usr/bin/makeflow</td>
+								<td>The path to the makeflow executable.</td>
+							</tr>
+							<tr>
+								<td>batch_system_type</td>
+								<td>local</td>
+								<td>The name of the batch system type to use. Supported batch systems are:
+									<ul>
+										<li>local </li>
+										<li>condor</li>
+										<li>sge</li>
+										<li>moab</li>
+										<li>cluster</li>
+										<li>wq</li>
+										<li>hadoop</li>
+										<li>mpi-queue</li>
+									</ul> 
+								</td>
+							</tr>
+							<tr>
+								<td>batch_options</td>
+								<td>-</td>
+								<td>Those options will be added to all submitted batch files.</td>
+							</tr>
+							<tr>
+								<td>limit_submission</td>
+								<td>100</td>
+								<td>The limit number of jobs submitted in parallel.</td>
+							</tr>
+							<tr>
+								<td>server_socket_host</td>
+								<td>127.0.0.1</td>
+								<td>The WEB address to use to run the workflow management system server.</td>
+							</tr>
+							<tr>
+								<td>server_socket_port</td>
+								<td>8080</td>
+								<td>The WEB server socket port to use to run the workflow management system server.</td>
+							</tr>
+							<tr>
+								<td>date_format</td>
+								<td>%d/%m/%Y</td>
+								<td>The default date format to use in the application for date parameters. This must be a date format string.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+	    	</section>
+        
+		  		<section id="email" class="group">
+			    	<h1 class="page-header">Email <small>section</small></h1>
+				  	<p>jflow offers the possibility to send emails to the users at the end of a workflow execution. This can be done 
+				  	by editing the <code>email</code> section of the <code>application.properties</code> file.</p>
+				  	<p> To access this functionality, <code>smtp_server</code>, <code>smtp_port</code>, <code>from_address</code>
+				  	and <code>from_password</code> are required parameters. The values <code>to_address</code>, <code>subject</code>
+				  	and <code>message</code> can be globaly set from the jflow configuration file or can be set within a workflow by
+				  	using respectivly the <code>self.set_to_address()</code>, <code>self.set_subject()</code> and <code>self.set_message()</code>
+				  	methods. This allows to request, as a workflow input, a user email in order to send him a notification when the workflow 
+				  	is over.
+		    	<div class="table-responsive">
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Property</th>
+								<th>Default</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>smtp_server</td>
+								<td>-</td>
+								<td>The smtp server used to send the email.</td>
+							</tr>
+							
+							<tr>
+								<td>smtp_port</td>
+								<td>-</td>
+								<td>The smtp server port number.</td>
+							</tr>
+							
+							<tr>
+								<td>from_address</td>
+								<td>-</td>
+								<td>Email used as "from" while sending the email.</td>
+							</tr>
+							
+							<tr>
+								<td>from_password</td>
+								<td>-</td>
+								<td>The password associated with from_address on the smtp server.</td>
+							</tr>
+
+							<tr>
+								<td>subject</td>
+								<td>-</td>
+								<td>The subject of the mail. This value will be used for all workflow. It can be overloaded within the
+									workflow implementation using <code>self.set_subject("subject")</code>.<br />
+									Placeholders can be used to access workflow attributes or unparametred methods: 
+									<code>###attribute###</code> or <code>###method()###</code>. For timestamps you can apply 
+									date function with the following syntax: <code>###attribute|date###</code> or <code>###method()|date###"</code>.
+								</td>
+							</tr>
+							
+							<tr>
+								<td>message</td>
+								<td>-</td>
+								<td>The mail content. This value will be used for all workflow. It can be overloaded within the
+									workflow implementation using <code>self.set_message("message")</code>.<br />
+									Placeholders can be used to access workflow attributes or unparametred methods: 
+									<code>###attribute###</code> or <code>###method()###</code>. For timestamps you can apply 
+									date function with the following syntax: <code>###attribute|date###</code> or <code>###method()|date###"</code>.
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				</section>
+
+        	<section id="storage" class="group">
+		    	<h1 class="page-header">Storage <small>section</small></h1>
+		    	<p>
+		    		This section configure the paths used by all workflows.
+		    	</p>
+		    	<p>
+		    		On a multi-user computer or cluster you can use placeholder <code>###USER###</code>.
+		    		<code>###USER###</code> will be replace by the environment variable <code>$USER</code>.
+		    	</p>
+		    	
+		    	<div class="table-responsive">
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Property</th>
+								<th>Default</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>log_file</td>
+								<td>&lt;path&gt;/jflow.log</td>
+								<td>The path to the log file for workflows execution. Errors and logs will be stored in this file.</td>
+							</tr>
+							<tr>
+								<td>work_directory</td>
+								<td>&lt;path&gt;/work</td>
+								<td>The path to the work directory. This is the location where workflows will write results. If using a cluster, this location
+								should be accessible by all cluster nodes.</td>
+							</tr>
+							<tr>
+								<td>tmp_directory</td>
+								<td>&lt;path&gt;/tmp</td>
+								<td>The path to the tmp directory. If using a cluster, this location should be accessible by all cluster nodes.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+		    	
+	    	</section>
+
+	    	<section id="softwares" class="group">
+		    	<h1 class="page-header">Softwares <small>section</small></h1>
+		    	
+		    	<p>
+		    		While retrieving a path from a workflow using <code>self.get_exec_path('my_software')</code>, jflow will first look in the sofwares section 
+		    		of the configuration file to get the full path of 'my_software'. If this one is nout found, jflow will then search within the <code>workflows/bin/</code>
+					directory. Finally, jflow search in the system PATH variable to find the right path.
+		    	</p>
+		    	<pre class="pre-hl "><code class="ini"># where could be find binaries
+[softwares]
+cutadapt = /path/to/cutadapt</code></pre>
+		    	
+	    	</section>
+
+		  		<section id="components">
+			    	<h1 class="page-header">Components <small>section</small></h1>
+				  	<p>In a production environment, it can be useful to custom DMS options for each components. To do so, within the <code>components</code>
+				  	section in the jflow configuration file, add a line following the schema: [component_name].batch_options = [options].</p>
+				  	<p>Cpu and memory values are then avalaible in the component via the methods <code>get_cpu()</code> and <code>get_memory()</code> on local and SGE enviroment only/</p>
+				  	<h3>Local configuration</h3>
+					<p>you can provide option with format <code>mem=XX[K|M|G] cpu=XX"</code></p>
+<pre class="pre-hl "><code class="ini">[components]
+BWAIndex.batch_options = "mem=1G"
+BWAmem.batch_options = "mem=10G cpu=4"</code></pre>
+				  	
+				  	<h3>SGE configuration</h3>
+					<p>you can provide option as you would provide to SGE</code></p>
+				  	<pre class="pre-hl "><code class="ini">[components]
+BWAIndex.batch_options = -l mem=1G -l h_vmem=1G -q myflowq
+BWAmem.batch_options = -l mem=10G -l h_vmem=10G -q myflow2q</code></pre>
+					
+
+				</section>
+
+		  		<section id="workflows">
+			    	<h1 class="page-header">Workflows <small>section</small></h1>
+				  	<p>Each workflow has a default group. In this section you can set a group name for each one of your workflow, 
+				  	thus while using the <code>availablewf()</code> plugin, you will be able to specify which group of workflow you want to get. 
+				  	You can set the group of a workflow by adding a line of the following schema : [workflow_classname].group = [group_name].</p>
+				  	<pre class="pre-hl "><code class="ini">[workflows]
+QuickStart.group = tutorial</code></pre>
+				</section>
+
+
+		  		<section id="ressources">
+			    	<h1 class="page-header">Ressources <small>section</small></h1>
+				  	<p>In a production environment, it can be useful to set an ensemble of variables, such as path to databanks, for 
+				  	multiple workflows. Thus, jflow gives access to ressources settled within the <code>application.properties</code> file.
+				  	All the values settled within this section are then accessible from any <code>Component</code> or <code>Workflow</code> 
+				  	through the <code>get_resource()</code> class method.</p>
+				  	<pre class="pre-hl "><code class="ini">[resources]
+ecoli_db = /path/to/ecoli536
+phix_db = /path/to/phi.fa
+...</code></pre>
+				</section>
+
+        </div><!--/span-->
+
+      </div><!--/row-->
+
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+
+	</div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+	
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>

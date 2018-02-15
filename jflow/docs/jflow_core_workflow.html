@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown active">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li class="active"><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+		        <li><a href="#what" class="active">What is a workflow</a></li>
+		        <li><a href="#workflow-architecture">Where to add a new workflow</a></li>
+		        <li><a href="#workflow" >The Workflow class</a></li>
+		       	<li><a href="#define_parameters">Define parameters</a>
+			       	<ul class="nav nav-stacked">
+			       		<li><a href="#parameters">Parameters</a></li>
+			       		<li><a href="#input_parameters">Inputs</a></li>
+			       		<li><a href="#multiple_parameters">Multiple parameters</a></li>
+			       		<li><a href="#exclusion_rules">Exclusion rules</a></li>
+	                </ul>
+                </li>
+				<li><a href="#process">Process</a></li>
+				<li><a href="#other_methods">Other methods</a>
+				  	<ul class="nav nav-stacked">
+				        <li><a href="#pre_process">Pre process</a></li>
+						<li><a href="#post_process">Post process</a></li>
+						<li><a href="#set_to_address">Set to address</a></li>
+						<li><a href="#set_subject">Set subject</a></li>
+						<li><a href="#set_message">Set message</a></li>
+						<li><a href="#get_resource">Get resource</a></li>
+					</ul>
+				</li>
+	        </ul>
+   	    </nav>
+   	 
+        <div class="col-xs-12 col-sm-9">
+        
+           	<section id="what" class="group">
+		    	<h1 class="page-header">What is a workflow</h1>
+	    		<p>A workflow is a collection of <a href="./jflow-core-component.html">components</a>. In jflow, it is represented by a Python class
+	    			inerhiting from <code>jflow.workflow.Workflow</code>. It lists all the inputs and parameters that should be requested to 
+	    			the final user and build the execution process by adding components and linking them to each others.</p>
+	    	</section>
+        
+        	<section id="workflow-architecture" class="group">
+		    	<h1 class="page-header">Where to add a new workflow</h1>
+		    	<p>New wokflow must be added as a new python package in the <code>workflows</code> package. The implementation of
+		    	a workflows must be written in the package <code>__init__.py</code> file. The developper can also create: </p>
+		    	<ul>
+		    		<li>a <code>components</code> package, where all the workflow specific components can be stored,</li>
+		    		<li>a <code>lib</code> package to import specific libraries within its workflow,</li>
+		    		<li>a <code>bin</code> folder with the binaries used in the workflow.</li>
+		    	</ul>
+		    	
+		    	<pre class="pre-hl "><code class="ini">jflow/
+├── bin/
+├── docs/
+├── src/
+├── workflows/
+│   ├── myworkflow/       [ the new workflow package ]
+│   │   ├── components/   [ specific components ]
+│   │   ├── lib/          [ specific libraries ]
+│   │   ├── bin/          [ specific binairies ]
+│   │   └── __init__.py   [ the workflow implementation ]
+│   ├── components/
+│   ├── extparsers/
+│   ├── __init__.py
+│   ├── formats.py
+│   └── types.py
+├── applications.properties
+└── README</code></pre>
+		    </section>   
+     
+        	<section id="workflow" class="group">
+		    	<h1 class="page-header">The Workflow class</h1>
+		    	<p>In jflow, a workflow is a class defined in the <code>__init__.py</code> file. In order to add a new workflow, the developper has to: </p>
+		    	
+		    	<ul>
+			    	<li>implement a class inheriting from the <code>jflow.workflow.Workflow</code> class,</li>
+					<li>overload the <code>get_description()</code> method to provide to the final user a description of the workflow,</li>
+					<li>overload the <code>define_parameters()</code> method to add the workflow inputs and parameters,</li>
+					<li>overload the <code>process()</code> method by adding components and setting their arguments,</li>
+					<li>link the components inputs and outputs.</li>
+				</ul>
+				<p>The class skeleton is given by</p>
+			    <div>
+			    	<pre class="pre-hl "><code class="python">from jflow.workflow import Workflow
+
+class MyWorkflow (Workflow):
+
+    def get_description(self):
+        return "a description"
+
+    def define_parameters(self, function="process"):
+        # define the parameters
+
+    def process(self):
+        # add and link the components</code></pre>
+			    </div>
+			    
+			</section>
+
+			<section id="define_parameters" class="group">
+		    	<h1 class="page-header">Define parameters</h1>
+				<p>
+					The <code>define_parameters()</code> method is used to add workflow parameters and inputs. To do so, several methods are available. 
+					Once defined, the new parameters are available as object attibuts, thus they are accessible through <code>self.parameter_name</code>.
+				</p>
+				<p>
+					Several types of parameters can be added, all described in the following sections. All have two required positional 
+					arguments: <code>name</code> and <code>help</code>. The other arguments are optional and can be given to the method by using their 
+					keywords.
+				</p>
+				<div class="alert alert-info" role="alert">
+					<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+					The operator <code>is</code> is not supported to evaluate a parameter, the operator <code>==</code> must be prefered.
+				</div>
+				
+				<div id="parameters" class="subgroup">
+					<h2>Parameters</h2>
+					
+					<p>Parameters can be added to handle a single element or a list of elements. Thus, the <code>add_parameter()</code> method can be used to force 
+					the final user to provide one and only one value, where the <code>add_parameter_list()</code> method allows the final user to give as many values he 
+					wants.</p>
+					
+					<h3>add_parameter()</h3>
+						<h4>Example</h4>
+						<p>
+							In the following example, a parameter named <code>sequencer</code> 
+							is added to the workflow. It has a list of choices and the default value is "HiSeq2000".
+						</p>
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_parameter("sequencer",
+    		   "The sequencer type.", 
+    		   choices = ["HiSeq2000", "ILLUMINA","SLX","SOLEXA","454","UNKNOWN"], 
+    		   default="HiSeq2000")</code></pre>
+				    	</div>
+						
+						<h4>Options</h4>					
+			    	
+			    			<p>There are two positional arguments: <code>name</code> and <code>help</code>. All other options are keyword options</p>
+					    	
+							<div class="table-responsive">
+								<table class="table table-bordered table-striped">
+									<thead>
+										<tr>
+											<th>Name</th>
+											<th>Type</th>
+											<th>Required</th>
+											<th>Default value</th>
+											<th>Description</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>name</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The name of the parameter. The parameter value is accessible 
+												within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+										</tr>
+										
+										<tr>
+											<td>help</td>
+											<td>string</td>
+											<td>true</td>
+											<td>None</td>
+											<td>The parameter help message.</td>
+										</tr>
+									
+										<tr>
+											<td>default</td>
+											<td>-</td>
+											<td>false</td>
+											<td>None</td>
+											<td>The default parameter value. It's type depends on the parameter type.</td>
+										</tr>
+										
+										<tr>
+											<td>type</td>
+											<td>string</td>
+											<td>false</td>
+											<td>"str"</td>
+											<td>The parameter type. The value provided by the final user will be casted and checked against this type. 
+											All built-in Python types are available "int", "str", "float", "bool", "date", ... To create customized types, 
+											refere to the <a href="./jflow-type.html">Add a data type</a> documentation.</td>
+										</tr>
+										
+										<tr>
+											<td>choices</td>
+											<td>list</td>
+											<td>false</td>
+											<td>[]</td>
+											<td>A list of the allowed values.</td>
+										</tr>
+										
+										<tr>
+											<td>required</td>
+											<td>boolean</td>
+											<td>false</td>
+											<td>false</td>
+											<td>Wether or not the parameter can be ommitted.</td>
+										</tr>
+										
+										<tr>
+											<td>flag</td>
+											<td>string</td>
+											<td>false</td>
+											<td>None</td>
+											<td>The command line flag (if the value is None, the flag will be <code>--name</code>).</td>
+										</tr>
+										
+										<tr>
+											<td>group</td>
+											<td>string</td>
+											<td>false</td>
+											<td>"default"</td>
+											<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+										</tr>
+										
+										<tr>
+											<td>display_name</td>
+											<td>string</td>
+											<td>false</td>
+											<td>None</td>
+											<td>The parameter name that should be displayed on the final form.</td>
+										</tr>
+										
+										<tr>
+											<td>add_to</td>
+											<td>string</td>
+											<td>false</td>
+											<td>None</td>
+											<td>If this parameter is part of a multiple parameter, <code>add_to</code> allows to define to which "parent" parameter it should be
+											linked to.</td>
+										</tr>
+
+										<tr>
+											<td>rules</td>
+											<td>string</td>
+											<td>false</td>
+											<td>None</td>
+											<td>Define custom rules on the parameter. Rules are separated by a ";"<br/>
+												Available rules:<br/>
+												<ul>
+													<li><strong>Exclude:</strong> if the parameter is provided by the user, the specified parameters 
+													are disabled (<code>Exclude=param1,param2,...</code>).<br/>
+													<li><strong>ToBeRequired:</strong> the specified parameters are required if the current one is 
+													provided by the user (<code>ToBeRequired=param1,param2,...</code>).<br/>
+													<li><strong>RequiredIf:</strong> parameter is required only if other parameters have (or have not) some values.<br/>
+													<em>Syntax: RequiredIf?(ANY|ALL)[param_1=value1,param_2!=value2,...] (all conditions or any condition)</em><br/>
+														Special values: * for any value of the parameter (not empty), None for not given (or empty)<br/>
+													Example: RequiredIf?ANY[adapter_1!="AATGC",adapter_2=*,gtf_file=None]</li>
+													<li><strong>DisabledIf:</strong> parameter is disabled if other parameters have some values.<br/>
+													<em>Syntax (like RequiredIf rule):<br/></br:>DisabledIf?(ANY|ALL)[param_1=value1,param_2=value2,...]</em> (all conditions or any condition)</li>
+												</ul>
+											</td>
+										</tr>
+		
+									</tbody>
+								</table>
+							</div>
+					
+					<h3>add_parameter_list()</h3>
+					
+						<p>The <code>add_parameter_list()</code> method takes the same arguments as <code>add_parameter()</code>. However, adding this parameter,
+						the final user will be allowed to enter multiple values for this parameter and the object attribut <code>self.parameter_name</code> will be
+						settled as a Python list.</p>
+					
+				</div>
+				
+	       		
+	       		<div id="input_parameters" class="subgroup">
+	       			<h2>Inputs</h2>
+	       			
+					<p>Just like parameters, inputs can be added to handle a single file or a list of files. Thus, the <code>add__input_file()</code> method can be used to force 
+					the final user to provide one and only one file, where the <code>add__input_file_list()</code> method allows the final user to give as many files as he 
+					wants.</p>
+	       			
+	       				<h3>add_input_file()</h3>
+							<h4>Example</h4>
+	       				<p>
+							In the following example, an input named <code>reads</code> 
+							is added to the workflow. The provided file is required and should be in fastq format. No file size limitation is specified. 
+						</p>
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_input_file_list("reads", 
+                         "Which read files should be used", 
+                         file_format="fastq", 
+                         required=True)</code></pre>
+				    	</div>
+				    		
+							<h4>Options</h4>
+								
+								<p>There are two positional argument : <code>name</code> and <code>help</code>. All other options are keyword options. </p>
+                      
+								<div class="table-responsive">
+									<table class="table table-bordered table-striped">
+										<thead>
+											<tr>
+												<th>Name</th>
+												<th>Type</th>
+												<th>Required</th>
+												<th>Default value</th>
+												<th>Description</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<td>name</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The name of the parameter. The parameter value is accessible 
+													within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+											</tr>
+											
+											<tr>
+												<td>help</td>
+												<td>string</td>
+												<td>true</td>
+												<td>None</td>
+												<td>The parameter help message.</td>
+											</tr>
+											
+											<tr>
+												<td>default</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The default path value.</td>
+											</tr>
+										
+											<tr>
+												<td>file_format</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"any"</td>
+												<td>The file format is checked before running the workflow. To create customized format, 
+													refere to the <a href="./jflow-format.html">Add a file format</a> documentation.</td>
+											</tr>
+											
+											<tr>
+												<td>type</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"inputfile"</td>
+												<td>The type can be "inputfile", "localfile", "urlfile" or "browsefile". An "inputfile" allows the 
+												final user to provide a "localfile" or an "urlfile" or a "browsefile". A "localfile" restricts the final
+												user to provide a path to a file visible by jflow. An "urlfile" only permits the final user to give an 
+												URL as input, where a "browsefile" force the final user to upload a file from its own computer. This last
+												option is only available from the GUI and is considered as a "localfile" from the command line. All the 
+												uploading process is handled by jflow.</td>
+											</tr>
+											
+											<tr>
+												<td>required</td>
+												<td>boolean</td>
+												<td>false</td>
+												<td>false</td>
+												<td>Wether or not the parameter can be ommitted.</td>
+											</tr>
+											
+											<tr>
+												<td>flag</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The command line flag (if the value is None, the flag will be <code>--name</code>).</td>
+											</tr>
+											
+											<tr>
+												<td>group</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"default"</td>
+												<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+											</tr>
+											
+											<tr>
+												<td>display_name</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>The parameter name that should be displayed on the final form.</td>
+											</tr>
+											
+											<tr>
+												<td>add_to</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>If this parameter is part of a multiple parameter, <code>add_to</code> allows to define to which "parent" parameter it should be
+												linked to.</td>
+											</tr>
+											
+											<tr>
+												<td>size_limit</td>
+												<td>string</td>
+												<td>false</td>
+												<td>"0"</td>
+												<td>Which maximum file size is allowed. If the value is "0", the file size allowed is unlimited. The given value should
+												also provides the file size units between "bytes", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb" and "Zb". A value of 10Mb will 
+												restrict the user to upload a file of 10 Mega Bytes.</td>
+											</tr>
+
+											<tr>
+												<td>rules</td>
+												<td>string</td>
+												<td>false</td>
+												<td>None</td>
+												<td>Define custom rules on the parameter. Rules are separated by a ";"<br/>
+													Available rules:<br/>
+													<ul>
+														<li><strong>Exclude:</strong> exclude parameters. If one is given, the other must be not given.<br/>
+														<em>Syntax: Exclude=param1,param2,...</em></li>
+														<li><strong>ToBeRequired:</strong> require other parameters if parameter is given.<br/>
+														<em>Syntax: ToBeRequired=param1,param2,...</em></li>
+														<li><strong>RequiredIf:</strong> parameter is required only if other parameters have (or have not) some values.<br/>
+														<em>Syntax: RequiredIf?(ANY|ALL)[param_1=value1,param_2!=value2,...] (all conditions or any condition)</em><br/>
+														Special values: * for any value of the parameter (not empty), None for not given (or empty)<br/>
+														Example: RequiredIf?ANY[adapter_1!="AATGC",adapter_2=*,gtf_file=None]</li>
+														<li><strong>DisabledIf:</strong> parameter is disabled if other parameters have some values.<br/>
+														<em>Syntax (like RequiredIf rule):<br/></br:>DisabledIf?(ANY|ALL)[param_1=value1,param_2=value2,...]</em> (all conditions or any condition)</li>
+														</ul>
+												</td>
+											</tr>
+
+										</tbody>
+									</table>
+								</div>
+								
+					    <h3>add_input_file_list()</h3>
+					    
+						<p>This method takes the same arguments as <code>add_input_file()</code>. However, adding this parameter,
+						the final user will be allowed to provide multiple files and the object attribut <code>self.parameter_name</code> will be
+						settled as a Python list.</p>
+						
+						<h3>add_input_directory()</h3>
+						<p>
+							The <code>add_input_directory()</code> method allows the user to select files from a specific directory. This 
+							kind of input can be useful for tools outputing not only files but an organized directory.
+							The parameter <code>get_files_fn</code> specify the function that will be used to retrieve the files. This method can 
+							take as many arguments as required, but the first argument has to be a string representing the folder path.
+							By default all files will be selected. From the workflow <code>process()</code> function, the files can be retrieved
+							by using the <code>get_files()</code> method.
+						</p>
+						
+						<h4>Example</h4>
+	       				<p>
+	       					In the following example, the <code>add_input_directory()</code> method is used to parse a directory and retrieve only fasta files
+	       					inside this directory. <code>get_files()</code> will browse the directory and get all fasta files.
+						</p>
+			    		<div>
+			    		<pre class="pre-hl "><code class="python">import os
+from jflow.Workflow import Workflow
+
+def fasta_files(folder):
+    res = []
+    for file in os.listdir(folder):
+        if file.endswith(".fasta"):
+            res.append(file)
+    return res
+
+class MyWorkflow(Workflow):
+    def define_parameters(self, function="process"):
+        self.add_input_directory("fastadir", "Path to folder with fasta files", 
+            get_files_fn=fasta_files)
+
+    def process(self):
+        # to retrieve the files
+        for fastafile in self.fastadir.get_files():
+            # do something</code></pre>
+				    	</div>
+				    		
+			    		<h4>Options</h4>
+						<p>There are two positional argument : <code>name</code> and <code>help</code>. All other options are keyword options. </p>
+						<div class="table-responsive">
+							<table class="table table-bordered table-striped">
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Type</th>
+										<th>Required</th>
+										<th>Default value</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>name</td>
+										<td>string</td>
+										<td>true</td>
+										<td>None</td>
+										<td>The name of the parameter. The parameter value is accessible 
+											within the workflow object through the attribute named <code>self.parameter_name</code>.</td>
+									</tr>
+									
+									<tr>
+										<td>help</td>
+										<td>string</td>
+										<td>true</td>
+										<td>None</td>
+										<td>The parameter help message.</td>
+									</tr>
+									
+									<tr>
+										<td>default</td>
+										<td>string</td>
+										<td>false</td>
+										<td>None</td>
+										<td>The default path value.</td>
+									</tr>
+								
+									<tr>
+										<td>get_files_fn</td>
+										<td>function</td>
+										<td>false</td>
+										<td>-</td>
+										<td>
+											get_files_fn will be the method called when executing <code>param.get_files()</code>. All argument from get_files()
+											will be used as arguments in get_files_fn
+										</td>								
+									</tr>
+									
+									<tr>
+										<td>required</td>
+										<td>boolean</td>
+										<td>false</td>
+										<td>false</td>
+										<td>Wether or not the parameter can be ommitted.</td>
+									</tr>
+									
+									<tr>
+										<td>flag</td>
+										<td>string</td>
+										<td>false</td>
+										<td>None</td>
+										<td>The command line flag (if the value is None, the flag will be <code>--name</code>).</td>
+									</tr>
+									
+									<tr>
+										<td>group</td>
+										<td>string</td>
+										<td>false</td>
+										<td>"default"</td>
+										<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+									</tr>
+									
+									<tr>
+										<td>display_name</td>
+										<td>string</td>
+										<td>false</td>
+										<td>None</td>
+										<td>The parameter name that should be displayed on the final form.</td>
+									</tr>
+
+								<tr>
+									<td>rules</td>
+									<td>string</td>
+									<td>false</td>
+									<td>None</td>
+									<td>Define custom rules on the parameter. Rules are separated by a ";"<br/>
+										Available rules:<br/>
+										<ul>
+											<li><strong>Exclude:</strong> exclude parameters. If one is given, the other must be not given.<br/>
+											<em>Syntax: Exclude=param1,param2,...</em></li>
+											<li><strong>ToBeRequired:</strong> require other parameters if parameter is given.<br/>
+											<em>Syntax: ToBeRequired=param1,param2,...</em></li>
+											<li><strong>RequiredIf:</strong> parameter is required only if other parameters have (or have not) some values.<br/>
+												<em>Syntax: RequiredIf?(ANY|ALL)[param_1=value1,param_2!=value2,...] (all conditions or any condition)</em><br/>
+												Special values: * for any value of the parameter (not empty), None for not given (or empty)<br/>
+												Example: RequiredIf?ANY[adapter_1!="AATGC",adapter_2=*,gtf_file=None]</li>
+											<li><strong>DisabledIf:</strong> parameter is disabled if other parameters have some values.<br/>
+														<em>Syntax (like RequiredIf rule):<br/></br:>DisabledIf?(ANY|ALL)[param_1=value1,param_2=value2,...]</em> (all conditions or any condition)</li>
+										</ul>
+									</td>
+								</tr>
+								</tbody>
+							</table>
+						</div>
+	       		</div>
+
+				
+				<div id="multiple_parameters" class="subgroup">
+					<h2>Multiple parameters</h2>
+					
+						<p>Jflow offers, to the developper, the possibility to structure the input data by using the notion of multiple parameters. A multi 
+						parameter is a collection of parameters linked together. Just like for parameters and inputs, it can be added to handle a single collection or a 
+						list of collections. Thus, the <code>add_multiple_parameter()</code> method can be used to force the final user to provide one and only one 
+						collection, where the <code>add_multiple_parameter_list()</code> method allows the final user to give as many collection he wants. To add a 
+						parameter within the multiple parameter, it only requires to set the option <code>add_to</code> of any methods previously described. 
+						The accessible object attribut <code>self.multi_parameter_name</code> is then a Python dictionary gathering all the values of the different 
+						parameters under the format <code>{"sub_parameter1":value}</code></p>
+						
+						<h3>add_multiple_parameter()</h3>
+						
+						<h4>Example</h4>
+						The following example creates a multiple parameter named <code>library</code> which contains two input files <code>R1</code> and <code>R2</code> 
+						and a <code>sequencer</code> parameter. </p>
+				    	
+				    	<div>
+				    		<pre class="pre-hl "><code class="python">self.add_multiple_parameter("library", "Library.", required=True)
+self.add_input_file("R1", "Path to R1 file.", required=True, add_to="library")
+self.add_input_file("R2", "Path to R2 file.", add_to="library")
+self.add_parameter("sequencer", "The sequencer type.", choices=["HiSeq2000", 
+    "ILLUMINA", "UNKNOWN"], default="HiSeq2000", add_to="library")</code></pre>
+				    	</div>
+
+						<h4>Options</h4>
+						<p>There are two positional arguments : name and help. All other options are keyword options.</p>
+								
+								<div class="table-responsive">
+										<table class="table table-bordered table-striped">
+											<thead>
+												<tr>
+													<th>Name</th>
+													<th>Type</th>
+													<th>Required</th>
+													<th>Default value</th>
+													<th>Description</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>name</td>
+													<td>string</td>
+													<td>true</td>
+													<td>None</td>
+													<td>The name of the multi parameter. The parameter value is accessible 
+														within the workflow object through the attribute named <code>self.multi_parameter_name</code>. And its sub parameters
+														using <code>self.multi_parameter_name["sub_parameter_name"]</code>.</td>
+												</tr>
+												
+												<tr>
+													<td>help</td>
+													<td>string</td>
+													<td>true</td>
+													<td>None</td>
+													<td>The parameter help message.</td>
+												</tr>
+
+												<tr>
+													<td>required</td>
+													<td>boolean</td>
+													<td>false</td>
+													<td>false</td>
+													<td>Wether or not the parameter can be ommitted.</td>
+												</tr>
+												
+												<tr>
+													<td>flag</td>
+													<td>string</td>
+													<td>false</td>
+													<td>None</td>
+													<td>The command line flag (if the value is None, the flag will be <code>--name</code>). The sub parameters can be set as following
+													<code>--name sub1=... sub2=...</code></td>
+												</tr>
+												
+												<tr>
+													<td>group</td>
+													<td>string</td>
+													<td>false</td>
+													<td>"default"</td>
+													<td>The value is used to group a list of parameters in sections. The group is used in both command line and GUI.</td>
+												</tr>
+												
+												<tr>
+													<td>display_name</td>
+													<td>string</td>
+													<td>false</td>
+													<td>None</td>
+													<td>The parameter name that should be displayed on the final form.</td>
+												</tr>
+
+												<tr>
+													<td>rules</td>
+													<td>string</td>
+													<td>false</td>
+													<td>None</td>
+													<td>Define custom rules on the parameter. Rules are separated by a ";"<br/>
+														Available rules:<br/>
+														<ul>
+															<li><strong>FilesUnique:</strong> all files in all sub-parameters must be unique.<br/>
+															<em>Syntax: FilesUnique</em></li>
+														</ul>
+													</td>
+												</tr>
+												
+											</tbody>
+										</table>
+									</div>
+						
+						<h3>add_multiple_parameter_list()</h3>
+						<p>This method takes the same arguments as <code>add_multiple_parameter()</code>. However, adding this parameter,
+						the final user will be allowed to provide multiple collection and the object attribut <code>self.multi_parameter_name</code> will be
+						settled as a Python list of Python dictionary.</p>
+						
+				</div>
+
+			</section>
+			
+	  		<section id="process" class="group">
+		    	<h1 class="page-header">Process</h1>
+		    	<p>The <code>process()</code> method is in charge of building the workflow by adding components (using the method <code>add_component()</code>) and 
+		    	linking their inputs and their outputs. A component is a class representing a workflow step. See the 
+		    	<a href="./jflow-core-component.html">component</a> documentation for more information.</p>
+
+   				<h2>add_component()</h2>
+   				<p>The <code>add_component()</code> method add a component to the workflow by building a <code>jflow.component.Component</code>
+   				object and returning it. All attributs defined within this object, such as the outputs, are then available from the workflow and 
+   				can be used as inputs of other components.</p>
+   				<h3>Example</h3>
+   				<p>In the following example, the first component <code>BWAIndex</code> is built and returned in the <code>bwaindex</code> object.
+   				The output <code>bwaindex.databank</code> is accessible as an object attribut and can be used as input of the <code>BWAmem</code>
+   				component. This example is extracted from the <a href="./jflow-quickstart.html">Quick start</a>.</p>
+					<div>
+				    <pre class="pre-hl "><code class="python"># index the reference genome
+bwaindex = self.add_component("BWAIndex", [self.reference_genome])
+# align reads against the indexed genome
+bwamem = self.add_component("BWAmem", [bwaindex.databank, self.reads])</code></pre>
+				    	</div>
+   				<h3>Options</h3>
+   				<p>There is one positional argument : component_name. All other options are keyword options.</p>
+   				<div class="table-responsive">
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Required</th>
+								<th>Default value</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>component_name</td>
+								<td>string</td>
+								<td>true</td>
+								<td>None</td>
+								<td>The component class name to add to the workflow.</td>
+							</tr>
+							<tr>
+								<td>args</td>
+								<td>list</td>
+								<td>false</td>
+								<td>[]</td>
+								<td>The component's arguments (see <a href="./jflow-core-component.html#define_parameters">here</a> for more details).</td>
+							</tr>
+							<tr>
+								<td>kwargs</td>
+								<td>dict</td>
+								<td>false</td>
+								<td>{}</td>
+								<td>The component's keyword arguments (see <a href="./jflow-core-component.html#define_parameters">here</a> for more details).</td>
+							</tr>
+							<tr>
+								<td>component_prefix</td>
+								<td>string</td>
+								<td>false</td>
+								<td>"default"</td>
+								<td>The prefix is used to name the component at the execution. The prefix allows to add multiple components of the same class within
+								the same workflow.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+			
+	  		<section id="other_methods" class="group">
+		    	<h1 class="page-header">Other methods</h1>
+				<div id="pre_process" class="subgroup">
+					<h2>Pre process</h2>
+					<p><code>pre_process()</code> is executed before running the <code>process</code> method. Unlike <code>process</code>, this method does not allow
+					to add components, but can be useful when implementing an application requiring to prepare some data before running the workflow (insert / recover
+					information from a database, add metadata to the workflow, ...).</p>
+				</div>
+				<div id="post_process" class="subgroup">
+					<h2>Post process</h2>
+					<p><code>post_process()</code> is executed right after the <code>process</code> method and cannot be used to add components. This method can
+					be useful to perform some database transactions and to synchronize data.</p>
+				</div>
+				<div id="set_to_address" class="subgroup">
+					<h2>Set to address</h2>
+					<p><code>set_to_address()</code> overwrite the value <code>to_address</code> defined in the jflow configuration file.</p>
+	   				<h3>Options</h3>
+	   				<p>There is one required argument : to_address.</p>
+	   				<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>to_address</td>
+									<td>string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The email address to use to send an email to the user once the workflow is completed.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					
+				</div>
+				<div id="set_subject" class="subgroup">
+					<h2>Set email subject</h2>
+					<p><code>set_subject()</code> </code> overwrite the value <code>subject</code> defined in the jflow configuration file.</p>
+	   				<h3>Options</h3>
+	   				<p>There is one required argument : subject.</p>
+	   				<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>subject</td>
+									<td>string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The email subject to use for the email sent to the user once the workflow is completed.<br />
+									Placeholders can be used to access workflow attributes or unparametred methods: 
+									<code>###attribute###</code> or <code>###method()###</code>. For timestamps you can apply 
+									date function with the following syntax: <code>###attribute|date###</code> or <code>###method()|date###"</code>.
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div id="set_message" class="subgroup">
+					<h2>Set email message</h2>
+					<p><code>set_message()</code> overwrite the value <code>message</code> defined in the jflow configuration file.</p>
+	   				<h3>Options</h3>
+	   				<p>There is one required argument : message.</p>
+	   				<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>message</td>
+									<td>string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The email message to use for the email sent to the user once the workflow is completed.<br />
+									Placeholders can be used to access workflow attributes or unparametred methods: 
+									<code>###attribute###</code> or <code>###method()###</code>. For timestamps you can apply 
+									date function with the following syntax: <code>###attribute|date###</code> or <code>###method()|date###"</code>.
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div id="get_resource" class="subgroup">
+					<h2>Get shared resources</h2>
+					<p>The method <code>get_resource()</code>, giving a specific resource, returns the defined value within the <code>resources</code> 
+					section of the jflow configuration file.</p>
+	   				<h3>Options</h3>
+	   				<p>There is one required argument : resource.</p>
+	   				<div class="table-responsive">
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Type</th>
+									<th>Required</th>
+									<th>Default value</th>
+									<th>Description</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>resource</td>
+									<td>string</td>
+									<td>true</td>
+									<td>None</td>
+									<td>The resource name for which is requested the configured value.</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</section>
+
+			<section id="your-rules" class="group">
+
+			</section>
+		  </div>
+		</div>
+		
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+	
+	</div>
+	
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+	
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>

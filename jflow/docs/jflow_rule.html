@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow Rules</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown active">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li class="active"><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    
+    <div class="container">
+
+      <div class="row">
+
+        <!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+	        	<li><a href="#where" class="active">Where to add a new rule</a></li>
+	        	<li><a href="#how" >How to add a new rule</a>
+	        		<ul class="nav nav-stacked">
+			        	<li><a href="#simple-rules">Simple rules</a></li>
+						<li><a href="#link-rules">Link rules</a></li>
+		                <li><a href="#conditional-rules">Conditional rules</a></li>
+						<li><a href="#raise-error-warning">Raise an error or a warning</a></li>
+		            </ul>
+	        	</li>
+		        <li><a href="#howuse" >How to use a new rule</a>
+                    <ul class="nav nav-stacked">
+                        <li><a href="#use-simple-rules">Simple rules</a></li>
+						<li><a href="#use-link-rules">Link rules</a></li>
+		                <li><a href="#use-conditional-rules">Conditional rules</a></li>
+                    </ul>
+                </li>
+	        </ul>
+   	    </nav>
+
+        <div class="col-xs-12 col-sm-9">
+
+        	<section id="where" class="group">
+				<h1>Where to add a new rule</h1>
+				<p>In the <code>workflows/</code> directory, jflow provides a <code>rules.py</code> file where new types can be added.</p>
+				<pre class="pre-hl"><code class="ini">jflow/
+├── bin/
+├── docs/
+├── src/
+├── workflows/
+│   ├── components/
+│   ├── extparsers/
+│   ├── __init__.py
+│   ├── formats.py
+│   ├── rules.py   [ file where to add new jflow rules ]
+│   └── types.py
+├── applications.properties
+└── README</code></pre>
+		
+	    	</section>
+	    	
+	    	<section id="how" class="group">
+
+                <h1>How to add a new rule</h1>
+
+				<p>Their are three types of rules : simple rules, link rules and conditional link rules.
+				</p>
+
+				<div id="simple-rules" class="subgroup">
+					<h2>Simple rules</h2>
+
+					<p>To create a such rule, create a class that inherit from the SimpleRule class:</p>
+					<div>
+				    		<pre class="pre-hl "><code class="python">class YourRule (SimpleRule):
+	def check():
+		# Your code</code></pre>
+					</div>
+					<p>Into the <code>check()</code> function, write how to check the rule.</p>
+					<p>As the rule inherit from SimpleRule class, it has some attributes already defined:</p>
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>user_args</td>
+								<td>Dict</td>
+								<td>Dictionary describing arguments given by the user: name of each parameter as key, associated
+								with their own values.</td>
+							</tr>
+							<tr>
+								<td>wf_instance</td>
+								<td>Workflow instance</td>
+								<td>The workflow instance object.</td>
+							</tr>
+							<tr>
+								<td>parameter_name</td>
+								<td>string</td>
+								<td>Name of the parameter containing the rule.</td>
+							</tr>
+							<tr>
+								<td>parameter_value</td>
+								<td>string</td>
+								<td>Value of the parameter containing the rule.</td>
+							</tr>
+							<tr>
+								<td>all_files</td>
+								<td>List</td>
+								<td>List of all files given by the user, in any parameter.</td>
+							</tr>
+							<tr>
+								<td>wf_parameter</td>
+								<td>Parameter instance</td>
+								<td>The parameter object containing the rule.</td>
+							</tr>
+							<tr>
+								<td>is_file_list</td>
+								<td>boolean</td>
+								<td>True if the parameter is an input file list.</td>
+							</tr>
+							<tr>
+								<td>is_a_file</td>
+								<td>boolean</td>
+								<td>True if the parameter is an input file.</td>
+							</tr>
+							<tr>
+								<td>is_file</td>
+								<td>boolean</td>
+								<td>True if the parameter is an input file or an input file list.</td>
+							</tr>
+							<tr>
+								<td>is_directory</td>
+								<td>boolean</td>
+								<td>True if the parameter is an input directory</td>
+							</tr>
+							<tr>
+								<td>is_file_or_directory</td>
+								<td>boolean</td>
+								<td>True if the parameter is an input file, an input file list or an input directory.</td>
+							</tr>
+							<tr>
+								<td>nb_rows</td>
+								<td>Dict</td>
+								<td>Number of rows for each MultipleParameterList. Example: {sample:3, data:2}, where
+									sample and data are the name of tow MultipleParameterList.
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</div>
+
+				<div id="link-rules" class="subgroup">
+					<h2>Link rules</h2>
+                    <p>These rules are like simple rules, but acts not only for the parameter into the rule is defined</p>
+					<p>To create the rule, create a class that inherit from the LinkRule class:</p>
+					<div>
+				    		<pre class="pre-hl "><code class="python">class YourRule (LinkRule):
+	def check():
+		# Your code</code></pre>
+					</div>
+					<p>Into the <code>check()</code> function, write how to check the rule.</p>
+					<p>As the rule inherit from the SimpleRule class, it has the same attributes a Simple rule have. But it has
+					also additional attributes:</p>
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>targets_args</td>
+								<td>List</td>
+								<td>List of arguments the rules acts on.</td>
+							</tr>
+
+						</tbody>
+					</table>
+				</div>
+				<div id="conditional-rules" class="subgroup">
+                    <h2>Conditional rules</h2>
+                    <p>These rules are like simple rules, but are enabled only if the parameter has one of given values.
+
+                    <p>To create the rule, create a class that inherit from the Conditional class:</p>
+                    <div>
+				    		<pre class="pre-hl "><code class="python">class YourRule (ConditionalRule):
+	def check():
+		# Your code</code></pre>
+					</div>
+                    <p>Into the <code>check()</code> function, write how to check the rule.</p>
+					<p>As the rule inherit from the SimpleRule class, it has the same attributes a Simple rule have. But it has
+					also additional attributes:</p>
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>conditions</td>
+								<td>List</td>
+								<td>List of parameter values that enabled the rule.</td>
+							</tr>
+                            <tr>
+                                <td>condition_raised</td>
+                                <td>string</td>
+                                <td>Value that enables the parameter if any, else None</td>
+                            </tr>
+
+						</tbody>
+					</table>
+                </div>
+				<div id="raise-error-warning" class="subgroup">
+                    <h2>Raise an error or a warning in a rule</h2>
+					<p>Into the <code>check()</code> function of your rule, when the rule generate an error, use the
+					function <code>self.error()</code>.<br/>
+					Example: <code>self.error("Parameter " + self.parameter_name + " was not correct")</code>.</p>
+					<p>If the rule generate a warning, use the function <code>self.warning()</code> instead.<br/>
+					Example: <code>self.warning("Parameter " + self.parameter_name + " will be ignored")</code></p>
+				</div>
+		
+	    	</section>
+	    	
+	    	<section id="howuse" class="group">
+		
+				<h1>How to use a new rule</h1>
+				
+				<p>To add a rule on a parameter, define the argument "rule" on the <code>add_parameter</code>
+                function of the workflow. The rule is written as follow, depending of the type of rule. To use several
+                rules on the same parameter, join them by a ";".</p>
+
+                <p>Rules can also be added to inputs (files, files list, directories) and multiple parameters, on their
+                dedicated function.</p>
+
+                <div id="use-simple-rules" class="subgroup">
+                    <h2>Simple rules</h2>
+                    <p>Just write the name of the rule. Warning: this name is case-sensitive</p>
+                    <p>Example: <code>Unique</code></p>
+                </div>
+
+                <div id="use-link-rules" class="subgroup">
+                    <h2>Link rules</h2>
+                    <p>Write the name of the rule, followed by a "=" and the list of the other parameters (targets) the
+                        rule acts on.</p>
+                    <p>Example: <code>Exclude=param_1,param_2</code></p>
+                </div>
+
+                <div id="use-conditional-rules" class="subgroup">
+                    <h2>Conditional rules</h2>
+                    <p>The syntax of this rule is like that: <code>&lt;name_of_the_rule&gt;<b>?</b>(ALL|ANY)[&lt;conditions&gt;]</code>.</p>
+                    <p>ALL or ANY: if ALL is set, all conditions must be raised to activate the rule. If ANY is set, the
+					condition is raised if at least one condition is raised.</p>
+                    <p>Conditions are written with this structure : &lt;parameter_name&gt;=&lt;parameter_value&gt;
+						(if parameter must be equal to value) or &lt;parameter_name&gt;!=&lt;parameter_value&gt;
+						(if parameter must be not equal to value. The parameter name is the name of a workflow
+						parameter. If the parameter is the one into the rule is defined, we can use the keyword
+						<em>self</em> instead of its name.<br/>Special values:
+						<ul>
+							<li>parameter_name=*: condition is raised if the parameter is given, regardless of its value</li>
+							<li>parameter_name=None: condition is raised if the parameter is not given</li>
+						</ul>
+					</p>
+                    <p>Example : <code>RequiredIf?ALL[param_1=value_1,param_2!=value_2]</code>.</p>
+                </div>
+
+	    	</section>
+		  </div>
+		</div>
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+	
+	</div>
+	
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+	
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>

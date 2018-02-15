@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li class="active"><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+      
+ 		<!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+		    	<li><a href="#introduction" class="active">Introduction</a></li>
+		    	<li><a href="#first_step">Step #1</a></li>
+		    	<li><a href="#second_step">Step #2</a>
+					<ul class="nav nav-stacked">
+			       		<li><a href="#BWAIndex_component">BWAIndex</a></li>
+			       		<li><a href="#BWAmem_component">BWAmem</a></li>
+	                </ul>
+		    	</li>
+		    	<li><a href="#third_step">Step #3</a></li>
+		    	<li><a href="#fourth_step">Step #4</a></li>
+	        </ul>
+		</nav>
+		
+		<div class="col-xs-12 col-sm-9">
+
+			<section id="introduction" class="group">
+				<h1 class="page-header">Introduction <small>to the quickstart</small></h1>
+				<p>The following <code>quickstart</code> intends to implement a basic workflow aiming at aligning reads against a reference genome. To do so, 
+				the developper needs to create components. A component is a workflow step. The components to create in this tutorial are:</p>
+				<ul>
+					<li><code>BWAIndex</code> in order to index the reference genome,</li>
+					<li><code>BWAmem</code> to align a set of reads against an indexed reference.</li>
+				</ul>
+				<p>Once the components created, a workflow, linking the 2 components, should be created. The resulting workflow and components are provided in the sources
+				of jflow under the <code>workflows/quickstart/</code> directory.</p>
+			</section>
+
+			<section id="first_step" class="group">
+				<h1 class="page-header">Step #1 <small>create the folder tree</small></h1>
+				<p> The first think to do before implementing the components and the workflow, is to create the folder tree. A workflow in jflow is 
+				a <code>Python package</code> defined by a folder with an <code>__init__.py</code> file.<p>
+				<p>Within jflow sources, add a package named <code>myQuickStart</code> and within this package create an other package named <code>components</code>
+				where all the components specific to <code>myQuickStart</code> will be stored. Note that if the component is shared by multiple workflows, you should 
+				add it in the <code>workflows/components/</code> folder.</p> 
+				<p>In this workflow, 2 components will be implemented, create 2 empty files named <code>bwaindex.py</code> and <code>bwamem.py</code>. These 2 files 
+				will be used in the <a href="#second_step">2nd step</a> to implement the components. You should obtained the following folder tree:</p> 
+		<pre class="pre-hl"><code class="ini">jflow/
+├── bin/
+├── docs/
+├── src/
+├── workflows/
+│   ├── components/
+│   ├── extparsers/
+│   ├── myQuickStart/         [ create the folder myQuickStart ]
+│   │   ├── components/       [ create the folder components where will be stored the components ]
+│   │   │   ├── __init__.py   [ create an empty __init__.py file to make this directory a package ]
+│   │   │   ├── bwaindex.py   [ create an empty bwaindex.py file for the BWAIndex component ]
+│   │   │   ├── bwamem.py     [ create an empty bwamem.py file for the BWAmem component ]
+│   │   ├── __init__.py       [ create an empty __init__.py file for the workflow definition ]
+│   ├── __init__.py
+│   ├── formats.py
+│   └── types.py
+├── applications.properties
+└── README</code></pre>
+				
+			</section>
+
+			<section id="second_step" class="group">
+				<h1 class="page-header">Step #2 <small>create required components</small></h1>
+				<p>To create a component in jflow, it only requires to implement a Python class inheriting from the 
+				<code>jflow.component.Component</code> class. Inheriting from this class force the developper to
+				overload the <code>define_parameters()</code> and the <code>process()</code> functions. The first one
+				allows the developper to define all the parameters the component takes to run the command line.
+				The second one permits to specify how the command line should be built.</p>
+			    	<pre class="pre-hl "><code class="python">import os
+								
+from jflow.component import Component
+from weaver.function import PythonFunction, ShellFunction
+
+class MyComponent (Component):
+    
+    def define_parameters(self, ...):
+        # define the parameters
+        
+    def process(self):
+        # define how should be built the command line</code></pre>
+				<p>In this tutorial, 2 components are created: BWAIndex and BWAmem.</p>
+				
+				<div id="BWAIndex_component" class="subgroup">
+					<h2>BWAIndex component</h2>					
+					<p>The BWAIndex command line should look like this:</p>
+			    	<pre class="pre-hl "><code class="ini">bwa index -a bwtsw -p input_file.fasta input_file.fasta > input_file.stdout 2>> input_file.stderr</code></pre>
+			    	<p>Where <code>bwa index</code> is the executable, <code>-a bwtsw</code> set the indexing algorithm to "bwstw", <code>-p input_file.fasta</code>
+			    	names the final output databack as the input file, <code>input_file.fasta</code> gives the fasta file to index, <code>> input_file.stdout</code>
+			    	catch the stdout messages and <code>2>> input_file.stderr</code> catch the stderr messages. From this, we can split the command line in different 
+			    	inputs and parameters as following:</p>
+			    	<ul>
+			    		<li>
+			    		<code>algorithm</code>: defines the <code>-a</code> option that allows to specify which indexing algorithm to use. "bwtsw" is one example, 
+			    		the other available values are "div" and "is". <code>-a</code> is a parameter and can be added as such by using the <code>add_parameter()</code> 
+			    		method available from the <code>jflow.component.Component</code> class. As this parameter only handles 3 different values, it is possible to 
+			    		restrict the user choice to these values by using the <code>choices</code> option of the <code>add_parameter()</code> method. Just like all add_[*] 
+			    		methods provided by the <code>jflow.component.Component</code> class, this method requires 2 options: the parameter name 
+			    		(here "algorithm") and the parameter help (here "Which algorithm should be used to index the fasta file").
+			    		</li>
+			    		<li>
+			    		<code>databank</code>: <code>bwa index</code> produces as output a databank with a name defined by the option <code>-p</code>. Here, we choose
+			    		to name it with the name of the input file: <code>input_file.fasta</code>. Adding an output to a component is possible by using the 
+			    		<code>add_output_file()</code> method. This function, in addition to the parameter name and the parameter help, takes the <code>filename</code> 
+			    		option to define the name of the produced file.
+			    		</li>
+			    		<li>
+			    		<code>input_fasta</code>: defines the input file <code>input_file.fasta</code> as a component parameter. To do so, jflow provides
+			    		the <code>add_input_file()</code> method. Providing the file is required to build the command line, to force this behaviour,
+			    		the option <code>required</code> can be settled to <code>True</code>. In the same way, BWAIndex can only be run on fasta files,
+			    		this can be specified with the <code>file_format</code> option.
+			    		</li>
+			    		<li>
+			    		<code>stdout</code>: to trace the command line, the produced stdout file (<code>input_file.stdout</code>) can be added as output file, 
+			    		just like it has been done for the <code>databank</code> parameter.
+			    		</li>
+			    		<li>
+			    		<code>stderr</code>: to trace the command line errors, the stderr file (<code>input_file.stderr</code>) can also be added as output file.
+			    		</li>
+			    	</ul>
+			    	<p>To be added to a component, all these parameters should be specified within the <code>define_parameters()</code> method as following:</p>
+			    	<pre class="pre-hl "><code class="python">import os
+								
+from jflow.component import Component
+from weaver.function import ShellFunction
+
+class BWAIndex (Component):
+    
+    def define_parameters(self, input_fasta, algorithm="bwtsw"):
+        self.add_input_file("input_fasta", "Which fasta file should be indexed", 
+                            file_format="fasta", default=input_fasta, required=True)
+        self.add_parameter("algorithm", "Which algorithm should be used to index the fasta file", 
+                           default=algorithm, choices=["bwtsw", "div", "is"])
+        self.add_output_file("databank", "The indexed databank", 
+                             filename=os.path.basename(input_fasta))
+        self.add_output_file("stdout", "The BWAIndex stdout file", filename="bwaindex.stdout")
+        self.add_output_file("stderr", "The BWAIndex stderr file", filename="bwaindex.stderr")
+        
+    def process(self):        
+        # define how should be built the command line</code></pre>
+			    	
+			    	<p>Including these parameter definitions, the resulting command line should have the following structure:
+			    	</p>
+			    	<pre class="pre-hl "><code class="ini">[EXE] index -a [algorithm] -p [databank] [input_fasta] > [stdout] 2>> [stderr]</code></pre>
+			    	<p>In the following, this structure will be used to help us to build the command line. To build a command line, jflow provides a
+			    	function named <code>ShellFunction</code> in which the command line structure can be given (nb: there is other functions available as 
+			    	the <code>PythonFunction</code> to run an internal function). The <code>ShellFunction</code> takes 2 arguments: the command line 
+			    	structure, wich is required, and the <code>cmd_format</code> defining the parameter ordering.</p>
+			    	Considering <code>cmd_format="{EXE} {IN} {OUT}"</code>, which is a classic value for this option, jflow will consider the following 
+			    	inputs and outputs order: <code>input_fasta</code>, <code>databank</code>, <code>stdout</code> and then <code>stderr</code> resulting
+			    	to the following command structure:</p>
+			    	<pre class="pre-hl "><code class="ini">[EXE] index -a [algorithm] -p $2 $1 > $3 2>> $4</code></pre>
+					<p>All execution path are accessible using the method <code>get_exec_path</code>. This leads to the implementation of the following 
+					<code>process()</code> function:</p>			
+			    	<pre class="pre-hl "><code class="python">import os
+								
+from jflow.component import Component
+from weaver.function import PythonFunction, ShellFunction
+
+class BWAIndex (Component):
+
+    def process(self):        
+        bwaindex = ShellFunction("ln -s $1 $2; " + self.get_exec_path("bwa") + " index -a " + \
+                                 self.algorithm + " -p $2 $1 > $3 2>> $4", 
+                                 cmd_format="{EXE} {IN} {OUT}")
+        bwaindex(inputs=self.input_fasta, outputs=[self.databank, self.stdout, self.stderr])</code></pre>
+					<p>In this example, the <code>bwa index</code> command line is preceded by a symbolic link creation. This is done because <code>bwa aln|mem|...</code>
+					use as input the prefix of the created databank and not directly the file generated by <code>bwa index</code>. The final class is given by:</p>
+			    	<pre class="pre-hl "><code class="python">import os
+								
+from jflow.component import Component
+from weaver.function import ShellFunction
+
+class BWAIndex (Component):
+    
+    def define_parameters(self, input_fasta, algorithm="bwtsw"):
+        self.add_input_file("input_fasta", "Which fasta file should be indexed", 
+                            file_format="fasta", default=input_fasta, required=True)
+        self.add_parameter("algorithm", "Which algorithm should be used to index the fasta file", 
+                           default=algorithm, choices=["bwtsw", "div", "is"])
+        self.add_output_file("databank", "The indexed databank", 
+                             filename=os.path.basename(input_fasta))
+        self.add_output_file("stdout", "The BWAIndex stdout file", filename="bwaindex.stdout")
+        self.add_output_file("stderr", "The BWAIndex stderr file", filename="bwaindex.stderr")
+        
+    def process(self):        
+        bwaindex = ShellFunction("ln -s $1 $2; " + self.get_exec_path("bwa") + " index -a " + \
+                                 self.algorithm + " -p $2 $1 > $3 2>> $4", 
+                                 cmd_format="{EXE} {IN} {OUT}")
+        bwaindex(inputs=self.input_fasta, outputs=[self.databank, self.stdout, self.stderr])</code></pre>
+        
+				</div>
+				
+				<div id="BWAmem_component" class="subgroup">
+					<h2>BWAmem component</h2>
+					<p>In the same way, the BWAmem component command line should look like this:</p>
+			    	<pre class="pre-hl "><code class="ini">bwa mem reference.fasta sample.fastq > sample.sam > sample.stdout 2>> sample.stderr</code></pre>
+					<p>The main difference with the previous component is that we will give <code>BWAmem</code> the ability to process multiple files to obtain the 
+					following:</p>
+					<pre class="pre-hl "><code class="ini">bwa mem reference.fasta sample.fastq > sample.sam > sample.stdout 2>> sample.stderr
+bwa mem reference.fasta sample2.fastq > sample2.sam > sample2.stdout 2>> sample2.stderr
+bwa mem reference.fasta sample3.fastq > sample3.sam > sample3.stdout 2>> sample3.stderr
+...</code></pre>
+					
+					
+					<p>To do so, we 
+					will introduce, in this section, the methods <code>add_input_file_list()</code> and <code>add_output_file_list()</code> and the notion of 
+					<code>abstraction</code>. The parameters that can be defined are:</p>
+			    	<ul>
+			    		<li>
+			    		<code>reads</code>: defines the <code>sample.fastq</code> file. Here, we will allow the component to iterate through multiple input files. This is 
+			    		possible by using the <code>add_input_file_list()</code> method available from the <code>jflow.component.Component</code> class. The options to this 
+			    		method are the same as the ones available with <code>add_input_file()</code>.
+			    		</li>
+			    		<li>
+			    		<code>reference_genome</code>: defines the <code>reference.fasta</code> file. This parameter is a single file and can be added using the 
+			    		<code>add_input_file()</code> method as described in the <a href="#BWAIndex_component">BWAIndex component</a>
+			    		</li>
+			    		<li>
+			    		<code>sam_files</code>: defines the output file <code>sample.sam</code> as an output file list parameter. This one can be added to the 
+			    		component using the <code>add_output_file_list()</code> method. Doing so, 2 options have to be given to the method: <code>pattern</code> and 
+			    		<code>items</code>. The first one defines the output filename pattern and the second one gives the list of the items through which the 
+			    		component will iterate. <code>{basename_woext}</code> allows to retrieve the items file basename settled, in this example, with the input file 
+			    		list.
+			    		</li>
+			    		<li>
+			    		<code>stderr</code>: to trace the command line, the produced error messages will be stored as an output file list (1 stderr file per execution).
+			    		</li>
+			    	</ul>
+					<p>Just like on the previous example, the <code>ShellFunction</code> is used to define the command line structure. However, where in <code>BWAIndex</code>
+					the function was directly executed, here we want <code>BWAmem</code> to iterate through the input file list. This can be done by using an abstraction. In this
+					example we will use <code>MultiMap</code> to map an input to multiple outputs, but serveral other abstraction exist. To use an abstraction, it only
+					requires to call the abstraction function (here <code>MultiMap</code>) on the <code>ShellFunction</code> previously defined:</p>
+					<pre class="pre-hl "><code class="ini">MultiMap(bwamem, inputs=[...], outputs=[...], includes=[...])</code></pre>
+					<p>The final class is then given by:</p>
+			    	<pre class="pre-hl "><code class="python">from jflow.component import Component
+from jflow.abstraction import MultiMap
+
+from weaver.function import ShellFunction
+
+
+class BWAmem (Component):
+
+    def define_parameters(self, reference_genome, reads):
+        self.add_input_file_list( "reads", "Which reads files should be used.", 
+                                  default=reads, required=True )
+        self.add_input_file("reference_genome", "Which reference file should be used", 
+                            default=reference_genome, required=True)
+        self.add_output_file_list("sam_files", "The BWA outputed file", 
+                                  pattern='{basename_woext}.sam', items=self.reads)
+        self.add_output_file_list("stderr", "The BWA stderr file", 
+                                  pattern='{basename_woext}.stderr', items=self.reads)
+
+    def process(self):
+        bwamem = ShellFunction(self.get_exec_path("bwa") + " mem " + self.reference_genome + \
+                               " $1 > $2 2>> $3", cmd_format='{EXE} {IN} {OUT}')
+        bwamem = MultiMap(bwamem, inputs=[self.reads], outputs=[self.sam_files, self.stderr], 
+                          includes=[self.reference_genome])</code></pre>
+				</div>
+				
+			</section>
+			
+			<section id="third_step" class="group">
+				<h1 class="page-header">Step #3 <small>create the workflow</small></h1>
+				<p>Creating a workflow in jflow is quite similar to the creation of a component. It requires to implement a Python class 
+				inheriting from the <code>jflow.workflow.Workflow</code> class. Inheriting from this class force the developper to
+				overload 3 methods:</p>
+				<ul>
+					<li><code>get_description()</code>: should return a workflow description usefull for the final user,</li>
+					<li><code>define_parameters()</code>: similar to the method described for the components,</li>
+					<li><code>process()</code>: in charge to create the workflow by linking the different components.</li>
+				</ul>
+			    	<pre class="pre-hl "><code class="python">from jflow.workflow import Workflow
+
+class MyWorkflow (Workflow):
+    
+    def get_description(self):
+        return "a description"
+
+    def define_parameters(self, function="process"):
+        # define the parameters
+
+    def process(self):
+        # add and link the components</code></pre>
+        
+        
+				<p>The first think to do is to overload the <code>get_description()</code> method to give a description to our new workflow.</p>
+			    	<pre class="pre-hl "><code class="python">from jflow.workflow import Workflow
+
+class MyQuickStart (Workflow):
+
+    def get_description(self):
+        return "Align reads against a reference genome"</code></pre>
+        
+				<p>In this tutorial, the final workflow will only take 2 parameters: a list of read files (<code>add_input_file_list()</code>) and 
+				a reference genome (<code>add_input_file()</code>). Just like
+				for a component this can be define as following:</p>
+			    	<pre class="pre-hl "><code class="python">from jflow.workflow import Workflow
+
+class MyQuickStart (Workflow):
+
+    def define_parameters(self, function="process"):
+        self.add_input_file_list("reads", "Which read files should be used", 
+                                 file_format="fastq", required=True)
+        self.add_input_file("reference_genome", "Which genome should the read being align on", 
+                            file_format="fasta", required=True)</code></pre>
+
+				<p>NB: The <code>function="process"</code> options allow to link a set of parameter to an execution function name (here "process").</p>
+				<p>Finaly, we can add the components within the workflow by using the method <code>add_component()</code>. This method takes as argument
+				the name of the component (given by the component class name) and the component parameters. All the outputs defined within a component
+				are accessible as a component class attribute. Thus it is easy to link the different components between each other.</p>
+			    	<pre class="pre-hl "><code class="python">from jflow.workflow import Workflow
+
+class MyQuickStart (Workflow):
+
+    def process(self):
+        # index the reference genome
+        bwaindex = self.add_component("BWAIndex", [self.reference_genome])
+        # align reads against the indexed genome
+        bwamem = self.add_component("BWAmem", [bwaindex.databank, self.reads])</code></pre>
+			<p>In this example, <code>BWAmem</code> takes as input the <code>databank</code> parameter produced by <code>BWAIndex</code>. The final class
+			representing the workflow should look like this:</p>
+			    	<pre class="pre-hl "><code class="python">from jflow.workflow import Workflow
+
+class MyQuickStart (Workflow):
+
+    def get_description(self):
+        return "Align reads against a reference genome"
+
+    def define_parameters(self, function="process"):
+        self.add_input_file_list("reads", "Which read files should be used", 
+                                 file_format="fastq", required=True)
+        self.add_input_file("reference_genome", "Which genome should the read being align on", 
+                            file_format="fasta", required=True)
+
+    def process(self):
+        # index the reference genome
+        bwaindex = self.add_component("BWAIndex", [self.reference_genome])
+        # align reads against the indexed genome
+        bwamem = self.add_component("BWAmem", [bwaindex.databank, self.reads])</code></pre>
+
+			</section>
+			
+			<section id="fourth_step" class="group">
+				<h1 class="page-header">Step #4 <small>test your workflow</small></h1>
+				<p>From your install directory enter</p>
+				<pre class="pre-hl "><code class="ini">python bin/jflow_cli.py -h</code></pre>
+				<pre class="pre-hl "><code class="ini">usage: jflow_cli.py [-h]
+[...]
+Available sub commands:
+  {rerun,reset,delete,execution-graph,status,quickstart,myquickstart}
+    [...]
+    myquickstart        Align reads against a reference genome
+    [...]</code></pre>
+				<p>A new line with "myquickstart" should be here! Run it on your own data ...</p>
+			</section>
+			
+		</div>
+		
+	  </div>
+		
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+	
+	</div>
+	
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+	
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>

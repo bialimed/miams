@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+
+    <title>Jflow</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container theme-showcase" role="main">
+
+      <!-- Jumbotron -->
+      <div class="jumbotron" style="margin-top:-25px;text-align:justify">
+        <h1>Jflow</h1>
+        <p class="lead">A JavaScript based workflow management system, composed of Jquery plugins which can easily be
+			embedded in any WEB application and a Python library providing all requested features to setup, run and 
+			monitor workflows.</p>
+		<br/>
+		<div style="position:absolute;width:1025px;padding:0px 5px 0 5px;background-color:white;border:1px solid lightgrey;border-radius:5px;">
+			<span class="label label-primary" style="position:absolute;top:-10px;left:-10px">How to cite</span>
+		    <h6><b>Jérôme Mariette, Frédéric Escudié, Philippe Bardou, Ibouniyamine Nabihoudine, Céline Noirot, Marie-Stéphane Trotard, 
+		    	Christine Gaspin, Christophe Klopp. Jflow: a workflow management system for web applications. Bioinformatics. 
+		    	2015. doi 10.1093/bioinformatics/btv589. &nbsp;&nbsp; - &nbsp;&nbsp;
+				<a href="http://bioinformatics.oxfordjournals.org/content/early/2015/11/25/bioinformatics.btv589.full" target="_blank"> Abstract/FREE Full Text </a></b>
+			</h6>
+		</div>
+		<br/>
+      </div>
+
+      <div class="row">
+
+        <div class="col-lg-6" style="text-align:justify">
+        	<h1 class="page-header">Jflow <small>Summary</small></h1>
+			<p>Today biologists produce large data sets and are in demand of rich and simple to
+				use WEB portals in which they can upload and analyse their files. Providing such
+				tools requires to mask the complexity induced by the needed High Perfomance
+				Computing (HPC) environment. The connexion between interface and computing
+				infrastructure is usually specific to each portal. We introduce jflow, a
+				Workflow Management System (WMS), composed of Jquery plugins which can easily be
+				embedded in any WEB application and a Python library providing all requested
+				features to setup, run and monitor workflows.</p>
+			<h1 class="page-header">Jflow <small>Availability</small></h1>
+			<p>Jflow is available under the GNU General 
+				Public License (GPL). The package is comming with a full documentation a quickstart and 
+				a running test portal. Sources are available <a target="_blank" href="https://mulcyber.toulouse.inra.fr/frs/?group_id=186">here</a>.</p>
+        </div><!--/span-->
+
+        <div class="col-lg-6">
+        	<div class="bs-docs-example" style="text-align: center;padding-top:5px;margin-top:35px;margin-bottom:30px;">
+				<img width="100%" src="img/jflow-global-architecture.png" class="img-rounded">
+			</div>
+        </div><!--/span-->
+
+      </div><!--/row-->
+
+      <!-- Example row of columns -->
+      <div class="row" style="text-align:justify">
+        <div class="col-lg-3">
+          <h3>Plugin insertion</h3>
+          <p>Learn how to insert the jflow plugin within your own application.</p>
+        </div>
+        <div class="col-lg-3">
+          <h3>Add new workflows</h3>
+          <p>Learn how to add new workflows.</p>
+        </div>
+        <div class="col-lg-3">
+          <h3>Add new components</h3>
+          <p>Your workflow requires new component, learn how to add new ones.</p>
+        </div>
+        <div class="col-lg-3">
+          <h3>Example</h3>
+          <p>Check out an example of jflow integration.</p>
+        </div>
+      </div>  
+	  <div class="row">
+        <div class="col-lg-3">
+          <p><a class="btn btn-primary" href="./jflow_plugin.html" role="button">View details &raquo;</a></p>
+        </div>
+        <div class="col-lg-3">
+          <p><a class="btn btn-primary" href="./jflow_core_workflow.html" role="button">View details &raquo;</a></p>
+        </div>
+        <div class="col-lg-3">
+          <p><a class="btn btn-primary" href="./jflow_core_component.html" role="button">View details &raquo;</a></p>
+        </div>
+        <div class="col-lg-3">
+          <p><a class="btn btn-primary" href="./example1.html" role="button">View details &raquo;</a></p>
+        </div>
+      </div>  
+
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+      
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->    
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Jflow Types</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap theme -->
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/theme.css" rel="stylesheet">
+
+	<!--  Highlight code -->
+	<link href="css/tomorrow-night-eighties.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body role="document">
+  
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="./index.html">Jflow</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="./index.html">About</a></li>
+            <li><a href="./jflow_install.html">Install</a></li>
+            <li><a href="./jflow_quickstart.html">Quick start</a></li>
+            <li class="dropdown active">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation<span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="./jflow_core_workflow.html">Add a workflow</a></li>
+                <li><a href="./jflow_core_component.html">Add a component</a></li>
+                <li><a href="./jflow_plugin.html">Plugin insertion</a></li>
+                <li><a href="./jflow_type.html">Add a data type</a></li>
+                <li class="active"><a href="./jflow_format.html">Add a file format</a></li>
+                <li><a href="./jflow_rule.html">Add a rule</a></li>
+                <li><a href="./jflow_advanced_configuration.html">Advanced configuration</a></li>
+              </ul>
+            </li>
+			<li><a href="./example1.html">Example</a></li>
+			<li><a href="mailto:support.genopole@toulouse.inra.fr">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="row">
+
+        <!--Nav Bar -->
+	    <nav class="col-xs-3 bs-docs-sidebar">
+	        <ul id="sidebar" class="nav nav-stacked fixed">
+	        	<li><a href="#where" class="active">Where to add a new format</a></li>
+		        <li><a href="#how" >How to add a new format</a></li>
+		        <li><a href="#howuse" >How to use a new format</a></li>
+	        </ul>
+   	    </nav>
+
+        <div class="col-xs-12 col-sm-9">
+
+        	<section id="where" class="group">
+
+				<h1>Where to add a new format</h1>
+				<p>In the <code>workflows/</code> directory, jflow provides a <code>formats.py</code> file where new formats can be added.</p>
+				<pre class="pre-hl "><code class="ini">jflow/
+├── bin/
+├── docs/
+├── src/
+├── workflows/
+│   ├── components/
+│   ├── extparsers/
+│   ├── __init__.py
+│   ├── formats.py   [ file where to add new jflow formats ]
+│   ├── rules.py
+│   └── types.py
+├── applications.properties
+└── README</code></pre>
+	    	</section>
+	    	
+	    	<section id="how" class="group">
+	    	
+				<h1>How to add a new format</h1>
+				<p>In jflow a format is represented by a function named by the desired format name. The function should take only 
+				one argument, whose value is the file path given by the user. The function is in charge to open and check the 
+				content of the file. If an error occurred or if the value does not meet the expected criteria, a
+				<code>jflow.InvalidFormatError</code> should be raised with the suitable error message. This message will 
+				be used by jflow to inform the final user of the error.</p>
+				<p>In the following example, the <code>fasta</code> function checks if the 10 first lines of the input file are in 
+				a fasta format:</p> 
+				
+				<pre class="pre-hl "><code class="python">def fasta(ifile):
+	try:
+	    reader = seqio.FastaReader(ifile, wholefile=True)
+	    nb_seq = 0
+	    for id, desc, seq, qualities in reader:
+	        nb_seq += 1
+	        # only check the first 10 sequences
+	        if nb_seq == 10: break
+	except:
+	    raise jflow.InvalidFormatError("The provided file '" + ifile + "' is not a fasta file!")</code></pre>
+			
+			  <div class="alert alert-info" role="alert">
+			  	<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+			  	Jflow provides <code>jflow.seqio</code> and <code>jflow.featureio</code> libraries where several file formats handler are available.
+			  </div>
+	    	</section>
+	    	
+	    	<section id="howuse" class="group">
+	    	
+				<h1>How to use a new format</h1>
+				
+				<p>The new created format can then be used in all <code>add_input_*</code> functions of the class <code>jflow.workflow.Workflow</code> 
+				and <code>jflow.component.Component</code> as following:</p>
+		
+		<pre class="pre-hl "><code class="python">[...]
+def define_parameters(self, function="process"):
+    self.add_input_file("reference_genome", "Which genome should the read be align on", file_format="fasta", required=True)
+[...]</code></pre>
+	    	</section>
+		  </div>
+		</div>
+      <hr>
+      <footer>
+      	<div class="container" style="text-align: center;">
+		  <p>Copyright © 2015, INRA | Designed by <a target="_blank" href="http://bioinfo.genotoul.fr/">GenoToul Bioinfo platform</a> and <a target="_blank" href="http://www.sigenae.org/">Sigenae platform</a>.</p>
+		</div>
+      </footer>
+	
+	</div>
+	
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- <script src="../../assets/js/docs.min.js"></script> -->
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <!-- <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script> -->
+	
+	<!--  Highlight code -->
+	<script src="js/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	
+	<script type='text/javascript'>
+		$('body').scrollspy({
+    		target: '.bs-docs-sidebar',
+    		offset: 150
+		});
+	</script>
+</body>
+</html>
