@@ -195,14 +195,14 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--logging-level', default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], action=LoggerAction, help='The logger level. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
-    group_input.add_argument('-a', '--input-aln', required=True, help="The alignment file of  the sample to evaluate (format: BAM). This BAM must be ordered by coordinates and indexed.")
+    group_input.add_argument('-a', '--input-aln', required=True, help="The alignment file of the sample to evaluate (format: BAM). This BAM must be ordered by coordinates and indexed.")
     group_input.add_argument('-b', '--input-baseline', required=True, help="MSI baseline file generated for your analytic process on data generated using the same protocols (format: TSV). This file describes the average and standard deviation of the number of expected signal peaks at each locus, as calculated from an MSI negative population (blood samples or MSI negative tumors). See mSINGS create_baseline script.")
-    group_input.add_argument('-g', '--input-genome', required=True, help="Reference used to generate alignment file.(format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.")
-    group_input.add_argument('-i', '--input-intervals', required=True, help="MSI interval file (format: TSV). See mSINGS create_intervals script.")
-    group_input.add_argument('-t', '--input-targets', required=True, help="The locations of the microsatellite tracts of interest (format: BED). This file must be sorted numerically and must not have a header line.")
+    group_input.add_argument('-g', '--input-genome', required=True, help="Reference used to generate alignment file (format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.")
+    group_input.add_argument('-i', '--input-intervals', required=True, help="MSI intervals file (format: TSV). See mSINGS create_intervals script.")
+    group_input.add_argument('-t', '--input-targets', required=True, help="The locations of the microsatellite of interest (format: BED). This file must be sorted numerically and must not have a header line.")
     group_output = parser.add_argument_group('Outputs')  # Outputs
-    group_output.add_argument('-oa', '--output-analyzer', required=True, help='******************************.')
-    group_output.add_argument('-or', '--output-report', required=True, help='******************************.')
+    group_output.add_argument('-oa', '--output-analyzer', required=True, help='Path to the output file containing the profiles of evaluated loci (format: TSV).')
+    group_output.add_argument('-or', '--output-report', required=True, help='Path to the output file containing status for the sample and the evaluated loci (format: TSV).')
     group_eval = parser.add_argument_group('Evaluation parameters')  # Evaluation parameters
     group_eval.add_argument('--multiplier', default=2.0, type=float, help='The number of standard deviations from the baseline that is required to call instability. [Default: %(default)s]')
     group_eval.add_argument('--msi-min-threshold', default=0.2, type=float, help='The maximum fraction of unstable sites allowed to call a specimen MSI negative. [Default: %(default)s]')

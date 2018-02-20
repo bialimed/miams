@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2017 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'dev'
 
@@ -31,16 +31,17 @@ class MSI (Workflow):
 
     def define_parameters(self, parameters_section=None):
         # Inputs data
-        self.add_input_file_list("R1", "Fastq R1", required=True, group="Inputs data")
-        self.add_input_file_list("R2", "Fastq R2", required=True, group="Inputs data")
+        self.add_input_file_list("R1", "Pathes to R1 (format: fastq).", required=True, group="Inputs data")
+        self.add_input_file_list("R2", "Pathes to R2 (format: fastq).", required=True, group="Inputs data")
 
+        # Cleaning
         self.add_input_file("R1_end_adapter", "Path to sequence file containing the start of Illumina P7 adapter (format: fasta). This sequence is trimmed from the end of R1 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
         self.add_input_file("R2_end_adapter", "Path to sequence file containing the start of reverse complemented Illumina P5 adapter ((format: fasta). This sequence is trimmed from the end of R2 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
-
-        self.add_input_file("bed", "Bed with msi regions", required=True, group="Inputs design")
-        self.add_input_file("intervals", "Intervals with msi regions (generated previously)", required=True, group="Inputs design")
-        self.add_input_file("baseline", "Baseline of stability", required=True, group="Inputs design")
-        self.add_input_file("genome_seq", "Reference genome (fasta)", required=True, file_format="fasta", group="Inputs design")
+        # Inputs design
+        self.add_input_file("targets", "The locations of the microsatellite of interest (format: BED). This file must be sorted numerically and must not have a header line.", required=True, group="Inputs design")
+        self.add_input_file("intervals", "MSI intervals file (format: TSV). See mSINGS create_intervals script.", required=True, group="Inputs design")
+        self.add_input_file("baseline", "Path to the MSI baseline file generated for your analytic process on data generated using the same protocols (format: TSV). This file describes the average and standard deviation of the number of expected signal peaks at each locus, as calculated from an MSI negative population (blood samples or MSI negative tumors). See mSINGS create_baseline script.", required=True, group="Inputs design")
+        self.add_input_file("genome_seq", "Path to the reference used to generate alignment files (format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.", required=True, file_format="fasta", group="Inputs design")
 
         # Parameters
         # Modify script/run_msings to edit parameters (multiplier, min threshold, max threshold)
@@ -57,9 +58,8 @@ class MSI (Workflow):
             cleaned_R2 = clean_R2.out_R1
 
         # Align reads
-        # lib_names = [spl["Library_Name"] for spl in self.samples]
         bwa = self.add_component("BWAmem", [self.genome_seq, cleaned_R1, cleaned_R2])
         idx_aln = self.add_component("BAMIndex", [bwa.aln_files])
 
         # Call MSI with run_msings.py
-        msings = self.add_component("MSINGS", [idx_aln.out_aln, self.bed, self.intervals, self.baseline, self.genome_seq])
+        msings = self.add_component("MSINGS", [idx_aln.out_aln, self.targets, self.intervals, self.baseline, self.genome_seq])
