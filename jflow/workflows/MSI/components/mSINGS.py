@@ -51,6 +51,7 @@ class MSINGS (Component):
 
     def process(self):
         cmd = self.get_exec_path("msings_venv") + " " + self.get_exec_path("run_msings.py") + \
+            " --java-path " + self.get_exec_path("java") + \
             " --java-mem " + str(self.java_mem) + \
             " --multiplier " + str(self.multiplier) + \
             " --msi-min-threshold " + str(self.msi_min_threshold) + \

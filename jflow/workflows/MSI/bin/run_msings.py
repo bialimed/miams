@@ -112,7 +112,7 @@ def process(args, log):
     log.info("Start Varscan readcounts")
     varscan_output = os.path.join(working_directory, "varscan.txt")
     cmd = [
-        "java",
+        args.java_path,
         "-Xmx{}g".format(args.java_mem),
         "-jar", varscan_path,
         "readcounts",
@@ -189,6 +189,7 @@ class LoggerAction(argparse.Action):
 if __name__ == "__main__":
     # Manage parameters
     parser = argparse.ArgumentParser(description="Launch mSINGS analysis from one BAM file. The virtual environment of mSINGS must be activated.")
+    parser.add_argument('-j', '--java-path', default=wich("java"), help='The path to the java runtime. [Default: %(default)s]')
     parser.add_argument('-m', '--java-mem', default=4, type=int, help='The memory allowed to java virtual machine in giga bytes. [Default: %(default)s]')
     parser.add_argument('-d', '--msings-directory', default=os.path.dirname(os.path.dirname(os.path.abspath(__file__))), help='The path to the mSINGS installation folder. [Default: %(default)s]')
     parser.add_argument('-l', '--logging-level', default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], action=LoggerAction, help='The logger level. [Default: %(default)s]')
