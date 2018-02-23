@@ -35,6 +35,45 @@ from anacore.lib.sequenceIO import Sequence, FastqIO
 # FUNCTIONS
 #
 ########################################################################
+def bam2PairedFastq(aln_path, R1_path, R2_path, selected_areas, min_len_on_area=20, qual_offset=33):
+    """
+    @summary: Writes in fastq files the reads pairs overlapping the provided regions.
+    @param aln_path: [str] The path to the alignment file (format: BAM)
+    @param R1_path: [str] The path to the outputted R1 file (format: fastq).
+    @param R2_path: [str] The path to the outputted R2 file (format: fastq).
+    @param selected_areas: [RegionList] The selected regions.
+    @param min_len_on_area: [int] A reads pair is written on fastq only if this number of nucleotides of the target are covered by the each read.
+    @param qual_offset: [int] The quality offset.
+    """
+    with FastqIO(R1_path, "w") as FH_R1:
+        with FastqIO(R2_path, "w") as FH_R2:
+            with pysam.AlignmentFile(aln_path, "rb") as FH_sam:
+                already_selected = dict()
+                for area_idx, curr_area in enumerate(selected_areas):
+                    selected_in_area = dict()
+                    for read in FH_sam.fetch(curr_area.reference.name, curr_area.start, curr_area.end):
+                        len_on_area = min(read.reference_end, curr_area.end) - max(read.reference_start, curr_area.start)  # Deletions decrease this value
+                        if len_on_area > min_len_on_area:
+                            read_id = read.query_name
+                            if read_id not in selected_in_area:
+                                selected_in_area[read_id] = {"R1": False, "R2": False}
+                            if read.is_read2:
+                                selected_in_area[read_id]["R2"] = True
+                                if selected_in_area[read_id]["R1"] and not read_id in already_selected:
+                                    R1 = getSeqFromAlnSeq(FH_sam.mate(read), qual_offset)
+                                    R2 = getSeqFromAlnSeq(read, qual_offset)
+                                    FH_R1.write(R1)
+                                    FH_R2.write(R2)
+                                    already_selected[read_id] = 1
+                            else:
+                                selected_in_area[read_id]["R1"] = True
+                                if selected_in_area[read_id]["R2"] and not read_id in already_selected:
+                                    R1 = getSeqFromAlnSeq(read, qual_offset)
+                                    R2 = getSeqFromAlnSeq(FH_sam.mate(read), qual_offset)
+                                    FH_R1.write(R1)
+                                    FH_R2.write(R2)
+                                    already_selected[read_id] = 1
+
 def getAreas(input_areas):
     """
     @summary: Returns the list of areas from a BED file.
@@ -46,46 +85,29 @@ def getAreas(input_areas):
         areas = RegionList(FH_panel.read())
     return areas
 
+def getSeqFromAlnSeq(read, qual_offset):
+    """
+    @summary: Returns the Sequence instance corresponding to the read.
+    @param read: [pysam.AlignedSegment] The read to convert.
+    @param qual_offset: [int] The quality offset.
+    @return: [Sequence] The sequence corresponding to the read.
+    """
+    read_seq = read.query_sequence
+    read_qual = "".join([chr(qual + qual_offset) for qual in read.query_qualities])
+    if read.is_reverse:
+        read_seq = revcom(read_seq)
+        read_qual = read_qual[::-1]
+    return Sequence(read.query_name, read_seq, None, read_qual)
 
-def bam2PairedFastq(aln_path, R1_path, R2_path, selected_areas, min_len_on_area=20):
+def revcom(seq):
     """
-    @summary: Writes in fastq files the reads pairs overlapping the provided regions.
-    @param aln_path: [str] The path to the alignment file (format: BAM)
-    @param R1_path: [str] The path to the outputted R1 file (format: fastq).
-    @param R2_path: [str] The path to the outputted R2 file (format: fastq).
-    @param selected_areas: [RegionList] The selected regions.
-    @param min_len_on_area: [int] A reads pair is written on fastq only if this number of nucleotides of the target are covered by the each read..
+    @summary: Returns the reverse complement the sequence.
+    @param seq: [str] The sequence.
+    @return: [str] The reverse complement of the sequence.
     """
-    with FastqIO(R1_path, "w") as FH_R1:
-        with FastqIO(R2_path, "w") as FH_R2:
-            with pysam.AlignmentFile(aln_path, "rb") as FH_sam:
-                already_selected = dict()
-                for area_idx, curr_area in enumerate(selected_areas):
-                    selected_in_area = dict()
-                    for read in FH_sam.fetch(curr_area.reference.name, curr_area.start, curr_area.end):
-                        len_on_area = min(read.next_reference_end, curr_area.end) - max(read.next_reference_start, curr_area.start)  # Deletions decrease this value
-                        if len_on_area > min_len_on_area:
-                            read_id = read.query_name
-                            if read_id not in selected_in_area:
-                                selected_in_area[read_id] = {"R1": False, "R2": False}
-                            if read.is_read2:
-                                selected_in_area[read_id]["R2"] = True
-                                if selected_in_area[read_id]["R1"] and not read_id in already_selected:
-                                    read_mate = read.mate()
-                                    R1 = Sequence(read_mate.query_name, read_mate.sequence, read_mate.comment, read_mate.quality)
-                                    R2 = Sequence(read_id, read.sequence, read.comment, read.quality)
-                                    FH_R1.write(R1)
-                                    FH_R2.write(R2)
-                                    already_selected[read_id] = 1
-                            else:
-                                selected_in_area[read_id]["R1"] = True
-                                if selected_in_area[read_id]["R2"] and not read_id in already_selected:
-                                    read_mate = FH_sam.mate(read)
-                                    R2 = Sequence(read_mate.query_name, read_mate.sequence, read_mate.comment, read_mate.quality)
-                                    R1 = Sequence(read_id, read.sequence, read.comment, read.quality)
-                                    FH_R1.write(R1)
-                                    FH_R2.write(R2)
-                                    already_selected[read_id] = 1
+    complement_rules = {'A':'T','T':'A','G':'C','C':'G','U':'A','N':'N','W':'W','S':'S','M':'K','K':'M','R':'Y','Y':'R','B':'V','V':'B','D':'H','H':'D',
+                        'a':'t','t':'a','g':'c','c':'g','u':'a','n':'n','w':'w','s':'s','m':'k','k':'m','r':'y','y':'r','b':'v','v':'b','d':'h','h':'d'}
+    return("".join([complement_rules[base] for base in seq[::-1]]))
 
 
 ########################################################################
@@ -97,6 +119,7 @@ if __name__ == "__main__":
     # Manage parameters
     parser = argparse.ArgumentParser(description='Extract reads pairs overlapping the specified regions from a BAM file.')
     parser.add_argument('-m', '--min-overlap', default=20, type=int, help='A reads pair is selected only if this number of nucleotides of the target are covered by the each read. [Default: %(default)s]')
+    parser.add_argument('-q', '--qual-offset', default=33, type=int, help='The quality offset of the reads in alignment file. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-a', '--input-aln', required=True, help='The path to the alignment file (format: BAM).')
