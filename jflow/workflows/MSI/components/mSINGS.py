@@ -30,7 +30,7 @@ from weaver.function import ShellFunction
 
 class MSINGS (Component):
 
-    def define_parameters(self, bam, targets, intervals, baseline, genome, multiplier=2.0, msi_min_threshold=0.60, msi_max_threshold=0.60, java_mem=4):
+    def define_parameters(self, aln, targets, intervals, baseline, genome, multiplier=2.0, msi_min_threshold=0.60, msi_max_threshold=0.60, java_mem=4):
         # Parameters
         self.add_parameter("multiplier", "The number of standard deviations from the baseline that is required to call instability.", default=multiplier, type=float)
         self.add_parameter("msi_min_threshold", "The maximum fraction of unstable sites allowed to call a specimen MSI negative.", default=msi_min_threshold, type=float)
@@ -38,16 +38,16 @@ class MSINGS (Component):
         self.add_parameter("java_mem", "", default=java_mem, type=int)
 
         # Input Files
-        self.add_input_file_list("bam", "Pathes to alignment files for the samples to evaluate (format: BAM). These BAM must be ordered by coordinates and indexed.", default=bam, required=True)
+        self.add_input_file_list("aln", "Pathes to alignment files for the samples to evaluate (format: BAM). These BAM must be ordered by coordinates and indexed.", default=aln, required=True)
         self.add_input_file("baseline", "Path to the MSI baseline file generated for your analytic process on data generated using the same protocols (format: TSV). This file describes the average and standard deviation of the number of expected signal peaks at each locus, as calculated from an MSI negative population (blood samples or MSI negative tumors). See mSINGS create_baseline script.", default=baseline, required=True)
         self.add_input_file("genome", "Path to the reference used to generate alignment files (format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.", default=genome, required=True)
         self.add_input_file("intervals", "Path to the MSI intervals file (format: TSV). See mSINGS create_intervals script.", default=intervals, required=True)
         self.add_input_file("targets", "The locations of the microsatellite of interest (format: BED). This file must be sorted numerically and must not have a header line.", default=targets, required=True)
 
         # Output Files
-        self.add_output_file_list("report", "Pathes to the output files containing status for the sample and the evaluated loci (format: TSV).", pattern='{basename_woext}_report.txt', items=self.bam)
-        self.add_output_file_list("analyzer", "Pathes to the output files containing the profiles of evaluated loci (format: TSV).", pattern='{basename_woext}_analyzer.txt', items=self.bam)
-        self.add_output_file_list("stderr", "Pathes to the stderr files (format: txt).", pattern='{basename_woext}.stderr', items=self.bam)
+        self.add_output_file_list("report", "Pathes to the output files containing status for the sample and the evaluated loci (format: TSV).", pattern='{basename_woext}_report.txt', items=self.aln)
+        self.add_output_file_list("analyzer", "Pathes to the output files containing the profiles of evaluated loci (format: TSV).", pattern='{basename_woext}_analyzer.txt', items=self.aln)
+        self.add_output_file_list("stderr", "Pathes to the stderr files (format: txt).", pattern='{basename_woext}.stderr', items=self.aln)
 
     def process(self):
         cmd = self.get_exec_path("msings_venv") + " " + self.get_exec_path("run_msings.py") + \
@@ -65,4 +65,4 @@ class MSINGS (Component):
             " --output-report $3 " + \
             " 2> $4"
         msings_fct = ShellFunction(cmd, cmd_format='{EXE} {IN} {OUT}')
-        MultiMap(msings_fct, inputs=[self.bam], outputs=[self.analyzer, self.report, self.stderr], includes=[self.ref_genome, self.intervals, self.baseline, self.bed])
+        MultiMap(msings_fct, inputs=[self.aln], outputs=[self.analyzer, self.report, self.stderr], includes=[self.ref_genome, self.intervals, self.baseline, self.targets])

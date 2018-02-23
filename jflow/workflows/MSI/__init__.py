@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017 IUCT-O
+# Copyright (C) 2018 IUCT-O
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 #
 
 __author__ = 'Charles Van Goethem and Frederic Escudie'
-__copyright__ = 'Copyright (C) 2017 IUCT-O'
+__copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
 __version__ = '0.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
@@ -63,3 +63,7 @@ class MSI (Workflow):
 
         # Call MSI with run_msings.py
         msings = self.add_component("MSINGS", [idx_aln.out_aln, self.targets, self.intervals, self.baseline, self.genome_seq])
+
+        # Retrieve size profile for each MSI
+        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets])
+        # merge R1 and R2 and process size
