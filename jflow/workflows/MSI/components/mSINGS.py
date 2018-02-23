@@ -65,4 +65,4 @@ class MSINGS (Component):
             " --output-report $3 " + \
             " 2> $4"
         msings_fct = ShellFunction(cmd, cmd_format='{EXE} {IN} {OUT}')
-        MultiMap(msings_fct, inputs=[self.aln], outputs=[self.analyzer, self.report, self.stderr], includes=[self.ref_genome, self.intervals, self.baseline, self.targets])
+        MultiMap(msings_fct, inputs=[self.aln], outputs=[self.analyzer, self.report, self.stderr], includes=[self.genome, self.intervals, self.baseline, self.targets])

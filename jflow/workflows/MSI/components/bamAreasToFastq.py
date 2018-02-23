@@ -32,7 +32,7 @@ class BamAreasToFastq (Component):
 
     def define_parameters(self, aln, targets, min_overlap=20):
         # Parameters
-        self.add_parameter("multiplier", "The number of standard deviations from the baseline that is required to call instability.", default=multiplier, type=float)
+        self.add_parameter("min_overlap", "A reads pair is selected only if this number of nucleotides of the target are covered by the each read.", default=min_overlap, type=int)
 
         # Input Files
         self.add_input_file_list("aln", "Pathes to alignment files (format: BAM).", default=aln, required=True)
