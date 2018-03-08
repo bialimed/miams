@@ -63,5 +63,5 @@ class MSI (Workflow):
         msings = self.add_component("MSINGS", [idx_aln.out_aln, self.targets, self.intervals, self.baseline, self.genome_seq])
 
         # Retrieve size profile for each MSI
-        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets])
+        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, 20, True])
         # merge R1 and R2 and process size
