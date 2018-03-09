@@ -64,4 +64,7 @@ class MSI (Workflow):
 
         # Retrieve size profile for each MSI
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, 20, True])
-        # merge R1 and R2 and process size
+        flash = self.add_component("Flash2", [on_targets.out_R1, on_targets.out_R2, None, 0.25, 20, 200, 33])
+
+        # Report
+        #self.add_component("MSIReport", [flash.out_report, msings.report, msings.get_targets_name()])
