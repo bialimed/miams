@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -120,6 +120,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract reads pairs overlapping the specified regions from a BAM file.')
     parser.add_argument('-m', '--min-overlap', default=20, type=int, help='A reads pair is selected only if this number of nucleotides of the target are covered by the each read. [Default: %(default)s]')
     parser.add_argument('-q', '--qual-offset', default=33, type=int, help='The quality offset of the reads in alignment file. [Default: %(default)s]')
+    parser.add_argument('-s', '--split-targets', action='store_true', help='With this parameter each region has his own pair of outputted fastq. In this configuration --output-R1 and --output-R2 must contain the placeholder "##TARGET##" dynamically replaced by the region name.')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-a', '--input-aln', required=True, help='The path to the alignment file (format: BAM).')
@@ -128,7 +129,21 @@ if __name__ == "__main__":
     group_output.add_argument('-R1', '--output-R1', required=True, help='The path to the outputted reads file (format: fastq).')
     group_output.add_argument('-R2', '--output-R2', required=True, help='The path to the outputted reads file (format: fastq).')
     args = parser.parse_args()
+    if args.split_targets:
+        if "##TARGET##" not in args.output_R1 or "##TARGET##" not in args.output_2:
+            raise Exception('With {} the parameters {} and {} must contains "##TARGET##" as placeholder.'.format(args.split_targets.flag, args.output_R1.flag, args.output_R2.flag))
 
     # Process
     selected_areas = getAreas(args.input_targets)
-    bam2PairedFastq(args.input_aln, args.output_R1, args.output_R2, selected_areas, args.min_overlap)
+    if not args.split_targets:
+        bam2PairedFastq(args.input_aln, args.output_R1, args.output_R2, selected_areas, args.min_overlap)
+    else:
+        uniq_names = set([elt.name for elt in selected_areas if elt.name is not None])
+        if len(selected_areas) != len(uniq_names):
+            raise Exception('With {} all the regions in {} must have an uniq name.'.format(args.split_targets.flag, args.input_targets))
+        for curr_area in selected_areas:
+            curr_output_R1 = args.output_R1
+            curr_output_R1.replace("##TARGET##", curr_area.name)
+            curr_output_R2 = args.output_R2
+            curr_output_R2.replace("##TARGET##", curr_area.name)
+            bam2PairedFastq(args.input_aln, curr_output_R1, curr_output_R2, RegionList([curr_area]), args.min_overlap)

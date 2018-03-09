@@ -60,7 +60,6 @@ class BamAreasToFastq (Component):
             self.add_output_file_list("stderr", "Pathes to the stderr files (format: txt).", pattern='{basename_woext}.stderr', items=self.aln)
         else:
             splitted_prefixes = self.get_splitted_prefixes()
-            print(splitted_prefixes)
             self.add_output_file_list("out_R1", "Pathes to the outputted R1 file (format: fastq).", pattern='{basename_woext}_R1.fastq.gz', items=splitted_prefixes)
             self.add_output_file_list("out_R2", "Pathes to the outputted R2 file (format: fastq).", pattern='{basename_woext}_R2.fastq.gz', items=splitted_prefixes)
             self.add_output_file_list("stderr", "Pathes to the stderr files (format: txt).", pattern='{basename_woext}.stderr', items=splitted_prefixes)
@@ -104,8 +103,6 @@ class BamAreasToFastq (Component):
     def process(self):
         if self.split_targets:
             self.process_split_targets()
-        print(self.repeated_aln if self.split_targets else self.aln)
-        print(self.repeated_targets)
         # Exec command
         cmd = self.get_exec_path("bamAreasToFastq.py") + \
             " --min-overlap " + str(self.min_overlap) + \
