@@ -52,7 +52,7 @@ def bam2PairedFastq(aln_path, R1_path, R2_path, selected_areas, min_len_on_area=
                 for area_idx, curr_area in enumerate(selected_areas):
                     selected_in_area = dict()
                     for read in FH_sam.fetch(curr_area.reference.name, curr_area.start, curr_area.end):
-                        if read.reference_start and read.reference_end and:  # Skip reads with a mapping score but no information on alignment (CIGAR=*)
+                        if read.reference_start and read.reference_end:  # Skip reads with a mapping score but no information on alignment (CIGAR=*)
                             len_on_area = min(read.reference_end, curr_area.end) - max(read.reference_start, curr_area.start)  # Deletions decrease this value
                             if len_on_area > min_len_on_area:
                                 read_id = read.query_name
