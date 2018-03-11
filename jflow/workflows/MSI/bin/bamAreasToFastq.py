@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -52,27 +52,20 @@ def bam2PairedFastq(aln_path, R1_path, R2_path, selected_areas, min_len_on_area=
                 for area_idx, curr_area in enumerate(selected_areas):
                     selected_in_area = dict()
                     for read in FH_sam.fetch(curr_area.reference.name, curr_area.start, curr_area.end):
-                        len_on_area = min(read.reference_end, curr_area.end) - max(read.reference_start, curr_area.start)  # Deletions decrease this value
-                        if len_on_area > min_len_on_area:
-                            read_id = read.query_name
-                            if read_id not in selected_in_area:
-                                selected_in_area[read_id] = {"R1": False, "R2": False}
-                            if read.is_read2:
-                                selected_in_area[read_id]["R2"] = True
-                                if selected_in_area[read_id]["R1"] and not read_id in already_selected:
-                                    R1 = getSeqFromAlnSeq(FH_sam.mate(read), qual_offset)
-                                    R2 = getSeqFromAlnSeq(read, qual_offset)
-                                    FH_R1.write(R1)
-                                    FH_R2.write(R2)
-                                    already_selected[read_id] = 1
-                            else:
-                                selected_in_area[read_id]["R1"] = True
-                                if selected_in_area[read_id]["R2"] and not read_id in already_selected:
-                                    R1 = getSeqFromAlnSeq(read, qual_offset)
-                                    R2 = getSeqFromAlnSeq(FH_sam.mate(read), qual_offset)
-                                    FH_R1.write(R1)
-                                    FH_R2.write(R2)
-                                    already_selected[read_id] = 1
+                        if read.reference_start and read.reference_end and:  # Skip reads with a mapping score but no information on alignment (CIGAR=*)
+                            len_on_area = min(read.reference_end, curr_area.end) - max(read.reference_start, curr_area.start)  # Deletions decrease this value
+                            if len_on_area > min_len_on_area:
+                                read_id = read.query_name
+                                read_phase = "R2" if read.is_read2 else "R1"
+                                if read_id not in already_selected:
+                                    if read_id not in selected_in_area:
+                                        selected_in_area[read_id] = {"R1": None, "R2": None}
+                                    selected_in_area[read_id][read_phase] = getSeqFromAlnSeq(read, qual_offset)
+                                    if selected_in_area[read_id]["R1"] is not None and selected_in_area[read_id]["R2"] is not None:
+                                        FH_R1.write(selected_in_area[read_id]["R1"])
+                                        FH_R2.write(selected_in_area[read_id]["R2"])
+                                        selected_in_area[read_id] = {"R1": None, "R2": None}
+                                        already_selected[read_id] = 1
 
 def getAreas(input_areas):
     """
