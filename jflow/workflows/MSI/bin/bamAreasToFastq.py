@@ -25,7 +25,7 @@ __status__ = 'prod'
 
 import pysam
 import argparse
-from anacore.lib.bed import BEDIO
+from anacore.lib.bed import getAreas
 from anacore.lib.region import RegionList
 from anacore.lib.sequenceIO import Sequence, FastqIO
 
@@ -66,17 +66,6 @@ def bam2PairedFastq(aln_path, R1_path, R2_path, selected_areas, min_len_on_area=
                                         FH_R2.write(selected_in_area[read_id]["R2"])
                                         selected_in_area[read_id] = {"R1": None, "R2": None}
                                         already_selected[read_id] = 1
-
-def getAreas(input_areas):
-    """
-    @summary: Returns the list of areas from a BED file.
-    @param input_areas: [str] The path to the areas description (format: BED).
-    @returns: [RegionList] The list of areas.
-    """
-    areas = RegionList()
-    with BEDIO(input_areas) as FH_panel:
-        areas = RegionList(FH_panel.read())
-    return areas
 
 def getSeqFromAlnSeq(read, qual_offset):
     """
