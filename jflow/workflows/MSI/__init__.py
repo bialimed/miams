@@ -65,6 +65,11 @@ class MSI (Workflow):
         # Retrieve size profile for each MSI
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, 20, True])
         flash = self.add_component("Flash2", [on_targets.out_R1, on_targets.out_R2, None, 0.25, 20, 200, 33])
+        ######################## pb flash2 impose un max overlap qui n'a pas de sens
 
         # Report
-        #self.add_component("MSIReport", [flash.out_report, msings.report, msings.get_targets_name()])
+        self.reports_cmpt = self.add_component("MSIMergeReports", [flash.out_report, msings.report, self.targets])
+
+    def post_process(self):
+        # Add HTML report with MSIReport.out_report. This file allow to switch between samples in header.
+        pass #######################################################################################################
