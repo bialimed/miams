@@ -1,0 +1,123 @@
+/*
+# Copyright (C) 2018 IUCT-O
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+.content {
+	margin-top: 10px;
+	margin-left: 20px;
+	margin-right: 20px;
+	margin-bottom: 20px;
+}
+.alert-info {
+	color: #31708f;
+	background-color: #d9edf7;
+	border-color: #bce8f1;
+}
+.alert-danger {
+	color: #a94442;
+	background-color: #f2dede;
+	border-color: #ebccd1;
+}
+.alert {
+	padding: 15px;
+	margin-bottom: 20px;
+	border: 1px solid transparent;
+	border-radius: 4px;
+}
+.top-bar {
+	background-color: #6C757D;
+	position: -webkit-sticky;
+	position: sticky;
+	top: 0;
+	z-index: 1071;
+	padding-top: 6px;
+	padding-bottom: 6px;
+}
+#samples-nav {
+	max-width: 400px;
+	width: 96%;
+	margin-right: auto;
+	margin-left: auto;
+}
+.block {
+	border-radius: .25rem;
+	border-left: .25rem solid #007BFF;
+	border-top: 1px solid #eee;
+	border-right: 1px solid #eee;
+	border-bottom: 1px solid #eee;
+	margin: 5px;
+	margin-bottom: 20px;
+	padding: 10px;
+}
+.title {
+	background-color: #007BFF;
+	font-size: 15px;
+	color: white;
+	width: 100px;
+	margin-left: -10px;
+	margin-top: -10px;
+	padding:3px;
+}
+.title:after {
+	content: " ";
+	width: 10px;
+	background-color: #007BFF;
+	transform: skewX(-15deg);
+}
+.badge.status-stable {
+	background-color: #28A745;
+}
+.badge.status-instable {
+/*
+	background-color: #DC3545;
+*/
+	background-color: #FF9800;
+}
+.badge.status-unknown {
+/*
+	background-color: #FF9800;
+*/
+	background-color: #DC3545;
+}
+.sticker {
+  border: solid 0.3em transparent;
+  text-align: center;
+  vertical-align: middle;
+}
+.sticker.status-stable {
+    border-left-color: #4CAF50;
+	background-color: #E8F5E9;
+}
+.sticker.status-instable {
+/*
+    border-left-color: #F44336;
+    background-color: #FFEBEE;
+*/
+    border-left-color: #FF9800;
+    background-color: #FFF3E0;
+}
+.sticker.status-unknown {
+    border-left-color: #F44336;
+    background-color: #FFEBEE;
+/*
+    border-left-color: #FF9800;
+    background-color: #FFF3E0;
+*/
+}
+#sample-summary ul {
+	margin-left: auto;
+	margin-right: auto;
+	width: 300px;
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--
+# Copyright (C) 2018 IUCT-O
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+	<head>
+		<title>MSI profile</title>
+		<meta charset="UTF-8">
+		<meta name="version" content="1.0.0">
+		<!-- CSS -->
+		<link rel="stylesheet" type="text/css" href="wMSI_lib/dataTables_1.10.16/css/jquery.dataTables.min.css">
+		<link rel="stylesheet" type="text/css" href="wMSI_lib/bootstrap_4.0.0/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="wMSI_lib/bootstrap-select_1.13.0-beta/css/bootstrap-select.min.css">
+		<link rel="stylesheet" type="text/css" href="wMSI_lib/app/app.css">
+		<!-- JS -->
+		<script src="wMSI_lib/jquery_3.2.1/jquery.min.js"></script>
+		<script src="wMSI_lib/highcharts_5.0.14/highcharts-core.min.js"></script>
+		<script src="wMSI_lib/highcharts_5.0.14/highcharts-export.min.js"></script>
+		<script src="wMSI_lib/datatables_1.10.16/js/jquery.dataTables.min.js"></script>
+		<script src="wMSI_lib/popper_1.14.1/popper.min.js"></script>
+		<script src="wMSI_lib/bootstrap_4.0.0/js/bootstrap.min.js"></script>
+		<script src="wMSI_lib/bootstrap-select_1.13.0-beta/js/bootstrap-select.min.js"></script>
+		<script src="wMSI_lib/app/app.js"></script>
+	</head>
+	<body>
+		<div class="top-bar">
+			<div id="samples-nav" class="input-group">
+				<div class="input-group-prepend">
+					<button type="button" id="prev-spl" class="btn btn-primary">
+						&lt;
+					</button>
+				</div>
+				<select id="selected-spl" class="selectpicker form-control" data-live-search="true"></select>
+				<div class="input-group-append">
+					<button type="button" id="next-spl" class="btn btn-primary">
+						&gt;
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="content">
+			<div id="user-alert" class="d-none alert alert-danger"></div>
+			<div class="block">
+				<h1 class="title">Sample</h1>
+				<div id="sample-summary" class="row">
+					<div class="col-md-6">
+						<ul>
+							<li>Status: <span id="spl-status" class="badge badge-primary"></span></li>
+							<li>Score: <span id="spl-score" class="badge badge-primary"></span></li>
+						</ul>
+					</div>
+					<div class="col-md-6">
+						<ul>
+							<li>Nb loci Stable: <span id="spl-stable-loci" class="badge badge-primary"></span></li>
+							<li>Nb loci instable: <span id="spl-instable-loci" class="badge badge-primary"></span></li>
+							<li>Nb loci undefined: <span id="spl-unknown-loci" class="badge badge-primary"></span></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="block">
+				<h1 class="title">Loci</h1>
+				<div id="length-graph"></div>
+				<div>
+					<table id="nb-seq-table" class="d-none table table-striped">
+						<thead>
+							<tr>
+								<th>Position</th>
+								<th>Name</th>
+								<th>Status</th>
+								<th>Nb reads pairs</th>
+								<th>Nb reads pairs combined</th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			const data_by_spl = ##DATA##
+			let select_spl = $("#selected-spl")
+			Object.keys(data_by_spl).forEach(function( curr_path ){
+				select_spl.append(new Option(curr_path, curr_path))
+			})
+			$('.selectpicker').selectpicker()
+			selectSample(data_by_spl[select_spl.val()])
+			navButtonUpdate(select_spl)
+
+			// Events
+			select_spl.on("change", function(){
+				const select_spl = $("#selected-spl")
+				try {
+					$("#user-alert").addClass("d-none")
+					selectSample(data_by_spl[select_spl.val()])
+					navButtonUpdate(select_spl)
+				} catch(error) {
+					$("#user-alert").text('Error when loading data.')
+					$("#user-alert").removeClass("d-none")
+				}
+			})
+			$("#next-spl").on("click", function(){
+				const select_spl = $("#selected-spl")
+				const curr_idx = select_spl.prop('selectedIndex')
+				if(curr_idx < Object.keys(data_by_spl).length - 1){
+					select_spl.prop('selectedIndex', curr_idx + 1).change()
+				}
+			})
+			$("#prev-spl").on("click", function(){
+				const select_spl = $("#selected-spl")
+				const curr_idx = select_spl.prop('selectedIndex')
+				if(curr_idx > 0){
+					select_spl.prop('selectedIndex', curr_idx - 1).change()
+				}
+			})
+		</script>
+	</body>
+</html>
