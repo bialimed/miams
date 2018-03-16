@@ -92,7 +92,7 @@
 		<script type="text/javascript">
 			const data_by_spl = ##DATA##
 			let select_spl = $("#selected-spl")
-			Object.keys(data_by_spl).forEach(function( curr_path ){
+			Object.keys(data_by_spl).sort().forEach(function( curr_path ){
 				select_spl.append(new Option(curr_path, curr_path))
 			})
 			$('.selectpicker').selectpicker()
