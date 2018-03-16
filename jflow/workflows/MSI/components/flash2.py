@@ -68,26 +68,26 @@ class Flash2 (Component):
         self.add_parameter("max_overlap", 'Maximum overlap length expected in approximately 90% of read pairs.', default=max_overlap, type=int)
         self.add_parameter("min_overlap", "The minimum required overlap length between two reads to provide a confident overlap.", default=min_overlap, type=int)
         self.add_parameter("mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=mismatch_ratio, type=float)
+        self.add_parameter_list("names", "The basenames of the output fastq in order of the R1. By default the basename is automatically determined.", default=names)
         self.add_parameter("nb_threads", "Set the number of worker threads", default=nb_threads, type=int)
         self.add_parameter("phred_offset", "phred_offset", default=phred_offset, type=int)
-        self.add_parameter_list("names", "", default=names)
         if len(self.names) == 0:
             self.prefixes = self.get_outputs('{basename_woext}', [R1, R2])
         else:
             self.prefixes = self.get_outputs('{basename_woext}', names)
 
         # Inputs files
-        self.add_input_file_list("R1", "fastq read R1", default=R1, required=True)
-        self.add_input_file_list("R2", "fastq read R2", default=R2, required=True)
+        self.add_input_file_list("R1", "fastq read R1 (format: fastq).", default=R1, required=True)
+        self.add_input_file_list("R2", "fastq read R2 (format: fastq).", default=R2, required=True)
 
         # Outputs files
-        self.add_output_file_list("out_histogram", "", pattern='{basename_woext}.histogram', items=self.prefixes)
-        self.add_output_file_list("out_hist", "", pattern='{basename_woext}.hist', items=self.prefixes)
-        self.add_output_file_list("out_report", "", pattern='{basename_woext}_report.json', items=self.prefixes)
-        self.add_output_file_list("out_combined", "", pattern='{basename_woext}.extendedFrags.fastq.gz', items=self.prefixes, file_format='fastq')
-        self.add_output_file_list("out_not_combined_R1", "", pattern='{basename_woext}.notCombined_1.fastq.gz', items=self.prefixes, file_format='fastq')
-        self.add_output_file_list("out_not_combined_R2", "", pattern='{basename_woext}.notCombined_2.fastq.gz', items=self.prefixes, file_format='fastq')
-        self.add_output_file_list("stderr", "", pattern='{basename_woext}.stderr', items=self.prefixes)
+        self.add_output_file_list("out_combined", "Pathes to the files containing combined pairs (format: fastq).", pattern='{basename_woext}.extendedFrags.fastq.gz', items=self.prefixes, file_format='fastq')
+        self.add_output_file_list("out_hist", "Pathes to the files containing the ascii histogram of combined pairs lengths (format: TSV).", pattern='{basename_woext}.hist', items=self.prefixes)
+        self.add_output_file_list("out_histogram", "Pathes to the files containing the number of combined pairs by length (format: TSV).", pattern='{basename_woext}.histogram', items=self.prefixes)
+        self.add_output_file_list("out_not_combined_R1", "Pathes to the R1 not combined (format: fastq).", pattern='{basename_woext}.notCombined_1.fastq.gz', items=self.prefixes, file_format='fastq')
+        self.add_output_file_list("out_not_combined_R2", "Pathes to the R2 not combined (format: fastq).", pattern='{basename_woext}.notCombined_2.fastq.gz', items=self.prefixes, file_format='fastq')
+        self.add_output_file_list("out_report", "Pathes to the files containing combination metrics (format: JSON).", pattern='{basename_woext}_report.json', items=self.prefixes)
+        self.add_output_file_list("stderr", "Pathes to the stderr file (format: txt).", pattern='{basename_woext}.stderr', items=self.prefixes)
 
 
     def process(self):
