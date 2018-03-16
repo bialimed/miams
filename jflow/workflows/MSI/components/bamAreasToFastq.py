@@ -112,8 +112,8 @@ class BamAreasToFastq (Component):
         MultiMap(
             bam2fastq_fct,
             inputs=[
-				self.repeated_targets,
-				(self.repeated_aln if self.split_targets else self.aln)
-			],
+                self.repeated_targets,
+                (self.repeated_aln if self.split_targets else self.aln)
+            ],
             outputs=[self.out_R1, self.out_R2, self.stderr],
         )
