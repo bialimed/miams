@@ -19,12 +19,11 @@ __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018'
 __license__ = 'GNU General Public License'
 __version__ = '1.0.0'
-__email__ = 'c-vangoethem@chu-montpellier.fr'
+__email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 from jflow.component import Component
 from jflow.abstraction import MultiMap
-
 from weaver.function import ShellFunction
 
 

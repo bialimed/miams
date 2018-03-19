@@ -24,7 +24,6 @@ __status__ = 'prod'
 
 from jflow.component import Component
 from jflow.abstraction import MultiMap
-
 from weaver.function import ShellFunction
 
 
@@ -48,6 +47,7 @@ class Cutadapt (Component):
             self.add_output_file_list("out_R2", "Path to the outputted R2 files (format: fastq).", pattern='{basename_woext}_trim.fastq.gz', items=self.in_R2)
         self.add_output_file_list("stdout", "Path to the stdout files (format: txt).", pattern='{basename_woext}.stdout', items=self.in_R1)
         self.add_output_file_list("stderr", "Path to the stderr files (format: txt).", pattern='{basename_woext}.stderr', items=self.in_R1)
+
 
     def process(self):
         cmd = self.get_exec_path("cutadapt") + \

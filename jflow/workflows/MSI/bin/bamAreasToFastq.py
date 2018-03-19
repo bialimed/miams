@@ -25,9 +25,9 @@ __status__ = 'prod'
 
 import pysam
 import argparse
-from anacore.lib.bed import getAreas
-from anacore.lib.region import RegionList
-from anacore.lib.sequenceIO import Sequence, FastqIO
+from anacore.bed import getAreas
+from anacore.region import RegionList
+from anacore.sequenceIO import Sequence, FastqIO
 
 
 ########################################################################

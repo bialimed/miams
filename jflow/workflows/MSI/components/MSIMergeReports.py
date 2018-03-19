@@ -23,9 +23,9 @@ __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import os
-from anacore.lib.bed import getAreas
 from jflow.component import Component
 from weaver.function import ShellFunction
+from anacore.bed import getAreas
 
 
 def two_dim_stack(elts, nb_col):

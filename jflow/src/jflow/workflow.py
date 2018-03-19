@@ -1,16 +1,16 @@
 #
 # Copyright (C) 2015 INRA
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -38,7 +38,7 @@ import jflow
 import jflow.utils as utils
 from jflow.utils import validate_email
 from pygraph.classes.digraph import digraph
-from jflow.workflows_manager import WorkflowsManager 
+from jflow.workflows_manager import WorkflowsManager
 from jflow.config_reader import JFlowConfigReader
 from jflow.utils import get_octet_string_representation, get_nb_octet
 from jflow.parameter import *
@@ -62,8 +62,8 @@ from workflows import rules as wf_rules
 
 
 class MINIWorkflow(object):
-    
-    def __init__(self, id, name, description, status, start_time, end_time, metadata, 
+
+    def __init__(self, id, name, description, status, start_time, end_time, metadata,
                  component_nameids, compts_status, errors):
         self.id = id
         self.name = name
@@ -75,44 +75,44 @@ class MINIWorkflow(object):
         self.component_nameids = component_nameids
         self.compts_status = compts_status
         self.errors = errors
-        
+
     def get_components_nameid(self):
         return self.component_nameids
 
     def get_components_status(self):
         return self.compts_status
-    
+
     def get_component_status(self, component_nameid):
         return self.compts_status[component_nameid]
-    
+
     def get_errors(self):
         return self.errors
-    
+
     def get_status(self):
         return self._status
 
 class Workflow(threading.Thread):
-    
+
     MAKEFLOW_LOG_FILE_NAME = "Makeflow.makeflowlog"
     DUMP_FILE_NAME = ".workflow.dump"
     STDERR_FILE_NAME = "wf_stderr.txt"
     WORKING = ".working"
     OLD_EXTENSION = ".old"
     DEFAULT_GROUP = "default"
-    
+
     STATUS_PENDING = "pending"
     STATUS_STARTED = "started"
     STATUS_COMPLETED = "completed"
     STATUS_FAILED = "failed"
     STATUS_ABORTED = "aborted"
     STATUS_RESETED = "reseted"
-    
+
     INPUTFILE_GRAPH_LABEL = "inputfile"
     INPUTFILES_GRAPH_LABEL = "inputfiles"
     INPUTDIRECTORY_GRAPH_LABEL = "inputdirectory"
     COMPONENT_GRAPH_LABEL = "component"
-    
-    
+
+
     def __init__(self, args={}, id=None, function= "process"):
         # define as a thread
         threading.Thread.__init__(self)
@@ -153,14 +153,14 @@ class Workflow(threading.Thread):
         self.description = self.get_description()
         self.tools_description = self.get_tools_description()
         self.__group = self.jflow_config_reader.get_workflow_group(self.__class__.__name__) or Workflow.DEFAULT_GROUP
-        
-        # define the parameters 
+
+        # define the parameters
         self.params_order = []
         if self.function != None:
             self.define_parameters(self.function)
         # add the metadata parameter
         self.metadata = []
-        
+
         if self.id is not None:
             self.directory = self.manager.get_workflow_directory(self.name, self.id)
             if not os.path.isdir(self.directory):
@@ -168,16 +168,16 @@ class Workflow(threading.Thread):
             if self.stderr is None:
                 self.stderr = self._set_stderr()
             self._serialize()
-            
+
         self.internal_components = self._import_internal_components()
         self.external_components = self._import_external_components()
 
     def get_workflow_group(self):
         return self.__group
-            
-    def add_input_directory(self, name, help, default=None, required=False, flag=None, 
+
+    def add_input_directory(self, name, help, default=None, required=False, flag=None,
                             group="default", display_name=None, get_files_fn=None, add_to=None, rules=None):
-        new_param = InputDirectory(name, help, flag=flag, default=default, required=required, 
+        new_param = InputDirectory(name, help, flag=flag, default=default, required=required,
                                    group=group, display_name=display_name, get_files_fn=get_files_fn, rules=rules)
         new_param.linkTrace_nameid = name
         # if this input should be added to a particular parameter
@@ -189,14 +189,14 @@ class Workflow(threading.Thread):
         else:
             self.params_order.append(name)
             self.__setattr__(name, new_param)
-    
-    def add_input_file(self, name, help, file_format="any", default=None, type="inputfile", 
+
+    def add_input_file(self, name, help, file_format="any", default=None, type="inputfile",
                        required=False, flag=None, group="default", display_name=None, size_limit="0", add_to=None,
                        rules=None):
         # check if the size provided is correct
         try: int(get_nb_octet(size_limit))
         except: size_limit="0"
-        new_param = InputFile(name, help, flag=flag, file_format=file_format, default=default, 
+        new_param = InputFile(name, help, flag=flag, file_format=file_format, default=default,
                               type=type, required=required, group=group, display_name=display_name, size_limit=size_limit,
                               rules=rules)
         new_param.linkTrace_nameid = name
@@ -209,7 +209,7 @@ class Workflow(threading.Thread):
         else:
             self.params_order.append(name)
             self.__setattr__(name, new_param)
-            
+
     def add_input_file_list(self, name, help, file_format="any", choices=None, default=None, type="inputfile",
                             required=False, flag=None, group="default", display_name=None, size_limit="0", add_to=None,
                             rules=None):
@@ -236,7 +236,7 @@ class Workflow(threading.Thread):
         else:
             self.params_order.append(name)
             self.__setattr__(name, new_param)
-            
+
     def add_multiple_parameter(self, name, help, required=False, flag=None, group="default", display_name=None,
                                rules=None):
         self.params_order.append(name)
@@ -250,10 +250,10 @@ class Workflow(threading.Thread):
         new_param = MultiParameterList(name, help, flag=flag, required=required, group=group, display_name=display_name,
                                        rules=rules, paired_columns=paired_columns)
         self.__setattr__(name, new_param)
-    
-    def add_parameter(self, name, help, default=None, type=str, choices=None, 
+
+    def add_parameter(self, name, help, default=None, type=str, choices=None,
                       required=False, flag=None, group="default", display_name=None, add_to=None, rules=None):
-        new_param = ParameterFactory.factory(name, help, flag=flag, default=default, type=type, choices=choices, 
+        new_param = ParameterFactory.factory(name, help, flag=flag, default=default, type=type, choices=choices,
                               required=required, group=group, display_name=display_name, rules=rules)
         # if this input should be added to a particular parameter
         if add_to:
@@ -264,11 +264,11 @@ class Workflow(threading.Thread):
         else:
             self.params_order.append(name)
             self.__setattr__(name, new_param)
-    
-    def add_parameter_list(self, name, help, default=None, type=str, choices=None, 
+
+    def add_parameter_list(self, name, help, default=None, type=str, choices=None,
                            required=False, flag=None, group="default", display_name=None, add_to=None, rules=None):
         if default == None: default = []
-        new_param = ParameterList(name, help, flag=flag, default=default, type=type, choices=choices, 
+        new_param = ParameterList(name, help, flag=flag, default=default, type=type, choices=choices,
                                   required=required, group=group, display_name=display_name, rules=rules)
         # if this input should be added to a particular parameter
         if add_to:
@@ -293,8 +293,8 @@ class Workflow(threading.Thread):
         # Set new parameter
         if parameter.__class__ in [StrParameter, IntParameter, FloatParameter, BoolParameter, DateParameter, PasswordParameter]:
             if value == "" and parameter.__class__ in [IntParameter, FloatParameter, BoolParameter, DateParameter] : value = None # from GUI
-            new_param = ParameterFactory.factory( parameter.name, parameter.help, default=value, type=parameter.type, choices=parameter.choices, 
-                                                  required=parameter.required, flag=parameter.flag, group=parameter.group, 
+            new_param = ParameterFactory.factory( parameter.name, parameter.help, default=value, type=parameter.type, choices=parameter.choices,
+                                                  required=parameter.required, flag=parameter.flag, group=parameter.group,
                                                   display_name=parameter.display_name )
         elif parameter.__class__ ==  ParameterList:
             if value == "" : value = [] # from GUI
@@ -310,19 +310,19 @@ class Workflow(threading.Thread):
             new_param = InputFileList( parameter.name, parameter.help, file_format=parameter.file_format, default=iovalues,
                                        type=parameter.type, choices=parameter.choices, required=parameter.required, flag=parameter.flag,
                                        group=parameter.group, display_name=parameter.display_name, size_limit=parameter.size_limit )
-            new_param.linkTrace_nameid = parameter.linkTrace_nameid            
+            new_param.linkTrace_nameid = parameter.linkTrace_nameid
         elif parameter.__class__ == InputFile:
             if value == "" : value = None # from GUI
             prepared_file = parameter.prepare(value)
             new_param = InputFile( parameter.name, parameter.help, file_format=parameter.file_format, default=prepared_file,
-                                   type=parameter.type, choices=parameter.choices, required=parameter.required, flag=parameter.flag, 
+                                   type=parameter.type, choices=parameter.choices, required=parameter.required, flag=parameter.flag,
                                    group=parameter.group, display_name=parameter.display_name )
             new_param.linkTrace_nameid = parameter.linkTrace_nameid
         elif parameter.__class__ == InputDirectory:
             if value == "" : value = None # from GUI
             prepared_directory = parameter.prepare(value)
-            new_param = InputDirectory( parameter.name, parameter.help, default=prepared_directory, choices=parameter.choices, 
-                                        required=parameter.required, flag=parameter.flag, group=parameter.group, 
+            new_param = InputDirectory( parameter.name, parameter.help, default=prepared_directory, choices=parameter.choices,
+                                        required=parameter.required, flag=parameter.flag, group=parameter.group,
                                         display_name=parameter.display_name, get_files_fn=parameter.get_files_fn)
             new_param.linkTrace_nameid = parameter.linkTrace_nameid
         else:
@@ -514,7 +514,7 @@ class Workflow(threading.Thread):
     def config_parser(arg_lines):
         for arg in arg_lines:
             yield arg
-            
+
     @staticmethod
     def get_status_under_text_format(workflow, detailed=False, display_errors=False, html=False):
         if workflow.start_time: start_time = time.asctime(time.localtime(workflow.start_time))
@@ -551,28 +551,28 @@ class Workflow(threading.Thread):
                 except: perc_aborted = 0
                 try: perc_completed = (status_info["completed"]*100.0)/status_info["tasks"]
                 except: perc_completed = 0
-                
-                if status_info["running"] > 0: 
+
+                if status_info["running"] > 0:
                     if html: running = "<span style='color:#3b3bff'>running:" + str(status_info["running"]) + "</span>"
                     else: running = "\033[94mrunning:" + str(status_info["running"]) + "\033[0m"
                 else: running = "running:" + str(status_info["running"])
-                if status_info["waiting"] > 0: 
+                if status_info["waiting"] > 0:
                     if html: waiting = "<span style='color:#ffea00'>waiting:" + str(status_info["waiting"]) + "</span>"
                     else: waiting = "\033[93mwaiting:" + str(status_info["waiting"]) + "\033[0m"
-                else: waiting = "waiting:" + str(status_info["waiting"])            
-                if status_info["failed"] > 0: 
+                else: waiting = "waiting:" + str(status_info["waiting"])
+                if status_info["failed"] > 0:
                     if html: failed = "<span style='color:#ff0000'>failed:" + str(status_info["failed"]) + "</span>"
                     else: failed = "\033[91mfailed:" + str(status_info["failed"]) + "\033[0m"
                 else: failed = "failed:" + str(status_info["failed"])
-                if status_info["aborted"] > 0: 
+                if status_info["aborted"] > 0:
                     if html: aborted = "<span style='color:#ff01ba'>aborted:" + str(status_info["aborted"]) + "</span>"
                     else: aborted = "\033[95maborted:" + str(status_info["aborted"]) + "\033[0m"
                 else: aborted = "aborted:" + str(status_info["aborted"])
-                if status_info["completed"] == status_info["tasks"] and status_info["completed"] > 0: 
+                if status_info["completed"] == status_info["tasks"] and status_info["completed"] > 0:
                     if html: completed = "<span style='color:#14ac00'>completed:" + str(status_info["completed"]) + "</span>"
                     else: completed = "\033[92mcompleted:" + str(status_info["completed"]) + "\033[0m"
                 else: completed = "completed:" + str(status_info["completed"])
-                
+
                 if display_errors and len(status_info["failed_commands"]) > 0:
                     if components_errors == "":
                         components_errors = "Failed Commands :\n"
@@ -604,7 +604,7 @@ class Workflow(threading.Thread):
             pretty_str += workflow.get_status() + "\033[0m"
             pretty_str += "\t" + elapsed_time + "\t" + start_time + "\t" + end_time
             return pretty_str
-    
+
     def get_errors(self):
         if os.path.isfile(self.stderr):
             error = {
@@ -624,9 +624,9 @@ class Workflow(threading.Thread):
                     while not lines[line_idx].startswith("Traceback"):
                         line_idx += 1
                     # skip : "Traceback (most recent call last):"
-                    line_idx += 1    
+                    line_idx += 1
                     while lines[line_idx] != lines[line_idx].lstrip():
-                        error["traceback"].append({ 
+                        error["traceback"].append({
                                                    "location" : lines[line_idx].strip(),
                                                    "line"     : lines[line_idx].strip()
                         })
@@ -656,7 +656,7 @@ class Workflow(threading.Thread):
         for current_components in self.components:
             descriptions[current_components.get_nameid()] = current_components.get_description()
         return descriptions
-                
+
     def get_outputs_per_components(self):
         outputs_files = OrderedDict()
         for current_components in self.components:
@@ -680,12 +680,12 @@ class Workflow(threading.Thread):
                                                      if param_obj.type != bool else ""))
                 programs[current_component.get_nameid()] = program
         return programs
-    
+
     def __setstate__(self, state):
         self.__dict__ = state.copy()
         self.external_components = self._import_external_components()
         threading.Thread.__init__(self, name=self.name)
-        
+
     def __getstate__(self):
         """
         Threading uses Lock Object, do not consider these objects when serializing a workflow
@@ -700,7 +700,7 @@ class Workflow(threading.Thread):
         if 'external_components' in odict:
             del odict['external_components']
         return odict
-    
+
     def set_to_address(self, to_address):
         self.__to_address = to_address
 
@@ -747,11 +747,11 @@ class Workflow(threading.Thread):
         import smtplib
         from email.mime.text import MIMEText
         smtps, smtpp, froma, fromp, toa, subject, message = self.jflow_config_reader.get_email_options()
-        
+
         if self.__to_address: toa = self.__to_address
         if self.__subject: subject = self.__subject
         if self.__message: message = self.__message
-        
+
         if smtps and smtpp and froma and fromp:
             if not toa: toa = froma
             if validate_email(froma) and validate_email(toa):
@@ -794,7 +794,7 @@ class Workflow(threading.Thread):
                         s.close()
                 except:
                     self._log("Impossible to connect to smtp server '" + smtps + "'", level="warning", traceback=traceback.format_exc(chain=False))
-    
+
     def get_parameters_per_groups(self):
         name = self.get_name()
         description = self.get_description()
@@ -807,7 +807,7 @@ class Workflow(threading.Thread):
             else:
                 pgparameters[param.group] = [param]
         return [pgparameters, parameters_order]
-    
+
     def get_parameters(self):
         params = []
         for param in self.params_order:
@@ -815,7 +815,7 @@ class Workflow(threading.Thread):
                 if (issubclass(attribute_value.__class__, AbstractParameter)) and param == attribute_value.name:
                     params.append(attribute_value)
         return params
-    
+
     def get_exec_path(self, software):
         exec_path = self.jflow_config_reader.get_exec(software)
         if exec_path is None and os.path.isfile(os.path.join(os.path.dirname(inspect.getfile(self.__class__)), "../bin", software)):
@@ -824,16 +824,16 @@ class Workflow(threading.Thread):
             exec_path = os.path.join(os.path.dirname(inspect.getfile(self.__class__)), "bin", software)
         elif exec_path is None and utils.which(software) == None:
             raise Exception("'" + software + "' path connot be retrieved either in the PATH and in the application.properties file!")
-        elif exec_path is None and utils.which(software) != None: 
+        elif exec_path is None and utils.which(software) != None:
             exec_path = software
         elif exec_path != None and not os.path.isfile(exec_path):
             raise Exception("'" + exec_path + "' set for '" + software + "' does not exists, please provide a valid path!")
         return exec_path
-    
+
     def add_component(self, component_name, args=[], kwargs={}, component_prefix="default"):
         # first build and check if this component is OK
         if component_name in self.internal_components or component_name in self.external_components:
-            
+
             if component_name in self.internal_components:
                 my_pckge = __import__(self.internal_components[component_name], globals(), locals(), [component_name])
                 # build the object and define required field
@@ -849,7 +849,7 @@ class Workflow(threading.Thread):
                 cmpt_object.set_prefix(component_prefix)
                 # can't use positional arguments with external components
                 cmpt_object.define_parameters(**kwargs)
-            
+
             # there is a dynamic component
             if cmpt_object.is_dynamic():
                 self.dynamic_component_present = True
@@ -864,7 +864,7 @@ class Workflow(threading.Thread):
                         output.update()
                 else:
                     if self._component_is_duplicated(cmpt_object):
-                        raise ValueError("Component " + cmpt_object.__class__.__name__ + " with prefix " + 
+                        raise ValueError("Component " + cmpt_object.__class__.__name__ + " with prefix " +
                                             cmpt_object.get_prefix() + " already exist in this pipeline!")
                     self.component_nameids[cmpt_object.get_nameid()] = None
                     self.components_to_exec = []
@@ -876,13 +876,13 @@ class Workflow(threading.Thread):
                     self.components.append(cmpt_object)
                 elif not self.component_nameids_is_init and not self.dynamic_component_present:
                     if self._component_is_duplicated(cmpt_object):
-                        raise ValueError("Component " + cmpt_object.__class__.__name__ + " with prefix " + 
+                        raise ValueError("Component " + cmpt_object.__class__.__name__ + " with prefix " +
                                             cmpt_object.get_prefix() + " already exist in this pipeline!")
                     self.components_to_exec.append(cmpt_object)
                     self.components.append(cmpt_object)
                 else:
                     if self._component_is_duplicated(cmpt_object):
-                        raise ValueError("Component " + cmpt_object.__class__.__name__ + " with prefix " + 
+                        raise ValueError("Component " + cmpt_object.__class__.__name__ + " with prefix " +
                                             cmpt_object.get_prefix() + " already exist in this pipeline!")
                     self.component_nameids[cmpt_object.get_nameid()] = None
 
@@ -890,24 +890,24 @@ class Workflow(threading.Thread):
         else:
             raise ImportError(component_name + " component cannot be loaded, available components are: {0}".format(
                                            ", ".join(list(self.internal_components.keys()) + list(self.external_components.keys()))))
-    
+
     def pre_process(self):
         pass
-    
+
     def process(self):
-        """ 
+        """
         Run the workflow, has to be implemented by subclasses
         """
         raise NotImplementedError( "Workflow.process() must be implemented in " + self.__class__.__name__ )
 
     def get_name(self):
-        """ 
+        """
         Return the workflow name.
         """
         return self.__class__.__name__.lower()
-    
+
     def get_description(self):
-        """ 
+        """
         Return the workflow description, has to be implemented by subclasses
         """
         raise NotImplementedError( "Workflow.get_description() must be implemented in " + self.__class__.__name__ )
@@ -923,26 +923,26 @@ class Workflow(threading.Thread):
         Return a workflow summary, if implemented by subclasses
         """
         return ""
-    
+
     def define_parameters(self, function="process"):
-        """ 
+        """
         Define the workflow parameters, has to be implemented by subclasses
         """
         raise NotImplementedError( "Workflow.define_parameters() must be implemented in " + self.__class__.__name__ )
-    
+
     def post_process(self):
         pass
-    
+
     def get_temporary_file(self, suffix=".txt"):
         tempfile_name = os.path.basename(tempfile.NamedTemporaryFile(suffix=suffix).name)
         return os.path.join(self.jflow_config_reader.get_tmp_directory(), tempfile_name)
 
     def get_component_output_directory(self, component_name, component_prefix):
         return os.path.join(self.directory, component_name + "_" + component_prefix)
-    
+
     def get_components_nameid(self):
         return list(self.component_nameids.keys())
-    
+
     def wf_execution_wrapper(self):
         getattr(self, self.function)()
 
@@ -955,7 +955,7 @@ class Workflow(threading.Thread):
                 for g_param in g_params:
                     wfile.write(g_param.name + ": " + str(g_param) + "\n")
                 wfile.write("\n")
-    
+
     def run(self):
         """
         Only require for Threading
@@ -1011,13 +1011,6 @@ class Workflow(threading.Thread):
                     self.post_process()
                     self._postprocess_status = self.STATUS_COMPLETED
                     self._status = self.STATUS_COMPLETED
-                    print("")
-                    print("###########")
-                    print("# Results #")
-                    print("###########")
-                    print("")
-                    self.__print_outputs(False)
-                    print("")
                     print(self.get_summary())
                 except:
                     self._postprocess_status = self.STATUS_FAILED
@@ -1039,6 +1032,9 @@ class Workflow(threading.Thread):
             if self.__step is not None:
                 self._send_email()
 
+    def pre_restart(self):
+        pass
+
     def restart(self):
         """
         @summary: Reruns incompleted steps.
@@ -1048,6 +1044,7 @@ class Workflow(threading.Thread):
             self._set_stderr()
         self._status = self.STATUS_STARTED
         self._postprocess_status = self.STATUS_PENDING
+        self.pre_restart()
         self.start()
 
     def get_status(self):
@@ -1073,10 +1070,10 @@ class Workflow(threading.Thread):
                 self._status = self.STATUS_FAILED
         except: pass
         return self._status
-    
+
     def get_resource(self, resource):
         return self.jflow_config_reader.get_resource(resource)
-    
+
     def get_components_status(self):
         """
         @summary: Returns the components status for all components.
@@ -1121,10 +1118,10 @@ class Workflow(threading.Thread):
                             status[cmpt_nameid]["completed"] += 1
             except: pass
         return status
-    
+
     def get_component_status(self, component_nameid):
         return self.get_components_status()[component_nameid]
-    
+
     def reset_component(self, component_name):
         # first reinit the step to the execution step
         self.__step = 1
@@ -1138,22 +1135,22 @@ class Workflow(threading.Thread):
         self.reseted_components.append(component_name)
         self._status = self.STATUS_RESETED
         self._serialize()
-    
+
     def minimize(self):
         compts_status = self.get_components_status()
-        return MINIWorkflow(self.id, self.name, self.description, self.get_status(), self.start_time, 
-                            self.end_time, self.metadata, self.get_components_nameid(), compts_status, 
+        return MINIWorkflow(self.id, self.name, self.description, self.get_status(), self.start_time,
+                            self.end_time, self.metadata, self.get_components_nameid(), compts_status,
                             self.get_errors())
-    
+
     def makeflow_pretty_print_node(self, dag, node):
         sys.stdout.write('{0:>10} {1} {2}\n'.format('NODE', node.id, node.symbol))
-        
+
         for output_file in sorted(node.output_files):
             sys.stdout.write('{0:>10} {1:>10} {2}\n'.format('', 'OUTPUT', output_file))
-    
+
         for input_file in sorted(node.input_files):
             sys.stdout.write('{0:>10} {1:>10} {2}\n'.format('', 'INPUT', input_file))
-            
+
         sys.stdout.write('{0:>10} {1:>10} {2}\n'.format('', 'COMMAND', node.command))
 
     def _set_stderr(self):
@@ -1163,7 +1160,7 @@ class Workflow(threading.Thread):
         return stderr
 
     def _log(self, msg, level="exception", raisee=False, traceback=None):
-        
+
         if level == "exception":
             logging.getLogger("wf." + str(self.id)).exception(msg)
             logh = open(self.stderr, "a")
@@ -1175,7 +1172,7 @@ class Workflow(threading.Thread):
             logging.getLogger("wf." + str(self.id)).debug(msg)
         elif level == "warning":
             logging.getLogger("wf." + str(self.id)).warning(msg)
-        
+
         if raisee:
             raise Exception(msg)
 
@@ -1193,7 +1190,7 @@ class Workflow(threading.Thread):
         self._import('nest', NESTS)
         self._import('options', OPTIONS)
         self._import('stack', STACKS)
-                
+
         # Execute nest
         with Nest(current_working_directory, wrapper=engine_wrapper, path=self.jflow_config_reader.get_makeflow_path()) as nest:
             with self.options:
@@ -1237,7 +1234,7 @@ class Workflow(threading.Thread):
             self.makes[make_directory] = current_component
             new_make = True
         return [make_directory, new_make]
-    
+
     def _serialize(self):
         self.dump_path = os.path.join(self.directory, self.DUMP_FILE_NAME)
         workflow_dump = open(self.dump_path, "wb")
@@ -1253,7 +1250,7 @@ class Workflow(threading.Thread):
         pckge = {}
         # then import pipeline packages
         pipeline_dir = os.path.dirname(inspect.getfile(self.__class__))
-        for importer, modname, ispkg in pkgutil.iter_modules([os.path.join(pipeline_dir, "components")], "workflows." + 
+        for importer, modname, ispkg in pkgutil.iter_modules([os.path.join(pipeline_dir, "components")], "workflows." +
                                                              os.path.basename(pipeline_dir) + ".components."):
             try:
                 m = __import__(modname)
@@ -1273,7 +1270,7 @@ class Workflow(threading.Thread):
             except Exception as e:
                 self._log("Component <{0}> cannot be loaded: {1}".format(modname, e), level="debug", traceback=traceback.format_exc(chain=False))
         return pckge
-    
+
     def _import_external_components(self):
         pckge = {}
         parsers = []
@@ -1287,14 +1284,14 @@ class Workflow(threading.Thread):
                         parsers.append(obj())
             except Exception as e:
                 self._log("Parser <{0}> cannot be loaded: {1}".format(modname, e), level="debug", traceback=traceback.format_exc(chain=False))
-        
+
         for parser in parsers :
             # import from pipeline components package ...
             pipeline_components_dir = os.path.join( os.path.dirname(inspect.getfile(self.__class__)), "components" )
-            
+
             # ... and from shared components package
             workflow_components_dir = os.path.join(os.path.dirname(os.path.dirname(inspect.getfile(self.__class__))), "components" )
-            
+
             try :
                 comps = parser.parse_directory(pipeline_components_dir) + parser.parse_directory(workflow_components_dir)
                 for c in comps :
@@ -1302,7 +1299,7 @@ class Workflow(threading.Thread):
             except :
                 pass
         return pckge
-        
+
     def _import(self, module, symbols):
         """ Import ``symbols`` from ``module`` into global namespace. """
         # Import module

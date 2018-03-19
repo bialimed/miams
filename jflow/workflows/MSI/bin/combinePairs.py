@@ -27,7 +27,7 @@ import sys
 import json
 import logging
 import argparse
-from anacore.lib.sequenceIO import Sequence, FastqIO
+from anacore.sequenceIO import Sequence, FastqIO
 
 
 ########################################################################
@@ -73,7 +73,7 @@ def nucRevCom(seq):
     @param seq: [str] The sequence to process.
     @return: [str] The reverse complement of the sequence.
     """
-    complement_rules = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'N':'N'}
+    complement_rules = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'N': 'N'}
     return "".join([complement_rules[base] for base in seq[::-1]])
 
 

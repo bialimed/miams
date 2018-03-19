@@ -23,10 +23,10 @@ __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import os
-from anacore.lib.bed import BEDIO
 from jflow.component import Component
 from jflow.abstraction import MultiMap
 from weaver.function import ShellFunction
+from anacore.bed import BEDIO
 
 
 class BamAreasToFastq (Component):
@@ -61,6 +61,7 @@ class BamAreasToFastq (Component):
             self.add_output_file_list("out_R2", "Pathes to the outputted R2 file (format: fastq).", pattern='{basename_woext}_R2.fastq.gz', items=splitted_prefixes)
             self.add_output_file_list("stderr", "Pathes to the stderr files (format: txt).", pattern='{basename_woext}.stderr', items=splitted_prefixes)
 
+
     def get_splitted_prefixes(self):
         prefixes = list()
         targets_name = self.get_targets_name()
@@ -72,6 +73,7 @@ class BamAreasToFastq (Component):
                 prefixes.append(curr_aln + "_" + curr_name)
         return prefixes
 
+
     def get_targets_name(self):
         names = list()
         with BEDIO(self.targets) as FH_in:
@@ -82,12 +84,14 @@ class BamAreasToFastq (Component):
             raise Exception('With option "split_targets" all the regions in {} must have an uniq name.'.format(in_targets))
         return names
 
+
     def process_split_targets(self):
         with BEDIO(self.targets) as FH_in:
             for curr_area in FH_in:
                 curr_out = os.path.join(self.output_directory, curr_area.name.replace(" ", "_") + ".bed")
                 with BEDIO(curr_out, "w", write_nb_col=4) as FH_out:
                     FH_out.write(curr_area)
+
 
     def get_splitted_pathes(self):
         splitted_pathes = list()
@@ -96,6 +100,7 @@ class BamAreasToFastq (Component):
                 curr_path = os.path.join(self.output_directory, curr_area.name.replace(" ", "_") + ".bed")
                 splitted_pathes.append(curr_path)
         return splitted_pathes
+
 
     def process(self):
         if self.split_targets:

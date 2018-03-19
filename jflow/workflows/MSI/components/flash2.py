@@ -37,7 +37,7 @@ def writeReport(combined, uncombined_R1, out_report):
     @param out_report: [str] Path to the outputted report file (format: json).
     """
     import json
-    from anacore.lib.sequenceIO import FastqIO
+    from anacore.sequenceIO import FastqIO
     report = {
         "nb_combined_pairs": 0,
         "nb_uncombined_pairs": 0,

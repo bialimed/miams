@@ -25,8 +25,8 @@ __status__ = 'prod'
 
 import json
 import argparse
-from anacore.lib.msings import CountMSI
-from anacore.lib.sv import HashedSVIO
+from anacore.msings import CountMSI
+from anacore.sv import HashedSVIO
 
 
 ########################################################################

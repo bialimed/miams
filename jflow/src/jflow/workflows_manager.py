@@ -1,16 +1,16 @@
 #
 # Copyright (C) 2015 INRA
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -42,7 +42,7 @@ class WorkflowsManager(object):
             os.makedirs(self.get_output_directory(), 0o751)
         self.dump_file = os.path.join(self.get_output_directory(), self.WORKFLOWS_DUMP_FILE_NAME)
         self.ids_file = os.path.join(self.get_output_directory(), self.IDS_FILE_NAME)
-    
+
     def _dump_workflows(self, workflows):
         def dump_func():
             # first load the existing workflows
@@ -69,9 +69,9 @@ class WorkflowsManager(object):
         else:
             functions = set(function)
         wf_instances, wf_methodes = [], []
-        
+
         if isinstance(filter_groups, str): filter_groups = [filter_groups]
-        
+
         # Load all modules within the workflow module
         for importer, modname, ispkg in pkgutil.iter_modules(workflows.__path__, workflows.__name__ + "."):
             __import__(modname)
@@ -81,21 +81,21 @@ class WorkflowsManager(object):
                     for function in functions:
                         # check if the workflow has the requested methode
                         # inspect.ismethod has been changed for inspect.isfunction in Python3
-                        for ifunction in inspect.getmembers(obj, predicate=inspect.isfunction):    
+                        for ifunction in inspect.getmembers(obj, predicate=inspect.isfunction):
                             if ifunction[0] == function:
                                 # try to build the workflow
-                                try: 
+                                try:
                                     select_workflow = True
                                     inst = obj(function=function)
-                                    if filter_groups :
+                                    if filter_groups:
                                         select_workflow = (inst.get_workflow_group() in filter_groups) == select
-                                    
-                                    if select_workflow: 
+
+                                    if select_workflow:
                                         wf_instances.append(inst)
                                         wf_methodes.append(function)
                                 except: pass
         return [wf_instances, wf_methodes]
-    
+
     def rerun_workflow(self, workflow_id):
         workflow = self.get_workflow(workflow_id)
         workflow.restart()
@@ -152,14 +152,14 @@ class WorkflowsManager(object):
     def get_workflow_errors(self, workflow_id):
         workflow = self.get_workflow(workflow_id)
         return workflow.get_errors()
-    
+
     def get_output_directory(self):
         return self.config_reader.get_work_directory()
-        
+
     def get_workflow_outputs(self, workflow_id):
         workflow = self.get_workflow(workflow_id)
         return workflow.get_outputs_per_components()
-        
+
     def get_workflows(self, use_cache=False):
         from jflow.workflow import Workflow
         workflows = []
@@ -208,7 +208,7 @@ class WorkflowsManager(object):
                 if class_name.lower() == workflow_name.lower():
                     return obj()
         return None
-    
+
     def get_workflow(self, workflow_id):
         rworkflow_id = utils.get_nb_string(workflow_id)
         try:
@@ -227,7 +227,7 @@ class WorkflowsManager(object):
         return workflow
 
     def get_workflow_directory(self, wname, wid):
-        return os.path.join(os.path.join(self.config_reader.get_work_directory(), wname), 
+        return os.path.join(os.path.join(self.config_reader.get_work_directory(), wname),
                                          self.WF_DIRECTORY_PREFIX + utils.get_nb_string(wid))
 
     def get_next_id(self):

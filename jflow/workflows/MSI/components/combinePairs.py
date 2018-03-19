@@ -48,6 +48,7 @@ class CombinePairs (Component):
         self.add_output_file_list("out_report", "Pathes to the files containing combination metrics (format: JSON).", pattern='{basename_woext}_report.json', items=self.prefixes)
         self.add_output_file_list("stderr", "Pathes to the stderr file (format: txt).", pattern='{basename_woext}.stderr', items=self.prefixes)
 
+
     def process(self):
         cmd = self.get_exec_path("combinePairs.py") + \
             " --min-overlap " + str(self.min_overlap) + \
