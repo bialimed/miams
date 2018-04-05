@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'dev'
 
@@ -121,11 +121,11 @@ class MSI (Workflow):
 
 
     def pre_restart(self):
-        os.path["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
+        os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
 
 
     def pre_process(self):
-        os.path["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
+        os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
         try:
             self.samples_names = [getLibNameFromReadsPath(str(elt)) for elt in self.R1]
         except:
