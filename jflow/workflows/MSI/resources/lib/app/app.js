@@ -23,10 +23,10 @@ String.prototype.capitalize = function() {
 };
 
 
-function selectSample( spl_data ){
+function selectSample( spl_data, pre_zoom_min=null, pre_zoom_max=null ){
 	fillSample('sample-summary', spl_data)
-	drawSizeGraph('length-graph', spl_data["loci"]);
-	drawTable('nb-seq-table', spl_data["loci"]);
+	drawSizeGraph('length-graph', spl_data["loci"], pre_zoom_min, pre_zoom_max)
+	drawTable('nb-seq-table', spl_data["loci"])
 }
 
 function navButtonUpdate(select_spl){
@@ -76,7 +76,7 @@ function fillSample( container_id, data ){
 	)
 }
 
-function drawSizeGraph( container_id, data, x_min=null, x_max=null ){
+function drawSizeGraph( container_id, data, pre_zoom_min=null, pre_zoom_max=null ){
 	// Transforms data to series
 	let series = []
 	const loci_ids = Object.keys(data).sort()
@@ -100,15 +100,21 @@ function drawSizeGraph( container_id, data, x_min=null, x_max=null ){
 		{
 			chart: {
 				type: "column",
-				zoomType: "x"
+				zoomType: "x",
+                events: {
+                    load: function(){
+                        if(pre_zoom_min != null || pre_zoom_max != 0){
+                            this.xAxis[0].setExtremes(pre_zoom_min, pre_zoom_max)
+                            this.showResetZoom()
+                        }
+                    }
+                }
 			},
 			title: {
 				text: 'Fragments lengths'
 			},
 			xAxis: {
 				tickInterval: 1,
-				min: x_min,
-				max: x_max,
 				title: {
 					text: "Length"
 				}
