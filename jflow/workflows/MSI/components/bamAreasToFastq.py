@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -31,24 +31,33 @@ from anacore.bed import BEDIO
 
 class BamAreasToFastq (Component):
 
-    def define_parameters(self, aln, targets, min_overlap=20, split_targets=False):
+    def define_parameters(self, aln, targets, min_overlap=20, split_targets=False, R1=None, R2=None):
         # Parameters
         self.add_parameter("min_overlap", "A reads pair is selected only if this number of nucleotides of the target are covered by the each read.", default=min_overlap, type=int)
         self.add_parameter("split_targets", 'With this parameter each region has his own pair of outputted fastq.', default=split_targets, type=bool)
 
         # Input Files
         self.add_input_file_list("aln", "Pathes to alignment files (format: BAM).", default=aln, required=True)
+        self.add_input_file_list("R1", "The path to the inputted reads file (format: fastq). If this option and the option R2 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).", default=R1)
+        self.add_input_file_list("R2", "The path to the inputted reads file (format: fastq). If this option and the option R1 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).", default=R2)
         self.add_input_file("targets", "The locations of areas to extract (format: BED).", default=targets, required=True)
+        if len(self.R1) != len(self.R2):
+            raise Exception("R1 and R2 list must have the same length.")
         if not self.split_targets:
             self.repeated_targets = [self.targets for elt in self.aln]
         else:
             self.splitted_targets = self.get_splitted_pathes()
             self.repeated_aln = list()
+            self.repeated_R1 = list()
+            self.repeated_R2 = list()
             self.repeated_targets = list()
-            for curr_aln in self.aln:
+            for curr_idx, curr_aln in enumerate(self.aln):
                 for curr_split in self.splitted_targets:
                     self.repeated_aln.append(curr_aln)
                     self.repeated_targets.append(curr_split)
+                    if len(self.R1) > 0 and len(self.R2) > 0:
+                        self.repeated_R1.append(self.R1[curr_idx])
+                        self.repeated_R2.append(self.R2[curr_idx])
 
         # Output Files
         if not self.split_targets:
@@ -108,17 +117,25 @@ class BamAreasToFastq (Component):
         # Exec command
         cmd = self.get_exec_path("bamAreasToFastq.py") + \
             " --min-overlap " + str(self.min_overlap) + \
-            " --input-targets $1 " + \
-            " --input-aln $2 " + \
-            " --output-R1 $3 " + \
-            " --output-R2 $4 " + \
-            " 2> $5"
-        bam2fastq_fct = ShellFunction(cmd, cmd_format='{EXE} {IN} {OUT}')
+            " --input-targets $4" + \
+            " --input-aln $5" + \
+            ("" if len(self.R1) == 0 else " --input-R1 $6") + \
+            ("" if len(self.R2) == 0 else " --input-R2 $7") + \
+            " --output-R1 $1" + \
+            " --output-R2 $2" + \
+            " 2> $3"
+        bam2fastq_fct = ShellFunction(cmd, cmd_format='{EXE} {OUT} {IN}')
+        inputs = [
+            self.repeated_targets,
+            (self.repeated_aln if self.split_targets else self.aln)
+        ]
+        if len(self.R1) > 0 and len(self.R2) > 0:
+            inputs.extend([
+                (self.repeated_R1 if self.split_targets else self.R1),
+                (self.repeated_R2 if self.split_targets else self.R2)
+            ])
         MultiMap(
             bam2fastq_fct,
-            inputs=[
-                self.repeated_targets,
-                (self.repeated_aln if self.split_targets else self.aln)
-            ],
+            inputs=inputs,
             outputs=[self.out_R1, self.out_R2, self.stderr],
         )

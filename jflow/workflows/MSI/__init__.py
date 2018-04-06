@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'dev'
 
@@ -151,7 +151,7 @@ class MSI (Workflow):
         msings = self.add_component("MSINGS", [idx_aln.out_aln, self.targets, self.intervals, self.baseline, self.genome_seq])
 
         # Retrieve size profile for each MSI
-        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, 20, True])
+        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, 20, True, cleaned_R1, cleaned_R2])
         flash = self.add_component("Flash2", [on_targets.out_R1, on_targets.out_R2, None, 0.25, 20, 200, 33])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, 0.25, 20])
 

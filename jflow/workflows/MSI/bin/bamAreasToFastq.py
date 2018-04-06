@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.1'
+__version__ = '1.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -35,6 +35,36 @@ from anacore.sequenceIO import Sequence, FastqIO
 # FUNCTIONS
 #
 ########################################################################
+def pickSeq(in_path, out_path, kept_ids):
+    """
+    @summary: Filters fastq by sequences IDs.
+    @param in_path: [str] The path to the initial sequences file (format: fastq).
+    @param out_path: [str] The path to the outputted sequences file (format: fastq).
+    @param kept_ids: [dict] Keys are IDs for kept sequences.
+    """
+    with FastqIO(in_path) as FH_in:
+        with FastqIO(out_path, "w") as FH_out:
+            for record in FH_in:
+                if record.id in kept_ids:
+                    FH_out.write(record)
+
+def replacePreFastq(in_R1, in_R2, pre_R1, pre_R2):
+    """
+    @summary: Replaces fastq extracted from BAM by theirs equivalent extracted from fastq used for the alignment.
+    @param in_R1: [str] The path to the R1 sequences file used in alignment (format: fastq).
+    @param in_R2: [str] The path to the R2 sequences file used in alignment (format: fastq).
+    @param pre_R1: [str] The path to the R1 sequences file extracted from BAM (format: fastq). This file will be replaced.
+    @param pre_R2: [str] The path to the R2 sequences file extracted from BAM  (format: fastq). This file will be replaced.
+    """
+    # Get kept ids
+    kept_ids = dict()
+    with FastqIO(pre_R1) as FH_R1:
+        for record in FH_R1:
+            kept_ids[record.id] = 1
+    # Write final fastq
+    pickSeq(in_R1, pre_R1, kept_ids)
+    pickSeq(in_R2, pre_R2, kept_ids)
+
 def bam2PairedFastq(aln_path, R1_path, R2_path, selected_areas, min_len_on_area=20, qual_offset=33):
     """
     @summary: Writes in fastq files the reads pairs overlapping the provided regions.
@@ -107,10 +137,14 @@ if __name__ == "__main__":
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-a', '--input-aln', required=True, help='The path to the alignment file (format: BAM).')
     group_input.add_argument('-t', '--input-targets', required=True, help='The path to the targets file (format: BED).')
+    group_input.add_argument('-i1', '--input-R1', help='The path to the inputted reads file (format: fastq). If this option and the option --input-R2 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).')
+    group_input.add_argument('-i2', '--input-R2', help='The path to the inputted reads file (format: fastq). If this option and the option --input-R1 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).')
     group_output = parser.add_argument_group('Outputs')  # Outputs
-    group_output.add_argument('-R1', '--output-R1', required=True, help='The path to the outputted reads file (format: fastq).')
-    group_output.add_argument('-R2', '--output-R2', required=True, help='The path to the outputted reads file (format: fastq).')
+    group_output.add_argument('-o1', '--output-R1', required=True, help='The path to the outputted reads file (format: fastq).')
+    group_output.add_argument('-o2', '--output-R2', required=True, help='The path to the outputted reads file (format: fastq).')
     args = parser.parse_args()
+    if (args.input_R1 is not None and args.input_R2 is None) or (args.input_R1 is None and args.input_R2 is not None):
+        raise Exception('If you want to extract reads from fastq instead of BAM you must specified --input-R1 and --input-R2.')
     if args.split_targets:
         if "##TARGET##" not in args.output_R1 or "##TARGET##" not in args.output_2:
             raise Exception('With {} the parameters {} and {} must contains "##TARGET##" as placeholder.'.format(args.split_targets.flag, args.output_R1.flag, args.output_R2.flag))
@@ -119,6 +153,8 @@ if __name__ == "__main__":
     selected_areas = getAreas(args.input_targets)
     if not args.split_targets:
         bam2PairedFastq(args.input_aln, args.output_R1, args.output_R2, selected_areas, args.min_overlap)
+        if args.input_R1 is not None and args.input_R2 is not None:
+            replacePreFastq(args.input_R1, args.input_R2, args.output_R1, args.output_R2)
     else:
         uniq_names = set([elt.name for elt in selected_areas if elt.name is not None])
         if len(selected_areas) != len(uniq_names):
@@ -129,3 +165,5 @@ if __name__ == "__main__":
             curr_output_R2 = args.output_R2
             curr_output_R2.replace("##TARGET##", curr_area.name)
             bam2PairedFastq(args.input_aln, curr_output_R1, curr_output_R2, RegionList([curr_area]), args.min_overlap)
+            if args.input_R1 is not None and args.input_R2 is not None:
+                replacePreFastq(args.input_R1, args.input_R2, args.output_R1, args.output_R2)
