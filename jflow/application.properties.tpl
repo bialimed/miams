@@ -17,7 +17,7 @@
 
 [global]
 # uncomment and set if not in the PATH, should be version >= 4.4.3
-#makeflow = /usr/bin/makeflow
+#makeflow = ###APP_FOLDER###/envs/miniconda3/envs/main/bin/makeflow
 # batch system type: local, condor, sge, moab, cluster, wq, hadoop, mpi-queue
 batch_system_type = local
 # add these options to all batch submit files
@@ -63,9 +63,9 @@ browse_root_dir = /tmp/MSI
 
 [softwares]
 # uncomment and set if not in the PATH
-#java =
-#run_msings.py = /softwares/msings/current/scripts/run_msings.py
-#msings_venv = /softwares/msings/current/venv/bin/python
+java = ###APP_FOLDER###/envs/miniconda3/envs/main/bin/java
+run_msings.py = ###APP_FOLDER###/envs/msings/scripts/run_msings.py
+msings_venv = ###APP_FOLDER###/envs/msings/venv/bin/python
 
 [resources]
 
