@@ -43,8 +43,8 @@ submit ${SCRIPT_DIR}/create_env.sh ${APP_DIR}/envs/miniconda3/envs/${ENV_NAME}/b
 
 # Create environment mSINGS
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Install mSINGS"
-submit ${SCRIPT_DIR}/install_msings.sh ${APP_DIR}/envs
 export PATH=$OLD_PATH
+submit ${SCRIPT_DIR}/install_msings.sh ${APP_DIR}/envs
 submit cp ${APP_DIR}/jflow/workflows/MSI/bin/run_msings.py ${APP_DIR}/envs/msings/scripts
 export PATH=${APP_DIR}/envs/miniconda3/bin:$PATH
 
