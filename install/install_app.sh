@@ -3,7 +3,9 @@
 # Manage parameters
 SCRIPT_DIR=`dirname $0`
 APP_DIR=`dirname ${SCRIPT_DIR}`
+APP_DIR=`realpath ${APP_DIR}`
 ENV_NAME="app"
+OLD_PATH=$PATH
 
 # Set utilities
 function submit {
@@ -12,9 +14,15 @@ function submit {
     if [ $exit_status -ne 0 ]
     then
         echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\033[0;31mERROR\033[0m] in subcommand $@" >&2
-        exit exit_status
+        exit $exit_status
     fi
 }
+
+# Clean previous install
+if [ -d ${APP_DIR}/envs ]
+then
+    rm -rf ${APP_DIR}/envs
+fi
 
 # Install conda
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Install conda"
@@ -36,16 +44,17 @@ submit ${SCRIPT_DIR}/create_env.sh ${APP_DIR}/envs/miniconda3/envs/${ENV_NAME}/b
 # Create environment mSINGS
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Install mSINGS"
 submit ${SCRIPT_DIR}/install_msings.sh ${APP_DIR}/envs
-submit ln -s ${APP_DIR}/jflow/workflows/MSI/bin/run_msings.py ${APP_DIR}/envs/msings/scripts
+export PATH=$OLD_PATH
+submit cp ${APP_DIR}/jflow/workflows/MSI/bin/run_msings.py ${APP_DIR}/envs/msings/scripts
+export PATH=${APP_DIR}/envs/miniconda3/bin:$PATH
 
 # Update application.properties
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Update applications.properties"
-submit sed 's/###APP_FOLDER###/${APP_DIR}/g' ${APP_DIR}/jflow/application.properties.tpl > ${APP_DIR}/jflow/application.properties
+sed "s,###APP_FOLDER###,${APP_DIR},g" ${APP_DIR}/jflow/application.properties.tpl > ${APP_DIR}/jflow/application.properties
+sed -i "s,###APP_ENV_NAME###,${ENV_NAME},g" ${APP_DIR}/jflow/application.properties
 
 # Execute install test
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Test install"
-##########################submit source activate ${ENV_NAME}
-##########################${APP_DIR}/jflow/bin/jflow_cli.py msi --R1 --R2 ...
-##########################source deactivate
+submit ${APP_DIR}/test/check_detection.sh
 
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[92mSUCCESS\033[0m] Installation completed successfully"

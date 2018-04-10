@@ -30,7 +30,7 @@ import shutil
 from jflow.workflow import Workflow
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-LIB_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "lib")
+LIB_DIR = os.path.join(CURRENT_DIR, "lib")
 sys.path.append(LIB_DIR)
 
 from anacore.illumina import getLibNameFromReadsPath
@@ -121,11 +121,17 @@ class MSI (Workflow):
 
 
     def pre_restart(self):
-        os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
+        if "PYTHONPATH" in os.environ:
+            os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
+        else:
+            os.environ["PYTHONPATH"] = LIB_DIR
 
 
     def pre_process(self):
-        os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
+        if "PYTHONPATH" in os.environ:
+            os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
+        else:
+            os.environ["PYTHONPATH"] = LIB_DIR
         try:
             self.samples_names = [getLibNameFromReadsPath(str(elt)) for elt in self.R1]
         except:
