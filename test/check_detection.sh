@@ -39,6 +39,6 @@ submit ${APP_DIR}/jflow/bin/jflow_cli.py msi \
 --baseline ${TEST_DIR}/data/MSI_BASELINE.tsv \
 --genome-seq ${TEST_DIR}/out_detection/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
 --output-dir ${TEST_DIR}/out_detection > /dev/null
-# submit rm -rf ${TEST_DIR}/out_detection
+submit rm -rf ${TEST_DIR}/out_detection
 
 source deactivate

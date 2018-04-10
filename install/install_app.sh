@@ -32,11 +32,6 @@ submit chmod u+x ${APP_DIR}/envs/Miniconda3-latest-Linux-x86_64.sh > /dev/null
 submit ${APP_DIR}/envs/Miniconda3-latest-Linux-x86_64.sh -bf -p ${APP_DIR}/envs/miniconda3 > /dev/null
 export PATH=${APP_DIR}/envs/miniconda3/bin:$PATH
 
-# Add channels in conda
-echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Add repositories to conda"
-submit conda config --add channels conda-forge > /dev/null
-submit conda config --add channels bioconda > /dev/null
-
 # Create environment with dependencies
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Create app environment"
 submit ${SCRIPT_DIR}/create_env.sh ${APP_DIR}/envs/miniconda3/envs/${ENV_NAME}/bin ${ENV_NAME}

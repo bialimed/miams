@@ -25,6 +25,8 @@ function submit {
 submit conda create --yes --name ${ENV_NAME} > /dev/null
 submit source activate ${ENV_NAME}
 
+submit conda config --add channels conda-forge > /dev/null
+submit conda config --add channels bioconda > /dev/null
 submit conda install --yes --quiet git > /dev/null
 submit conda install --yes --quiet make > /dev/null
 submit conda install --yes --quiet bwa==0.7.8 > /dev/null
