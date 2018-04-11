@@ -78,9 +78,9 @@ def commonSubPathes(pathes_a, pathes_b, use_basename=False):
     return out_list
 
 
-class MSI (Workflow):
+class MIAmSTag (Workflow):
     def get_description(self):
-        return "Microsatellites instability detection."
+        return "Workflow for detecting microsatellite instability by next-generation sequencing on amplicons."
 
 
     def write_log(self, log_path, version):

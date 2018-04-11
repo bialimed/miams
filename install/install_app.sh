@@ -4,7 +4,7 @@
 SCRIPT_DIR=`dirname $0`
 APP_DIR=`dirname ${SCRIPT_DIR}`
 APP_DIR=`realpath ${APP_DIR}`
-ENV_NAME="app"
+ENV_NAME="MIAmS"
 OLD_PATH=$PATH
 
 # Set utilities

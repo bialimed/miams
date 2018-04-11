@@ -3,7 +3,7 @@
 # Manage parameters
 TEST_DIR=`dirname $0`
 APP_DIR=`dirname ${TEST_DIR}`
-ENV_NAME="app"
+ENV_NAME="MIAmS"
 
 # Set utilities
 function submit {
@@ -29,7 +29,7 @@ submit mkdir -p ${TEST_DIR}/out_detection
 submit wget -q ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa.gz --directory-prefix ${TEST_DIR}/out_detection > /dev/null
 submit gzip -d ${TEST_DIR}/out_detection/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa.gz > /dev/null
 submit bwa index ${TEST_DIR}/out_detection/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa > /dev/null
-submit ${APP_DIR}/jflow/bin/jflow_cli.py msi \
+submit ${APP_DIR}/jflow/bin/jflow_cli.py miamstag \
 --R1 ${TEST_DIR}/data/instable/I17G01612_S13_L001_R1.fastq.gz \
 --R2 ${TEST_DIR}/data/instable/I17G01612_S13_L001_R2.fastq.gz \
 --R1 ${TEST_DIR}/data/stable/I17G01744_S19_L001_R1.fastq.gz \
