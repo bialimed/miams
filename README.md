@@ -118,7 +118,7 @@ This command:
 ### Launch
 The following command is the example used in installation test:
 
-    ${APP_DIR}/envs/miniconda3/bin/source activate MIAmS
+    source ${APP_DIR}/envs/miniconda3/bin/activate MIAmS
     ${APP_DIR}/jflow/bin/jflow_cli.py miamstag \
       --R1 ${APP_DIR}/test/data/instable/I17G01612_S13_L001_R1.fastq.gz \
       --R2 ${APP_DIR}/test/data/instable/I17G01612_S13_L001_R2.fastq.gz \
@@ -129,7 +129,7 @@ The following command is the example used in installation test:
       --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
       --baseline ${APP_DIR}/test/data/MSI_BASELINE.tsv \
       --output-dir ${APP_DIR}/test/out_detection
-    ${APP_DIR}/envs/miniconda3/bin/source deactivate
+    source ${APP_DIR}/envs/miniconda3/bin/deactivate
 
 Use `${APP_DIR}/jflow/bin/jflow_bin.py miamstag --help` for more information about
 parameters.
@@ -137,79 +137,63 @@ parameters.
 ### Monitor
 #### For monitoring all workflows
 
-    ${APP_DIR}/app/bin/jflow_admin.py status
+    ${APP_DIR}/jflow/bin/jflow_admin.py status
 
 This command has the following output:
 
     ID      NAME    STATUS  ELAPSED_TIME    START_TIME      END_TIME
-    000002  adivar  completed       0:14:30 Tue Sep 26 13:55:15 2017        Tue Sep 26 14:09:46 2017
-    000001  adivar  completed       0:11:02 Mon Sep 25 13:39:31 2017        Mon Sep 25 13:50:34 2017
+    000003  miamstag        failed          0:01:03 Thu Apr 12 11:24:02 2018        Thu Apr 12 11:25:05 2018
+    000002  miamstag        completed       0:01:13 Thu Apr 12 11:11:54 2018        Thu Apr 12 11:13:08 2018
+    000001  miamstag        completed       0:01:04 Wed Apr 11 17:28:41 2018        Wed Apr 11 17:29:45 2018
 
-In this example two workflows has been processed and completed without errors.
+In this example the workflows 1 and 2 have been processed and completed with
+success the workflow 3 has failed.
 
 #### For monitoring a specific workflow
 
 Use the following command:
 
-    ${APP_DIR}/jflow/bin/jflow_manager.py status \
+    ${APP_DIR}/jflow/bin/jflow_admin.py status \
       --workflow-id <YOUR_WF_ID> \
       --errors
 
 The first block of the output indicate the status and the elapsed time of the
 workflow.
 
-    Workflow #000001 (adivar) is failed, time elapsed: 0:02:16 (from Wed Dec 13 16:23:52 2017 to Wed Dec 13 16:26:09 2017)
+    Workflow #000003 (miamstag) is failed, time elapsed: 0:01:03 (from Thu Apr 12 11:24:02 2018 to Thu Apr 12 11:25:05 2018)
     Workflow Error :
-      File "/work/fescudie/test/adivar/ext/jflow/src/weaver/engine.py", line 156, in execute
-        Failed to execute DAG /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/.working/317c6658db/Makeflow using /home/fescudie/cctools/bin/makeflow:
-        Command '['/home/fescudie/cctools/bin/makeflow', 'Makeflow', '--log-verbose', '-J', '100', '-T', 'sge']' returned non-zero exit status 1
+      File "/work/fescudie/MSI/test2/msings_workflow/jflow/src/weaver/engine.py", line 156, in execute
+        Failed to execute DAG /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/.working/78f9a76eb0/Makeflow using /work/fescudie/MSI/test2/msings_workflow/envs/miniconda3/envs/MIAmS/bin/makeflow:
+        Command '['/work/fescudie/MSI/test2/msings_workflow/envs/miniconda3/envs/MIAmS/bin/makeflow', 'Makeflow', '--log-verbose', '-J', '100', '-T', 'sge']' returned non-zero exit status 1
 
 The second block details the status and the elapsed time of each components of
 the workflow. "Total" represents the number of commands defined by the component:
 a components can be composed of several commands executed on several input files.
 
     Components Status :
-      - FilterVCF.default, time elapsed 06 (total:2, waiting:0, running:0, failed:2, aborted:0, completed:0)
-      - FilterVCFOnAnnot.default, time elapsed 03 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - BAMIndex.libB, time elapsed 06 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - Coverage.libA, time elapsed 09 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - Cutadapt.R2, time elapsed 55 (total:4, waiting:0, running:0, failed:0, aborted:0, completed:4)
-      - DepthsDistribution.libB, time elapsed 07 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - AmpliVariantCalling.libA, time elapsed 59 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - Cutadapt.R1, time elapsed 52 (total:4, waiting:0, running:0, failed:0, aborted:0, completed:4)
-      - BWAmem.default, time elapsed 01:56 (total:4, waiting:0, running:0, failed:0, aborted:0, completed:4)
-      - Coverage.libB, time elapsed 10 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - VCFToTSV.default, time elapsed 00 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:0)
-      - VariantsCtrlCheck.default, time elapsed 00 (total:1, waiting:0, running:0, failed:0, aborted:0, completed:0)
-      - AmpliVariantCalling.libB, time elapsed 39 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - BAMIndex.default, time elapsed 13 (total:4, waiting:0, running:0, failed:0, aborted:0, completed:4)
-      - BAMIndex.libA, time elapsed 06 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - SortVCF.default, time elapsed 06 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - MergeVCFAmpli.default, time elapsed 06 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - AddAmpliRG.libA, time elapsed 11 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - FilterVCFOnCount.default, time elapsed 06 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - AddAmpliRG.libB, time elapsed 11 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - DepthsDistribution.libA, time elapsed 05 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - VEP.default, time elapsed 45 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
-      - ReadsStat.default, time elapsed 01:20 (total:8, waiting:0, running:0, failed:0, aborted:0, completed:8)
-      - FilterVCFAnnotOnRNA.default, time elapsed 06 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
+      - MSIMergeReports.default, time elapsed 08 (total:2, waiting:0, running:0, failed:2, aborted:0, completed:0)
+      - BAMIndex.default, time elapsed 05 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
+      - BamAreasToFastq.default, time elapsed 18 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
+      - MSINGS.default, time elapsed 16 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
+      - BWAmem.default, time elapsed 27 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
+      - CombinePairs.default, time elapsed 01:01 (total:2, waiting:0, running:0, failed:0, aborted:0, completed:2)
 
 The third block details the commands where an execution error has been detected
 (the number of command correspond to the total number of failed in second block).
 You can see the content of the .stderr file to see the error message.
 
     Failed Commands :
-      - FilterVCF.default :
-        /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/.working/317c6658db/_Stash/0/0/0/w000002A /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/FilterVCFAnnotOnRNA_default/17T033348_S3_L001_R1_001_trim.vcf /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/FilterVCF_default/17T033348_S3_L001_R1_001_trim.vcf /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/FilterVCF_default/17T033348_S3_L001_R1_001_trim.stderr
-        /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/.working/317c6658db/_Stash/0/0/0/w000002A /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/FilterVCFAnnotOnRNA_default/HORIZON_S1_L001_R1_001_trim.vcf /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/FilterVCF_default/HORIZON_S1_L001_R1_001_trim.vcf /work/fescudie/jflow/ADIVaR_dev/work/adivar/wf000001/FilterVCF_default/HORIZON_S1_L001_R1_001_trim.stderr
+      - MSIMergeReports.default :
+        /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/.working/78f9a76eb0/_Stash/0/0/0/w000000A /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSINGS_default/I17G01612_S13_L001_report.txt /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSIMergeReports_default/spl_0_comb_reports_list.tsv /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSIMergeReports_default/I17G01612_S13_L001_report_report.json /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSIMergeReports_default/I17G01612_S13_L001_report.stderr
+        /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/.working/78f9a76eb0/_Stash/0/0/0/w000000A /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSINGS_default/I17G01744_S19_L001_report.txt /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSIMergeReports_default/spl_1_comb_reports_list.tsv /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSIMergeReports_default/I17G01744_S19_L001_report_report.json /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/MSIMergeReports_default/I17G01744_S19_L001_report.stderr
 
 ### Rerun
 You can rerun failed/incomplete steps with the following command:
 
-    ${APP_DIR}/envs/miniconda3/bin/source activate MIAmS
-    ${APP_DIR}/jflow/bin/jflow_manager.py rerun \
+    source ${APP_DIR}/envs/miniconda3/bin/activate MIAmS
+    ${APP_DIR}/jflow/bin/jflow_admin.py rerun \
       --workflow-id <YOUR_WF_ID>
-    ${APP_DIR}/envs/miniconda3/bin/source deactivate
+    source ${APP_DIR}/envs/miniconda3/bin/deactivate
 
 
 ## License
@@ -219,7 +203,8 @@ You can rerun failed/incomplete steps with the following command:
 
 
 ## Authors
-* Charles Van Goethem
+* Charles Van Goethem Laboratoire de Biologie des Tumeurs Solides Hôpital Arnaud
+de Villeneuve CHU de Montpellier
 * Frédéric Escudié Laboratoire d'Anatomo-Cytopathologie de l'Institut
 Universitaire du Cancer Toulouse - Oncopole
 
