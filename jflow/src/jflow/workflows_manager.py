@@ -30,6 +30,7 @@ import jflow.utils as utils
 import jflow.concurrent_access as concurrent
 from jflow.config_reader import JFlowConfigReader
 
+
 class WorkflowsManager(object):
 
     IDS_FILE_NAME = "jflowIDs.txt"
@@ -96,11 +97,14 @@ class WorkflowsManager(object):
                                 except: pass
         return [wf_instances, wf_methodes]
 
-    def rerun_workflow(self, workflow_id):
+    def rerun_workflow(self, workflow_id, is_synchro=False):
         workflow = self.get_workflow(workflow_id)
         workflow.restart()
         # Update the workflow in the cache
         self._dump_workflows([workflow])
+        # Wait end of the workflow thread
+        if is_synchro:
+            workflow.join()
         return workflow
 
     def reset_workflow_component(self, workflow_id, component_name):
@@ -110,7 +114,7 @@ class WorkflowsManager(object):
         self._dump_workflows([workflow])
         return workflow
 
-    def run_workflow(self, workflow_class, args, function="process"):
+    def run_workflow(self, workflow_class, args, function="process", is_synchro=False):
         # Load all modules within the workflow module
         for importer, modname, ispkg in pkgutil.iter_modules(workflows.__path__, workflows.__name__ + "."):
             __import__(modname)
@@ -120,6 +124,9 @@ class WorkflowsManager(object):
         workflow.start()
         # Add the workflow dump path to the workflows dump
         self._dump_workflows([workflow])
+        # Wait end of the workflow thread
+        if is_synchro:
+            workflow.join()
         return workflow
 
     def delete_workflow(self, workflow_id):

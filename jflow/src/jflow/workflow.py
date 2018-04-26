@@ -1032,9 +1032,6 @@ class Workflow(threading.Thread):
             if self.__step is not None:
                 self._send_email()
 
-    def pre_restart(self):
-        pass
-
     def restart(self):
         """
         @summary: Reruns incompleted steps.
@@ -1046,6 +1043,9 @@ class Workflow(threading.Thread):
         self._postprocess_status = self.STATUS_PENDING
         self.pre_restart()
         self.start()
+
+    def pre_restart(self):
+        pass
 
     def get_status(self):
         """

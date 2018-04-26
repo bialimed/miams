@@ -2,17 +2,17 @@
 
 #
 # Copyright (C) 2015 INRA
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -37,11 +37,11 @@ if __name__ == '__main__':
 
     # Create a workflow manager to get access to our workflows
     wfmanager = WorkflowsManager()
-    
+
     # Create the top-level parser
     parser = JflowArgumentParser()
     subparsers = parser.add_subparsers(title='Available sub commands')
-    
+
     # Add rerun workflow availability
     sub_parser = subparsers.add_parser("rerun", help="Rerun a specific workflow")
     sub_parser.add_argument("--workflow-id", type=str, help="Which workflow should be rerun",
@@ -84,15 +84,16 @@ if __name__ == '__main__':
     sub_parser = subparsers.add_parser("tools", help="Show tools used in a workflow")
     sub_parser.add_argument("workflow_name", help="Name of the workflow")
     sub_parser.set_defaults(cmd_object="tools")
-    
-    
-    args = vars(parser.parse_args())
 
+
+    args = vars(parser.parse_args())
     if not "cmd_object" in args:
         print(parser.format_help())
         parser.exit(0, "")
     elif args["cmd_object"] == "rerun":
-        wfmanager.rerun_workflow(args["workflow_id"])
+        wf = wfmanager.rerun_workflow(args["workflow_id"], is_synchro=True)
+        if wf.get_status() == Workflow.STATUS_FAILED:
+            sys.exit(1)
     elif args["cmd_object"] == "reset":
         try:
             wfmanager.reset_workflow_component(args["workflow_id"], args["component_name"])

@@ -86,12 +86,12 @@ if __name__ == '__main__':
             sub_parser.error(e)
         except RuleIgnore:
             pass
-        wf = wfmanager.run_workflow(args["cmd_object"], args)
+        wf = wfmanager.run_workflow(args["cmd_object"], args, is_synchro=True)
         if wf.get_status() == Workflow.STATUS_FAILED:
             sys.exit(1)
 
     elif args["cmd_object"] == "rerun":
-        wf = wfmanager.rerun_workflow(args["workflow_id"])
+        wf = wfmanager.rerun_workflow(args["workflow_id"], is_synchro=True)
         if wf.get_status() == Workflow.STATUS_FAILED:
             sys.exit(1)
     elif args["cmd_object"] == "reset":
