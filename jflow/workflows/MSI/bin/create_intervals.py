@@ -32,13 +32,13 @@ def getSoftwarePath(software, expected_folder):
     """
     path = os.path.join(expected_folder, software)  # Expected path in mSINGS directory
     if not os.path.exists(path):
-        path = wich(software)  # Search in PATH
+        path = which(software)  # Search in PATH
         if path is None:
             raise Exception("The software {} cannot be found in environment.".format(software))
     return path
 
 
-def wich(software):
+def which(software):
     """
     @summary: Returns the path to the software from the PATH environment variable.
     @param software: [str] Name of the software.
@@ -47,9 +47,9 @@ def wich(software):
     soft_path = None
     PATH = os.environ.get('PATH')
     for current_folder in reversed(PATH.split(os.pathsep)):  # Reverse PATh elements to kept only the first valid folder
-        evel_path = os.path.join(current_folder, software)
+        eval_path = os.path.join(current_folder, software)
         if os.path.exists(eval_path):
-            soft_path = evel_path
+            soft_path = eval_path
     return soft_path
 
 
@@ -67,10 +67,9 @@ def process(args, log):
     if not os.path.exists(working_directory):
         os.makedirs(working_directory)
 
-    # sort bed file
+    # Sort bed file
     log.info("Start sort bed file")
     sort_output = os.path.join(working_directory, "sorted.bed")
-    fout = open(sort_output,'w')
     cmd = [
         "sort",
         "-V",
@@ -78,19 +77,20 @@ def process(args, log):
         "-k2,2n",
         args.input_bed
     ]
-    log.debug("sub-command: " + " ".join(map(str, cmd)))
-    subprocess.check_call(cmd, stdout=fout)
-    fout.close()
+    log.debug("sub-command: " + " ".join(cmd))
+    with open(sort_output, 'w') as FH_out:
+        subprocess.check_call(cmd, stdout=FH_out)
+    log.info("End sort bed file")
 
     # Making MSI intervals file
-    log.info("Making MSI intervals file")
+    log.info("Start making MSI intervals file")
     cmd = [
         msi_path,
         "formatter",
         sort_output,
         args.output
     ]
-    log.debug("sub-command: " + " ".join(map(str, cmd)))
+    log.debug("sub-command: " + " ".join(cmd))
     subprocess.check_call(cmd)
     log.info("End Making MSI intervals file")
 

@@ -45,13 +45,13 @@ def getSoftwarePath(software, expected_folder):
     """
     path = os.path.join(expected_folder, software)  # Expected path in mSINGS directory
     if not os.path.exists(path):
-        path = wich(software)  # Search in PATH
+        path = which(software)  # Search in PATH
         if path is None:
             raise Exception("The software {} cannot be found in environment.".format(software))
     return path
 
 
-def wich(software):
+def which(software):
     """
     @summary: Returns the path to the software from the PATH environment variable.
     @param software: [str] Name of the software.
@@ -83,7 +83,7 @@ def process(args, log):
         os.makedirs(working_directory)
 
     # Mpileup
-    log.info("Start samptools mpileup")
+    log.info("Start samtools mpileup")
     mpileup_output = os.path.join(working_directory, "mpileup.txt")
     cmd = [
         samtools_path,
@@ -106,7 +106,7 @@ def process(args, log):
     log.debug("sub-command: " + " ".join(map(str, cmd)))
     with open(filtered_mpileup_output, 'w') as FH_out:
         subprocess.check_call(cmd, stdout=FH_out)
-    log.info("End samptools mpileup")
+    log.info("End samtools mpileup")
 
     # Varscan
     log.info("Start Varscan readcounts")
@@ -136,7 +136,7 @@ def process(args, log):
         args.input_targets,
         "-o", tmp_output_analyzer
     ]
-    log.debug("sub-command: " + " ".join(map(str, cmd)))
+    log.debug("sub-command: " + " ".join(cmd))
     subprocess.check_call(cmd)
     log.info("End MSI analyzer")
 
@@ -189,7 +189,7 @@ class LoggerAction(argparse.Action):
 if __name__ == "__main__":
     # Manage parameters
     parser = argparse.ArgumentParser(description="Launch mSINGS analysis from one BAM file. The virtual environment of mSINGS must be activated.")
-    parser.add_argument('-j', '--java-path', default=wich("java"), help='The path to the java runtime. [Default: %(default)s]')
+    parser.add_argument('-j', '--java-path', default=which("java"), help='The path to the java runtime. [Default: %(default)s]')
     parser.add_argument('-m', '--java-mem', default=4, type=int, help='The memory allowed to java virtual machine in giga bytes. [Default: %(default)s]')
     parser.add_argument('-d', '--msings-directory', default=os.path.dirname(os.path.dirname(os.path.abspath(__file__))), help='The path to the mSINGS installation folder. [Default: %(default)s]')
     parser.add_argument('-l', '--logging-level', default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], action=LoggerAction, help='The logger level. [Default: %(default)s]')
