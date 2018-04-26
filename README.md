@@ -26,7 +26,7 @@ The application folder has the following structure:
     └── test/                           # Scripts and data to test the workflows
 
 ### 2. Configure application
-Configure resources used by the workflow in `application.properties`.
+Configure resources used by the workflow in `jflow/application.properties.tpl`.
 
 All the detail on configuration options can be find in `app/docs/jflow_advanced_configuration.html`.
 
@@ -162,9 +162,9 @@ workflow.
 
     Workflow #000003 (miamstag) is failed, time elapsed: 0:01:03 (from Thu Apr 12 11:24:02 2018 to Thu Apr 12 11:25:05 2018)
     Workflow Error :
-      File "/work/fescudie/MSI/test2/msings_workflow/jflow/src/weaver/engine.py", line 156, in execute
-        Failed to execute DAG /work/fescudie/jflow/MIAmS/work/miamstag/wf000004/.working/78f9a76eb0/Makeflow using /work/fescudie/MSI/test2/msings_workflow/envs/miniconda3/envs/MIAmS/bin/makeflow:
-        Command '['/work/fescudie/MSI/test2/msings_workflow/envs/miniconda3/envs/MIAmS/bin/makeflow', 'Makeflow', '--log-verbose', '-J', '100', '-T', 'sge']' returned non-zero exit status 1
+      File "/work/fescudie/MIAmS/test2/msings_workflow/jflow/src/weaver/engine.py", line 156, in execute
+        Failed to execute DAG /work/fescudie/jflow/MIAmS/work/miamstag/wf000003/.working/78f9a76eb0/Makeflow using /work/fescudie/MIAmS/test2/msings_workflow/envs/miniconda3/envs/MIAmS/bin/makeflow:
+        Command '['/work/fescudie/MIAmS/test2/msings_workflow/envs/miniconda3/envs/MIAmS/bin/makeflow', 'Makeflow', '--log-verbose', '-J', '100', '-T', 'sge']' returned non-zero exit status 1
 
 The second block details the status and the elapsed time of each components of
 the workflow. "Total" represents the number of commands defined by the component:

@@ -51,15 +51,15 @@ from_password =
 [storage]
 # In this section, ###USER### (if it's used) is replaced by $USER environment variable.
 # where should be written the log file
-log_file = /tmp/MSI/jflow.log
+log_file = /tmp/MIAmS/jflow.log
 # Where should the pipelines write results, should be accessible
 # by all cluster nodes
-work_directory = /tmp/MSI/work
+work_directory = /tmp/MIAmS/work
 # Where should the pipelines write temporary files, should be
 # accessible by all cluster nodes
-tmp_directory = /tmp/MSI/tmp
+tmp_directory = /tmp/MIAmS/tmp
 # Folder root for server browse files
-browse_root_dir = /tmp/MSI
+browse_root_dir = /tmp/MIAmS
 
 [softwares]
 # uncomment and set if not in the PATH
