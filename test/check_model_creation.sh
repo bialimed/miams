@@ -17,9 +17,9 @@ function submit {
 }
 
 # Clean previous install
-if [ -d ${TEST_DIR}/out_detection ]
+if [ -d ${TEST_DIR}/out_model ]
 then
-    rm -rf ${TEST_DIR}/out_detection
+    rm -rf ${TEST_DIR}/out_model
 fi
 
 # Execute msi detection test
@@ -33,17 +33,20 @@ then
     submit bwa index ${TEST_DIR}/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa > /dev/null
 fi
 
-submit ${APP_DIR}/jflow/bin/jflow_cli.py miamstag \
- --R1 ${TEST_DIR}/data/instable/I17G01612_S13_L001_R1.fastq.gz \
- --R2 ${TEST_DIR}/data/instable/I17G01612_S13_L001_R2.fastq.gz \
- --R1 ${TEST_DIR}/data/stable/I17G01744_S19_L001_R1.fastq.gz \
- --R2 ${TEST_DIR}/data/stable/I17G01744_S19_L001_R2.fastq.gz \
- --targets ${TEST_DIR}/data/msi.bed \
- --intervals ${TEST_DIR}/data/msi_intervals.tsv \
- --baseline ${TEST_DIR}/data/MSI_BASELINE.tsv \
- --genome-seq ${TEST_DIR}/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
- --output-dir ${TEST_DIR}/out_detection > /dev/null
+submit mkdir -p ${TEST_DIR}/out_detection
+submit ${APP_DIR}/envs/msings/scripts/create_intervals.py \
+  --input-bed ${APP_DIR}/test/data/msi.bed \
+  --output ${APP_DIR}/test/out_model/msi_intervals.tsv
 
-submit rm -rf ${TEST_DIR}/out_detection
+submit ${APP_DIR}/jflow/bin/jflow_cli.py miamslearn \
+  --R1 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R1.fastq.gz \
+  --R2 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R2.fastq.gz \
+  --targets ${APP_DIR}/test/data/msi.bed \
+  --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
+  --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
+  --output-baseline ${APP_DIR}/test/out_model/baseline.tsv \
+  --output-log ${APP_DIR}/test/out_model/baseline_log.txt > /dev/null
+
+submit rm -rf ${TEST_DIR}/out_model
 
 source deactivate

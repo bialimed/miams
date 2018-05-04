@@ -40,6 +40,8 @@ submit ${SCRIPT_DIR}/create_env.sh ${APP_DIR}/envs/miniconda3/envs/${ENV_NAME}/b
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Install mSINGS"
 export PATH=$OLD_PATH
 submit ${SCRIPT_DIR}/install_msings.sh ${APP_DIR}/envs
+submit cp ${APP_DIR}/jflow/workflows/MIAmS_learn/bin/create_baseline.py ${APP_DIR}/envs/msings/scripts
+submit cp ${APP_DIR}/jflow/workflows/MIAmS_learn/bin/create_intervals.py ${APP_DIR}/envs/msings/scripts
 submit cp ${APP_DIR}/jflow/workflows/MIAmS_tag/bin/run_msings.py ${APP_DIR}/envs/msings/scripts
 export PATH=${APP_DIR}/envs/miniconda3/bin:$PATH
 
@@ -50,6 +52,7 @@ sed -i "s,###APP_ENV_NAME###,${ENV_NAME},g" ${APP_DIR}/jflow/application.propert
 
 # Execute install test
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[34mINFO\033[0m] Test install"
+submit ${APP_DIR}/test/check_model_creation.sh
 submit ${APP_DIR}/test/check_detection.sh
 
 echo -e "[`date '+%Y-%m-%d %H:%M:%S'`][\e[92mSUCCESS\033[0m] Installation completed successfully"

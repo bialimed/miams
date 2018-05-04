@@ -18,16 +18,16 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.4.0'
+__version__ = '1.0.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
-__status__ = 'dev'
+__status__ = 'prod'
 
 import os
 import sys
 import json
-import time
 import shutil
-from jflow.workflow import Workflow
+
+from workflows.src.miamsWorkflows import MIAmSWf
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 LIB_DIR = os.path.join(CURRENT_DIR, "lib")
@@ -78,27 +78,14 @@ def commonSubPathes(pathes_a, pathes_b, use_basename=False):
     return out_list
 
 
-class MIAmSTag (Workflow):
+class MIAmSTag (MIAmSWf):
+    def __init__(self, *args, **kwargs):
+        super(MIAmSWf, self).__init__(*args, **kwargs)
+        self.lib_dir = LIB_DIR
+
+
     def get_description(self):
         return "Workflow for detecting microsatellite instability by next-generation sequencing on amplicons."
-
-
-    def write_log(self, log_path, version):
-        """Writes a tiny log for user.
-
-        :param log_path: Path to the log file.
-        :type log_path: str
-        :param version: Version of the workflow.
-        :type version: str
-        """
-        with open(log_path, "w") as FH_log:
-            FH_log.write(
-                "Workflow={}\n".format(self.__class__.__name__) + \
-                "Version={}\n".format(version) + \
-                "Parameters={}\n".format(" ".join(sys.argv)) + \
-                "Start_time={}\n".format(self.start_time) + \
-                "End_time={}\n".format(time.time())
-            )
 
 
     def define_parameters(self, parameters_section=None):
@@ -120,18 +107,8 @@ class MIAmSTag (Workflow):
         self.add_parameter("output_dir", "Path to the output folder.", required=True, group="Output data")
 
 
-    def pre_restart(self):
-        if "PYTHONPATH" in os.environ:
-            os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
-        else:
-            os.environ["PYTHONPATH"] = LIB_DIR
-
-
     def pre_process(self):
-        if "PYTHONPATH" in os.environ:
-            os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + LIB_DIR
-        else:
-            os.environ["PYTHONPATH"] = LIB_DIR
+        super(MIAmSWf, self)
         try:
             self.samples_names = [getLibNameFromReadsPath(str(elt)) for elt in self.R1]
         except:

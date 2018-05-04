@@ -113,8 +113,44 @@ This command:
 * writes the final configuration (jflow/application.properties) from your template
 * checks the installation by running workflows on a small dataset
 
+## Prepare analysis
+MIAmS is mainly based on [mSINGS](https://bitbucket.org/uwlabmed/msings). This
+software works in 3 steps:
 
-## Workflow management
+* Convert a BED describing loci to an interval format.
+* Learn from many stable samples the standard distribution of InDel size by loci.
+This step create a model used in following analyses.
+* Find MSI status by comparison between InDel profile in sample and InDel
+profile in model.
+
+The two first steps described below should be proceed once contrary to to the
+third described in *Workflows management* that must be processed for each analysis.
+
+### Convert BED to interval
+
+    ${APP_DIR}/envs/msings/scripts/ \
+      --input-bed ${APP_DIR}/test/data/msi.bed \
+      --output ${APP_DIR}/test/out_model/msi_intervals.tsv
+
+### Build stable MSI reference model with *MIAmS Learn*
+The following command must be used on large number of stable samples coming from
+your laboratory. Take in mind the sentence of mSINGS's authors: "_Baseline statistics
+vary markedly from assay-to-assay and lab-to-lab. It is CRITICAL that you prepare
+a baseline file that is specific for your analytic process, and for which data
+have been generated using the same protocols._"
+
+    source ${APP_DIR}/envs/miniconda3/bin/activate MIAmS
+    ${APP_DIR}/jflow/bin/jflow_cli.py miamslearn \
+      --R1 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R1.fastq.gz \
+      --R2 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R2.fastq.gz \
+      --targets ${APP_DIR}/test/data/msi.bed \
+      --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
+      --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
+      --output-baseline ${APP_DIR}/test/out_model/baseline.tsv \
+      --output-log ${APP_DIR}/test/out_model/baseline_log.txt
+    source ${APP_DIR}/envs/miniconda3/bin/deactivate
+
+## Workflows management
 ### Launch
 The following command is the example used in installation test:
 
@@ -125,7 +161,7 @@ The following command is the example used in installation test:
       --R1 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R1.fastq.gz \
       --R2 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R2.fastq.gz \
       --targets ${APP_DIR}/test/data/msi.bed \
-      --genome-seq ${APP_DIR}/test/out_detection/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
+      --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
       --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
       --baseline ${APP_DIR}/test/data/MSI_BASELINE.tsv \
       --output-dir ${APP_DIR}/test/out_detection

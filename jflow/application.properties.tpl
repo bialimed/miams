@@ -65,6 +65,7 @@ browse_root_dir = /tmp/MIAmS
 # uncomment and set if not in the PATH
 java = ###APP_FOLDER###/envs/miniconda3/envs/###APP_ENV_NAME###/bin/java
 run_msings.py = ###APP_FOLDER###/envs/msings/scripts/run_msings.py
+create_baseline.py = ###APP_FOLDER###/envs/msings/scripts/create_baseline.py
 msings_venv = ###APP_FOLDER###/envs/msings/msings-env/bin/python
 
 [resources]
