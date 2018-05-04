@@ -1,13 +1,26 @@
 #!/usr/bin/env python2.7
 #
-# Copyright (C) 2018
+# Copyright (C) 2018 IUCT-O
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
 
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018'
 __license__ = 'Academic License Agreement'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -181,7 +194,9 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--logging-level', default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], action=LoggerAction, help='The logger level. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
-    group_input.add_argument('-a', '--inputs-aln', required=True, nargs='+', help="The pathes of alignment file to evaluate (format: BAM). All BAMs must be ordered by coordinates and indexed.")
+    group_input_exclusive = group_input.add_mutually_exclusive_group(required=True)
+    group_input_exclusive.add_argument('-a', '--inputs-aln', nargs='+', help="The pathes of alignment file to evaluate (format: BAM). All BAMs must be ordered by coordinates and indexed.")
+    group_input_exclusive.add_argument('-f', '--input-list', help="The path of the file listing the alignment files pathes (format: txt). All BAMs must be ordered by coordinates and indexed.")
     group_input.add_argument('-g', '--input-genome', required=True, help="Reference used to generate alignment file.(format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.")
     group_input.add_argument('-i', '--input-intervals', required=True, help="MSI interval file (format: TSV). See mSINGS create_intervals script.")
     group_input.add_argument('-t', '--input-targets', required=True, help="The locations of the microsatellite tracts of interest (format: BED). This file must be sorted numerically and must not have a header line.")
@@ -195,5 +210,9 @@ if __name__ == "__main__":
     log.setLevel(args.logging_level)
     log.info("Start mSINGS")
     log.info("Command: " + " ".join(sys.argv))
+    if args.input_list is not None:
+        with open(args.input_list) as FH_in:
+            args.inputs_aln = [elt.strip() for elt in FH_in.readlines() if elt != ""]
+    log.info(args.inputs_aln)
     process(args, log)
     log.info("End mSINGS")
