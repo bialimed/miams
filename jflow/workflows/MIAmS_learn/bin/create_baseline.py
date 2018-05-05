@@ -213,6 +213,5 @@ if __name__ == "__main__":
     if args.input_list is not None:
         with open(args.input_list) as FH_in:
             args.inputs_aln = [elt.strip() for elt in FH_in.readlines() if elt != ""]
-    log.info(args.inputs_aln)
     process(args, log)
     log.info("End mSINGS")
