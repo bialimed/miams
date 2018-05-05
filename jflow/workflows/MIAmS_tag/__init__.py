@@ -80,7 +80,7 @@ def commonSubPathes(pathes_a, pathes_b, use_basename=False):
 
 class MIAmSTag (MIAmSWf):
     def __init__(self, *args, **kwargs):
-        super(MIAmSWf, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.lib_dir = LIB_DIR
 
 
@@ -108,7 +108,7 @@ class MIAmSTag (MIAmSWf):
 
 
     def pre_process(self):
-        super(MIAmSWf, self)
+        super().pre_process()
         try:
             self.samples_names = [getLibNameFromReadsPath(str(elt)) for elt in self.R1]
         except:

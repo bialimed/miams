@@ -78,6 +78,7 @@ msings_venv = ###APP_FOLDER###/envs/msings/msings-env/bin/python
 # BWAmem.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
 # Cutadapt.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
 # MSINGS.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
+# MSINGSBaseline.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
 # MSIMergeReports.batch_options = -V -l h_vmem=3G -l mem=3G -q normal
 
 # Set workflows group

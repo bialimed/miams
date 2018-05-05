@@ -35,7 +35,7 @@ sys.path.append(LIB_DIR)
 
 class MIAmSLearn (MIAmSWf):
     def __init__(self, *args, **kwargs):
-        super(MIAmSWf, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.lib_dir = LIB_DIR
 
 
