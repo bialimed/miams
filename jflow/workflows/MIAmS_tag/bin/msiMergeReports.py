@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -61,10 +61,13 @@ def process(args):
     msings_report = CountMSI(args.input_msings_result)
     if len(msings_report.samples) != 1:
         raise Exception("Only one sample must be reported in {}.".format(args.input_msings_result))
-    if len(msings_report.loci) != len(final_metrics["loci"]):
-        raise Exception('The number of loci in "{}" and in "{}" are inconsistent.'.format(args.input_msings_result, args.input_combined_list))
     spl_name = list(msings_report.samples.keys())[0]
     msings_spl = msings_report.samples[spl_name]
+    for curr_locus in final_metrics["loci"]:  # Add status unknown on loci without reads in msings_report (mSINGS does not write line in his report for this locus)
+        if curr_locus not in msings_spl.loci:
+            msings_spl.loci[curr_locus] = None
+    if len(msings_report.loci) != len(final_metrics["loci"]):
+        raise Exception('The number of loci in "{}" and in "{}" are inconsistent.'.format(args.input_msings_result, args.input_combined_list))
     final_metrics["sample"] = {
         "name": msings_spl.name,
         "score": msings_spl.score,
