@@ -128,7 +128,7 @@ third described in *Workflows management* that must be processed for each analys
 
 ### Convert BED to interval
 
-    ${APP_DIR}/envs/msings/scripts/ \
+    ${APP_DIR}/envs/msings/scripts/create_intervals.py \
       --input-bed ${APP_DIR}/test/data/msi.bed \
       --output ${APP_DIR}/test/out_model/msi_intervals.tsv
 
