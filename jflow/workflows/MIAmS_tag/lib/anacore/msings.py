@@ -102,9 +102,9 @@ class CountMSI(object):
 
     def _parseFileHandle(self, FH):
         # Parse general information
-        samples = [elt.strip() for elt in FH.readline().split("\t")][1:]
-        nb_unstable = [int(elt.strip()) for elt in FH.readline().split("\t")][1:]
-        nb_evaluated = [int(elt.strip()) for elt in FH.readline().split("\t")][1:]
+        samples = [elt.strip() for elt in FH.readline().split("\t")[1:]]
+        nb_unstable = [int(elt.strip()) for elt in FH.readline().split("\t")[1:]]
+        nb_evaluated = [int(elt.strip()) for elt in FH.readline().split("\t")[1:]]
         line = FH.readline()
         if not line.startswith("msing_score"):
             scores = [None for curr_spl in samples]
