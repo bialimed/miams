@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -40,7 +40,7 @@ class BamAreasToFastq (Component):
         self.add_input_file_list("aln", "Pathes to alignment files (format: BAM).", default=aln, required=True)
         self.add_input_file_list("R1", "The path to the inputted reads file (format: fastq). If this option and the option R2 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).", default=R1)
         self.add_input_file_list("R2", "The path to the inputted reads file (format: fastq). If this option and the option R1 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).", default=R2)
-        self.add_input_file("targets", "The locations of areas to extract (format: BED).", default=targets, required=True)
+        self.add_input_file("targets", "The locations of areas to extract (format: BED). The position of the interests areas are extracted from column 7 (thickStart) and column 8 (thickEnd) if they exist otherwise they are extracted from column 2 (Start) and column 3 (End).", default=targets, required=True)
         if len(self.R1) != len(self.R2):
             raise Exception("R1 and R2 list must have the same length.")
         if not self.split_targets:
@@ -90,7 +90,7 @@ class BamAreasToFastq (Component):
                 names.append(curr_area.name)
         uniq_names = set([elt for elt in names if elt is not None])
         if len(names) != len(uniq_names):
-            raise Exception('With option "split_targets" all the regions in {} must have an uniq name.'.format(in_targets))
+            raise Exception('With option "split_targets" all the regions in {} must have an uniq name.'.format(self.targets))
         return names
 
 
@@ -98,7 +98,8 @@ class BamAreasToFastq (Component):
         with BEDIO(self.targets) as FH_in:
             for curr_area in FH_in:
                 curr_out = os.path.join(self.output_directory, curr_area.name.replace(" ", "_") + ".bed")
-                with BEDIO(curr_out, "w", write_nb_col=4) as FH_out:
+                nb_col = 4 if curr_area.thickStart is None or curr_area.thickEnd is None else 8  # 8 for amplicons with ZOI
+                with BEDIO(curr_out, "w", write_nb_col=nb_col) as FH_out:
                     FH_out.write(curr_area)
 
 

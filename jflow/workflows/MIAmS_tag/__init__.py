@@ -89,6 +89,8 @@ class MIAmSTag (MIAmSWf):
 
 
     def define_parameters(self, parameters_section=None):
+        self.add_parameter("min_zoi_overlap", "A reads pair is selected for combine method only if this number of nucleotides of the target are covered by the each read.", default=12, type=int, group="Combine reads method")
+
         # Cleaning
         self.add_input_file("R1_end_adapter", "Path to sequence file containing the start of Illumina P7 adapter (format: fasta). This sequence is trimmed from the end of R1 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
         self.add_input_file("R2_end_adapter", "Path to sequence file containing the start of reverse complemented Illumina P5 adapter ((format: fasta). This sequence is trimmed from the end of R2 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
@@ -134,7 +136,7 @@ class MIAmSTag (MIAmSWf):
         msings = self.add_component("MSINGS", [idx_aln.out_aln, self.targets, self.intervals, self.baseline, self.genome_seq])
 
         # Retrieve size profile for each MSI
-        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, 20, True, cleaned_R1, cleaned_R2])
+        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, 0.25, 20])
 
         # Report

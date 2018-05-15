@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -83,7 +83,11 @@ def bam2PairedFastq(aln_path, R1_path, R2_path, selected_areas, min_len_on_area=
                     selected_in_area = dict()
                     for read in FH_sam.fetch(curr_area.reference.name, curr_area.start, curr_area.end):
                         if read.reference_start and read.reference_end:  # Skip reads with a mapping score but no information on alignment (CIGAR=*)
-                            len_on_area = min(read.reference_end, curr_area.end) - max(read.reference_start, curr_area.start)  # Deletions decrease this value
+                            len_on_area = None
+                            if curr_area.thickStart is None or curr_area.thickEnd is None:
+                                len_on_area = read.get_overlap(curr_area.start, curr_area.end)
+                            else:
+                                len_on_area = read.get_overlap(curr_area.thickStart, curr_area.thickEnd)
                             if len_on_area > min_len_on_area:
                                 read_id = read.query_name
                                 read_phase = "R2" if read.is_read2 else "R1"
@@ -136,7 +140,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-a', '--input-aln', required=True, help='The path to the alignment file (format: BAM).')
-    group_input.add_argument('-t', '--input-targets', required=True, help='The path to the targets file (format: BED).')
+    group_input.add_argument('-t', '--input-targets', required=True, help='The path to the targets file (format: BED). The position of the interests areas are extracted from column 7 (thickStart) and column 8 (thickEnd) if they exist otherwise they are extracted from column 2 (Start) and column 3 (End).')
     group_input.add_argument('-i1', '--input-R1', help='The path to the inputted reads file (format: fastq). If this option and the option --input-R2 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).')
     group_input.add_argument('-i2', '--input-R2', help='The path to the inputted reads file (format: fastq). If this option and the option --input-R1 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).')
     group_output = parser.add_argument_group('Outputs')  # Outputs
