@@ -103,7 +103,7 @@ function drawSizeGraph( container_id, data, pre_zoom_min=null, pre_zoom_max=null
 				zoomType: "x",
                 events: {
                     load: function(){
-                        if(pre_zoom_min != null || pre_zoom_max != 0){
+                        if(pre_zoom_min != null || pre_zoom_max != null){
                             this.xAxis[0].setExtremes(pre_zoom_min, pre_zoom_max)
                             this.showResetZoom()
                         }
@@ -143,22 +143,34 @@ function drawSizeGraph( container_id, data, pre_zoom_min=null, pre_zoom_max=null
 }
 
 function drawTable( container_id, data ){
-    $("#" + container_id + " tbody tr").remove()
-	const loci_ids = Object.keys(data).sort()
-	loci_ids.forEach(function (key) {
-		const locus = data[key]
-		const status = (locus["is_stable"] == null ? "unknown" : (locus["is_stable"] ? "stable" : "instable"))
-		const nb_pairs_combined = locus["pairs_combination"]["nb_pairs"]
-		$("#" + container_id + " tbody").append(
-			"<tr>" +
-				"<td>" + locus["position"] + "</td>" +
-				"<td>" + locus["name"] + "</td>" +
-				'<td class="sticker status-' + status + '">' + status + "</td>" +
-				"<td>" + locus["nb_pairs"] + "</td>" +
-				"<td>" + (nb_pairs_combined*100/locus["nb_pairs"]).toFixed(2) + "</td>" +
-			"</tr>"
-		)
-	});
-	$("#" + container_id).removeClass("d-none");
-	$("#" + container_id).DataTable();
+    // Prepare data
+    const loci_ids = Object.keys(data).sort()
+    let rows_data = new Array()
+    loci_ids.forEach(function (key) {
+        const locus = data[key]
+        const status = (locus["is_stable"] == null ? "unknown" : (locus["is_stable"] ? "stable" : "instable"))
+        const nb_pairs_combined = locus["pairs_combination"]["nb_pairs"]
+        rows_data.push([
+            locus["position"],
+            locus["name"],
+            status,
+            locus["nb_pairs"],
+            (nb_pairs_combined*100/locus["nb_pairs"]).toFixed(2)
+        ])
+    });
+    // Create/Clear datatable
+    $("#" + container_id).removeClass("d-none")
+    let datatable = $("#" + container_id).DataTable()
+    datatable.clear()
+    // Add data
+    datatable.rows.add(rows_data)
+    // Add class on status cells
+    datatable.columns(2).nodes()
+        .flatten()
+        .to$()
+        .each( function (idx, td) {
+            td.className = 'sticker status-' + td.textContent
+        })
+    // Draw
+    datatable.draw()
 }
