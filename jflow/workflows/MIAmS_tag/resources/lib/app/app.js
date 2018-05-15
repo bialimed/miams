@@ -124,10 +124,21 @@ function drawSizeGraph( container_id, data, pre_zoom_min=null, pre_zoom_max=null
 					text: "Nb amplicons"
 				}
 			},
-			tooltip: {
-				headerFormat: '<b>{series.name}</b><br />',
-				pointFormat: '<b>{point.x}nt</b>: <b>{point.y}</b> amplicons'
-			},
+            tooltip: {
+                crosshairs: [true],
+                shared: true,
+                formatter: function() {
+                    let lines = ['Nb amplicons for <b>' + this.points[0].x + 'nt</b>:']
+                    $.each(this.points, function(idx, point) {
+                        lines.push(
+                            '<b><span style="color:' + point.series.color + '">' + point.series.name + '</b></span>' +
+                            ': ' +
+                            '<b>' + point.y + '</b>'
+                        )
+                    });
+                    return lines.join('<br />')
+                }
+            },
 			credits: {
 				enabled: false
 			},
