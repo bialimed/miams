@@ -123,11 +123,11 @@ class MIAmSTag (MIAmSWf):
         # Clean reads
         cleaned_R1 = self.R1
         if self.R1_end_adapter != None:
-            clean_R1 = self.add_component("Cutadapt", ["a", self.R1_end_adapter, self.R1, None, 0.01, 10], component_prefix="R1")
+            clean_R1 = self.add_component("Cutadapt", ["a", self.R1_end_adapter, self.R1, None, 0.1, 11], component_prefix="R1")
             cleaned_R1 = clean_R1.out_R1
         cleaned_R2 = self.R2
         if self.R2_end_adapter != None:
-            clean_R2 = self.add_component("Cutadapt", ["a", self.R2_end_adapter, self.R2, None, 0.01, 10], component_prefix="R2")
+            clean_R2 = self.add_component("Cutadapt", ["a", self.R2_end_adapter, self.R2, None, 0.1, 11], component_prefix="R2")
             cleaned_R2 = clean_R2.out_R1
 
         # Align reads
