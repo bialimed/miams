@@ -18,89 +18,93 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.2'
+__version__ = '1.1.0'
 __email__ = 'frederic.escudie@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import gzip
+from copy import deepcopy
 from anacore.abstractFile import isGzip
+from anacore.sv import HashedSVIO
+from anacore.msi import MSILocus, LocusRes, MSISample, MSISplRes, Status
 
 
-class MsingsSample:
-    def __init__(self, name, score, is_stable, loci=None):
+class MSINGSAnalysis(HashedSVIO):
+    """Manage output file produced by the command "msi analyzer" of mSINGS (https://bitbucket.org/uwlabmed/msings)."""
+
+    def __init__(self, filepath, mode="r"):
         """
-        @param name: [str] Name of the sample.
-        @param score: [float] Score of the MSI.
-        @param is_stable: [bool] True if the sample is stable.
-        @param loci: [dict] The stability status by locus (with True the locus is stable).
+        Return the new instance of MSINGSAnalysis.
+
+        :param filepath: The filepath.
+        :type filepath: str
+        :param mode: Mode to open the file ('r', 'w', 'a').
+        :type mode: str
         """
-        self.name = name
-        self.score = score
-        self.is_stable = is_stable
-        self.loci = dict() if loci is None else loci
+        super().__init__(filepath, mode, "\t", "")
 
-
-    def getNbUnstable(self):
+    def _parseLine(self):
         """
-        @summary: Returns the number of instable loci for the sample.
-        @return: [int] The number of instable loci.
+        Return a structured record from the current line.
+
+        :return: The record described by the current line.
+        :rtype: dict
         """
-        nb_unstable = 0
-        for locus, is_stable in self.loci.items():
-            if is_stable is not None and not is_stable:
-                nb_unstable += 1
-        return nb_unstable
+        record = super()._parseLine()
+        peaks = record["IndelLength:AlleleFraction:SupportingCalls"].split(" ")
+        if len(peaks) == 1 and peaks[0] == "0:0.0:0":
+            peaks = []
+        else:
+            for idx, curr_peak in enumerate(peaks):
+                indel_length, AF, DP = curr_peak.split(":")
+                peaks[idx] = {
+                    "indel_length": int(indel_length),
+                    "AF": float(AF),
+                    "DP": int(DP)
+                }
+        record.pop("IndelLength:AlleleFraction:SupportingCalls", None)
+        record["Peaks"] = peaks
+        return record
 
-
-    def getNbStable(self):
+    def recordToLine(self, record):
         """
-        @summary: Returns the number of stable loci for the sample.
-        @return: [int] The number of stable loci.
+        Return the record in SV format.
+
+        :param record: The record to process.
+        :type record: dict
+        :return: The SV line corresponding to the record.
+        :rtype: str
         """
-        nb_stable = 0
-        for locus, is_stable in self.loci.items():
-            if is_stable is not None and is_stable:
-                nb_stable += 1
-        return nb_stable
+        formatted_record = deepcopy(record)
+        formatted_record["IndelLength:AlleleFraction:SupportingCalls"] = " ".join(
+            ["{}:{}:{}".format(curr_peak["indel_length"], curr_peak["AF"], curr_peak["DP"]) for curr_peak in record["Peaks"]]
+        )
+        return super.recordToLine(formatted_record)
 
 
-    def getNbUsable(self):
-        """
-        @summary: Returns the number of loci usable in MSI evaluation for the sample.
-        @return: [int] The number of instable loci.
-        """
-        nb_usable = 0
-        for locus, is_stable in self.loci.items():
-            if is_stable is not None:
-                nb_usable += 1
-        return nb_usable
-
-
-    def getNbLoci(self):
-        """
-        @summary: Returns the number of loci in the sample.
-        @return: [int] The number of loci.
-        """
-        return len(self.loci)
-
-
-class CountMSI(object):
-    """
-    @summary: Manage output file produced by the command "msi count_msi_samples"
-    of mSINGS (https://bitbucket.org/uwlabmed/msings).
-    """
+class MSINGSReport(object):
+    """Manage output file produced by the command "msi count_msi_samples" of mSINGS (https://bitbucket.org/uwlabmed/msings)."""
 
     def __init__(self, filepath):
         """
-        @param filepath: [str] The filepath.
+        Return the new instance of MSINGSReport.
+
+        :param filepath: The filepath.
+        :type filepath: str
         """
         self.filepath = filepath
         self.samples = dict()
         self.loci = list()
+        self.method_name = "MSINGS"
         self.parse()
 
-
     def _parseFileHandle(self, FH):
+        """
+        Parse file referenced by the file handle FH and store information in self.
+
+        :param FH: The file handle for the filepath.
+        :type FH: TextIOWrapper
+        """
         # Parse general information
         samples = [elt.strip() for elt in FH.readline().split("\t")[1:]]
         nb_unstable = [int(elt.strip()) for elt in FH.readline().split("\t")[1:]]
@@ -118,15 +122,16 @@ class CountMSI(object):
             line = FH.readline()  # To next line
         status = [elt.strip() for elt in line.split("\t")][1:]
         for idx, elt in enumerate(status):
-            is_stable = None
+            curr_status = Status.undetermined
             if nb_evaluated[idx] > 0:
                 if elt == "NEG":
-                    is_stable = True
+                    curr_status = Status.stable
                 elif elt == "POS":
-                    is_stable = False
-            status[idx] = is_stable
+                    curr_status = Status.instable
+            status[idx] = curr_status
         for spl_idx, curr_spl in enumerate(samples):
-            self.samples[curr_spl] = MsingsSample(curr_spl, scores[spl_idx], status[spl_idx])
+            spl_res = MSISplRes(status[spl_idx], self.method_name, scores[spl_idx])
+            self.samples[curr_spl] = MSISample(curr_spl, None, {self.method_name: spl_res})
         # Parse loci information
         for curr_line in FH:
             fields = [elt.strip() for elt in curr_line.split("\t")]
@@ -134,15 +139,19 @@ class CountMSI(object):
             self.loci.append(curr_locus)
             for idx, curr_val in enumerate(fields[1:]):
                 curr_spl = samples[idx]
+                loci_res = None
                 if curr_val == "":
-                    self.samples[curr_spl].loci[curr_locus] = None
+                    loci_res = LocusRes(Status.undetermined)
                 elif curr_val == "1":
-                    self.samples[curr_spl].loci[curr_locus] = False
+                    loci_res = LocusRes(Status.instable)
                 else:
-                    self.samples[curr_spl].loci[curr_locus] = True
-
+                    loci_res = LocusRes(Status.stable)
+                self.samples[curr_spl].addLocus(
+                    MSILocus(curr_locus, None, {self.method_name: loci_res})
+                )
 
     def parse(self):
+        """Parse file and store information in self."""
         if isGzip(self.filepath):
             with gzip.open(self.filepath, "rt") as FH:
                 self._parseFileHandle(FH)

@@ -38,6 +38,7 @@ submit ${APP_DIR}/jflow/bin/jflow_cli.py miamstag \
  --R2 ${TEST_DIR}/data/instable/I17G01612_S13_L001_R2.fastq.gz \
  --R1 ${TEST_DIR}/data/stable/I17G01744_S19_L001_R1.fastq.gz \
  --R2 ${TEST_DIR}/data/stable/I17G01744_S19_L001_R2.fastq.gz \
+ --models ${TEST_DIR}/data/models.json \
  --targets ${TEST_DIR}/data/msi.bed \
  --intervals ${TEST_DIR}/data/msi_intervals.tsv \
  --baseline ${TEST_DIR}/data/MSI_BASELINE.tsv \

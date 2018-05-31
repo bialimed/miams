@@ -45,17 +45,17 @@ def writeReport(combined, R1, out_report):
     report = {
         "nb_combined_pairs": 0,
         "nb_uncombined_pairs": 0,
-        "nb_by_lengths": dict()
+        "nb_by_length": dict()
     }
     # Get nb combined and lengths distribution
     with FastqIO(combined) as FH_comb:
         for record in FH_comb:
             report["nb_combined_pairs"] += 1
             curr_len = len(record.string)
-            if curr_len not in report["nb_by_lengths"]:
-                report["nb_by_lengths"][curr_len] = 1
+            if curr_len not in report["nb_by_length"]:
+                report["nb_by_length"][curr_len] = 1
             else:
-                report["nb_by_lengths"][curr_len] += 1
+                report["nb_by_length"][curr_len] += 1
     # Get nb uncombined
     nb_total_pairs = 0
     with FastqIO(R1) as FH_R1:

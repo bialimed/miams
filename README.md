@@ -143,6 +143,7 @@ have been generated using the same protocols._"
     ${APP_DIR}/jflow/bin/jflow_cli.py miamslearn \
       --R1 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R1.fastq.gz \
       --R2 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R2.fastq.gz \
+      --models ${APP_DIR}/test/data/models.json \
       --targets ${APP_DIR}/test/data/msi.bed \
       --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
       --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
@@ -160,6 +161,7 @@ The following command is the example used in installation test:
       --R2 ${APP_DIR}/test/data/instable/I17G01612_S13_L001_R2.fastq.gz \
       --R1 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R1.fastq.gz \
       --R2 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R2.fastq.gz \
+      --models ${APP_DIR}/test/data/models.json \
       --targets ${APP_DIR}/test/data/msi.bed \
       --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
       --intervals ${APP_DIR}/test/data/msi_intervals.tsv \

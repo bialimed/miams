@@ -89,6 +89,7 @@ class MIAmSTag (MIAmSWf):
 
 
     def define_parameters(self, parameters_section=None):
+        # Combine reads method
         self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
         self.add_parameter("min_pair_overlap", "The minimum required overlap length between two reads in pair to provide a confident overlap.", default=20, type=int, group="Combine reads method")
         self.add_parameter("min_zoi_overlap", "A reads pair is selected for combine method only if this number of nucleotides of the target are covered by the each read.", default=12, type=int, group="Combine reads method")
@@ -105,6 +106,7 @@ class MIAmSTag (MIAmSWf):
         self.add_input_file("targets", "The locations of the microsatellite of interest (format: BED). This file must be sorted numerically and must not have a header line.", required=True, group="Inputs design")
         self.add_input_file("intervals", "MSI intervals file (format: TSV). See mSINGS create_intervals script.", required=True, group="Inputs design")
         self.add_input_file("baseline", "Path to the MSI baseline file generated for your analytic process on data generated using the same protocols (format: TSV). This file describes the average and standard deviation of the number of expected signal peaks at each locus, as calculated from an MSI negative population (blood samples or MSI negative tumors). See mSINGS create_baseline script.", required=True, group="Inputs design")
+        self.add_input_file("models", "Path to the file generated for your analytic process on data generated using the same protocols (format: JSON). This file describes the lengths distribution for each locus for samples tagged as MSI and samples tagged as MSS. See MIAmSLearn.", required=True, group="Inputs design")
         self.add_input_file("genome_seq", "Path to the reference used to generate alignment files (format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.", required=True, file_format="fasta", group="Inputs design")
 
         # Outputs data
@@ -140,13 +142,15 @@ class MIAmSTag (MIAmSWf):
         # Retrieve size profile for each MSI
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, self.max_mismatch_ratio, self.min_pair_overlap])
+        msias = self.add_component("TagMSIAmplSize", [combine.out_report, self.targets, self.models, self.samples_names, 200])
 
         # Report
-        self.reports_cmpt = self.add_component("MSIMergeReports", [combine.out_report, msings.report, self.targets])
+        self.reports_cmpt = self.add_component("MSIMergeReports", [msias.out_report, msings.aggreg_report])
 
 
     def post_process(self):
-        if not os.path.exists(self.output_dir): os.mkdir(self.output_dir)
+        if not os.path.exists(self.output_dir):
+            os.mkdir(self.output_dir)
 
         # User log
         log_file = os.path.join(self.output_dir, self.__class__.__name__ + "_log.txt")
@@ -154,7 +158,8 @@ class MIAmSTag (MIAmSWf):
 
         # Copy data
         data_folder = os.path.join(self.output_dir, "data")
-        if not os.path.exists(data_folder): os.mkdir(data_folder)
+        if not os.path.exists(data_folder):
+            os.mkdir(data_folder)
         for curr_res in self.reports_cmpt.out_report:
             filename = os.path.basename(curr_res)
             shutil.copy(curr_res, os.path.join(data_folder, filename))
@@ -163,14 +168,15 @@ class MIAmSTag (MIAmSWf):
         wf_src_path = os.path.dirname(os.path.realpath(__file__))
         web_lib_path = os.path.join(wf_src_path, "resources", "lib")
         out_lib = os.path.join(self.output_dir, "lib")
-        if os.path.exists(out_lib): shutil.rmtree(out_lib)
+        if os.path.exists(out_lib):
+            shutil.rmtree(out_lib)
         shutil.copytree(web_lib_path, out_lib)
 
         # Get results
         results_by_sample = {}
         for curr_spl, curr_res in zip(self.samples_names, self.reports_cmpt.out_report):
             with open(curr_res) as FH_in:
-                results_by_sample[curr_spl] = json.load(FH_in)
+                results_by_sample[curr_spl] = json.load(FH_in)[0]
 
         # Write report
         template_path = os.path.join(wf_src_path, "resources", "report.html")

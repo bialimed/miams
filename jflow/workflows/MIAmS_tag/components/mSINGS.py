@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -45,10 +45,16 @@ class MSINGS (Component):
 
         # Output Files
         self.add_output_file_list("report", "Pathes to the output files containing status for the sample and the evaluated loci (format: TSV).", pattern='{basename_woext}_report.txt', items=self.aln)
-        self.add_output_file_list("analyzer", "Pathes to the output files containing the profiles of evaluated loci (format: TSV).", pattern='{basename_woext}_analyzer.txt', items=self.aln)
-        self.add_output_file_list("stderr", "Pathes to the stderr files (format: txt).", pattern='{basename_woext}.stderr', items=self.aln)
+        self.add_output_file_list("analysis", "Pathes to the output files containing the profiles of evaluated loci (format: TSV).", pattern='{basename_woext}_analysis.txt', items=self.aln)
+        self.add_output_file_list("aggreg_report", "Pathes to the output files containing status for the sample and the evaluated loci and the data used (format: JSON).", pattern='{basename_woext}_report.json', items=self.aln)
+        self.add_output_file_list("msings_stderr", "Pathes to the stderr files of mSINGS (format: txt).", pattern='{basename_woext}_msings.stderr', items=self.aln)
+        self.add_output_file_list("rename_stderr", "Pathes to the stderr files of the rename step (format: txt).", pattern='{basename_woext}_rename.stderr', items=self.aln)
+        self.add_output_file_list("aggreg_stderr", "Pathes to the stderr files of the aggregation step (format: txt).", pattern='{basename_woext}_aggreg.stderr', items=self.aln)
 
     def process(self):
+        tmp_report = [curr_path + ".tmp" for curr_path in self.report]
+
+        # Process mSINGS
         cmd = self.get_exec_path("msings_venv") + " " + self.get_exec_path("run_msings.py") + \
             " --java-path " + self.get_exec_path("java") + \
             " --java-mem " + str(self.java_mem) + \
@@ -64,4 +70,22 @@ class MSINGS (Component):
             " --output-report $3 " + \
             " 2> $4"
         msings_fct = ShellFunction(cmd, cmd_format='{EXE} {IN} {OUT}')
-        MultiMap(msings_fct, inputs=[self.aln], outputs=[self.analyzer, self.report, self.stderr], includes=[self.genome, self.intervals, self.baseline, self.targets])
+        MultiMap(msings_fct, inputs=[self.aln], outputs=[self.analysis, tmp_report, self.msings_stderr], includes=[self.genome, self.intervals, self.baseline, self.targets])
+
+        # Remove suffix in samples names
+        cmd = self.get_exec_path("sed") + \
+            " -e 's/_analysis//'" + \
+            " $1" + \
+            " > $2" + \
+            " 2> $3"
+        rename_fct = ShellFunction(cmd, cmd_format='{EXE} {IN} {OUT}')
+        MultiMap(rename_fct, inputs=[tmp_report], outputs=[self.report, self.rename_stderr])
+
+        # Aggregate report and analysis
+        cmd = self.get_exec_path("mSINGSToReport.py") + \
+            " --input-report $1 " + \
+            " --input-analysis $2 " + \
+            " --output $3 " + \
+            " 2> $4"
+        convert_fct = ShellFunction(cmd, cmd_format='{EXE} {IN} {OUT}')
+        MultiMap(convert_fct, inputs=[self.report, self.analysis], outputs=[self.aggreg_report, self.aggreg_stderr])
