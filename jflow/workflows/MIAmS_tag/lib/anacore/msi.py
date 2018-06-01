@@ -376,53 +376,61 @@ class PairsCombiProcessor:
                 spl.loci[self.locus_id].results["PairsCombi"].score = res_by_spl[spl.name].score
 
     def getSplRes(self):
-        # Get status by model spl
-        status_by_model_spl = dict()
-        for spl in self.models:
-            status_by_model_spl[spl.name] = spl.loci[self.locus_id].results["Expected"].status
-        # Get clusters fro dendrogram
-        clusters = self.getClusters()
-        cluster_by_spl = {spl: 0 for spl in clusters[0]}
-        for spl in clusters[1]:
-            cluster_by_spl[spl] = 1
-        count_status_by_clstr = {
-            0: {Status.instable: 0, Status.stable: 0},
-            1: {Status.instable: 0, Status.stable: 0}
-        }
-        for spl_name, spl_status in status_by_model_spl.items():
-            if spl_name in cluster_by_spl:
-                clstr_id = cluster_by_spl[spl_name]
-                count_status_by_clstr[clstr_id][spl_status] += 1
-        # Select MSI and MSS clusters
-        count_clstr_0 = count_status_by_clstr[0]
-        count_clstr_1 = count_status_by_clstr[1]
-        clstr_MSS_id = 0 if count_clstr_0[Status.stable] >= count_clstr_1[Status.stable] else 1
-        clstr_MSI_id = 0 if count_clstr_0[Status.instable] >= count_clstr_1[Status.instable] else 1
-        clstr_MSS = count_status_by_clstr[clstr_MSS_id]
-        clstr_MSI = count_status_by_clstr[clstr_MSI_id]
-        # Tag evaluated samples
-        nb_expected_MSS = sum([1 for spl, status in status_by_model_spl.items() if status == Status.stable and spl in cluster_by_spl])
-        nb_expected_MSI = sum([1 for spl, status in status_by_model_spl.items() if status == Status.instable and spl in cluster_by_spl])
         res_by_spl = {}
-        if clstr_MSS_id == clstr_MSI_id or \
-           clstr_MSS[Status.stable] + clstr_MSI[Status.stable] < 2 or \
-           clstr_MSS[Status.instable] + clstr_MSI[Status.instable] < 2 or \
-           clstr_MSS[Status.stable] / nb_expected_MSS < self.param["dendro_valid_ratio"] or \
-           clstr_MSI[Status.instable] / nb_expected_MSI < self.param["dendro_valid_ratio"]:
-            for spl, clstr_id in cluster_by_spl.items():
-                res_by_spl[spl] = LocusRes.fromDict({
-                    "status": Status.undetermined,
-                    "score": None
-                })
-        else:
-            for spl, clstr_id in cluster_by_spl.items():
-                res_by_spl[spl] = LocusRes.fromDict({
-                    "status": Status.stable if clstr_id == clstr_MSS_id else Status.instable,
-                    "score": round(
-                        (clstr_MSS[Status.stable] / nb_expected_MSS + clstr_MSI[Status.instable] / nb_expected_MSI) / 2,  # ######################## Manque la prise en compte de la distance
-                        5
-                    )
-                })
+        for spl in self.evaluated:
+            res_by_spl[spl.name] = LocusRes.fromDict({
+                "status": Status.undetermined,
+                "score": None
+            })
+        nb_valid_eval = 0
+        nb_valid_models = 0
+        for curr_eval in self.evaluated:
+            if curr_eval.loci[self.locus_id].results["PairsCombi"].getNbPairs() >= self.param["min_pairs"]:
+                nb_valid_eval += 1
+        for curr_model in self.models:
+            if curr_model.loci[self.locus_id].results["PairsCombi"].getNbPairs() >= self.param["min_pairs"]:
+                nb_valid_models += 1
+        if nb_valid_eval > 0 and nb_valid_models > 4:
+            # Get status by model spl
+            status_by_model_spl = dict()
+            for spl in self.models:
+                status_by_model_spl[spl.name] = spl.loci[self.locus_id].results["Expected"].status
+            # Get clusters fro dendrogram
+            clusters = self.getClusters()
+            cluster_by_spl = {spl: 0 for spl in clusters[0]}
+            for spl in clusters[1]:
+                cluster_by_spl[spl] = 1
+            count_status_by_clstr = {
+                0: {Status.instable: 0, Status.stable: 0},
+                1: {Status.instable: 0, Status.stable: 0}
+            }
+            for spl_name, spl_status in status_by_model_spl.items():
+                if spl_name in cluster_by_spl:
+                    clstr_id = cluster_by_spl[spl_name]
+                    count_status_by_clstr[clstr_id][spl_status] += 1
+            # Select MSI and MSS clusters
+            count_clstr_0 = count_status_by_clstr[0]
+            count_clstr_1 = count_status_by_clstr[1]
+            clstr_MSS_id = 0 if count_clstr_0[Status.stable] >= count_clstr_1[Status.stable] else 1
+            clstr_MSI_id = 0 if count_clstr_0[Status.instable] >= count_clstr_1[Status.instable] else 1
+            clstr_MSS = count_status_by_clstr[clstr_MSS_id]
+            clstr_MSI = count_status_by_clstr[clstr_MSI_id]
+            # Tag evaluated samples
+            nb_expected_MSS = sum([1 for spl, status in status_by_model_spl.items() if status == Status.stable and spl in cluster_by_spl])
+            nb_expected_MSI = sum([1 for spl, status in status_by_model_spl.items() if status == Status.instable and spl in cluster_by_spl])
+            if clstr_MSS_id != clstr_MSI_id and \
+               clstr_MSS[Status.stable] + clstr_MSI[Status.stable] >= 2 and \
+               clstr_MSS[Status.instable] + clstr_MSI[Status.instable] >= 2 and \
+               clstr_MSS[Status.stable] / nb_expected_MSS >= self.param["dendro_valid_ratio"] and \
+               clstr_MSI[Status.instable] / nb_expected_MSI >= self.param["dendro_valid_ratio"]:
+                for spl, clstr_id in cluster_by_spl.items():
+                    res_by_spl[spl] = LocusRes.fromDict({
+                        "status": Status.stable if clstr_id == clstr_MSS_id else Status.instable,
+                        "score": round(
+                            (clstr_MSS[Status.stable] / nb_expected_MSS + clstr_MSI[Status.instable] / nb_expected_MSI) / 2,  # ######################## Manque la prise en compte de la distance
+                            5
+                        )
+                    })
         return res_by_spl
 
 

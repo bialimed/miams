@@ -192,7 +192,7 @@ success the workflow 3 has failed.
 Use the following command:
 
     ${APP_DIR}/jflow/bin/jflow_admin.py status \
-      --workflow-id <YOUR_WF_ID> \
+      --workflow-id ${YOUR_WF_ID} \
       --errors
 
 The first block of the output indicate the status and the elapsed time of the
@@ -230,7 +230,7 @@ You can rerun failed/incomplete steps with the following command:
 
     source ${APP_DIR}/envs/miniconda3/bin/activate MIAmS
     ${APP_DIR}/jflow/bin/jflow_admin.py rerun \
-      --workflow-id <YOUR_WF_ID>
+      --workflow-id ${YOUR_WF_ID}
     source ${APP_DIR}/envs/miniconda3/bin/deactivate
 
 

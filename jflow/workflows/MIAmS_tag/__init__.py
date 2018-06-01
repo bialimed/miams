@@ -34,10 +34,40 @@ LIB_DIR = os.path.join(CURRENT_DIR, "lib")
 sys.path.append(LIB_DIR)
 
 from anacore.illumina import getLibNameFromReadsPath
+from anacore.msi import MSIReport, Status
+
+
+def getHigherPeakByLocus(models, min_reads_support):
+    """
+    Returns length of the higher peak of each model by locus.
+
+    :param models: The list of MSIReport representing the models (status known and stored in Expected result).
+    :type models: list
+    :param min_reads_support: The minimum number of reads on locus to use the stability status of the current model.
+    :type min_reads_support: int
+    :return: By locus the list of higher peak length.
+    :rtype
+    """
+    higher_by_locus = {}
+    models_samples = MSIReport.parse(models)
+    for curr_spl in models_samples:
+        for locus_id, curr_locus in curr_spl.loci.items():
+            if locus_id not in higher_by_locus:
+                higher_by_locus[locus_id] = []
+            if curr_locus.results["Expected"].status == Status.stable and curr_locus.results["PairsCombi"].getNbPairs() > (min_reads_support / 2):
+                max_peak = None
+                max_count = -1
+                for length, count in curr_locus.results["PairsCombi"].data["nb_by_length"].items():
+                    if count >= max_count:  # "=" for select the tallest
+                        max_count = count
+                        max_peak = int(length)
+                higher_by_locus[locus_id].append(max_peak)
+    return higher_by_locus
 
 
 def commonSubStr(str_a, str_b):
-    """Returns the longer common substring from the left of the two strings.
+    """
+    Returns the longer common substring from the left of the two strings.
 
     :param str_a: The first string to process.
     :type str_a: str
@@ -57,7 +87,8 @@ def commonSubStr(str_a, str_b):
 
 
 def commonSubPathes(pathes_a, pathes_b, use_basename=False):
-    """Returns the longer common substring from the left of the two strings.
+    """
+    Returns the longer common substring from the left of the two strings.
 
     :param pathes_a: The first string to process.
     :type pathes_a: list
@@ -89,6 +120,8 @@ class MIAmSTag (MIAmSWf):
 
 
     def define_parameters(self, parameters_section=None):
+        self.add_parameter("min_reads_support", "The minimum number of reads on locus for analyse the stability status of this locus in this sample.", default=300, type=int, group="Classification parameters")
+
         # Combine reads method
         self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
         self.add_parameter("min_pair_overlap", "The minimum required overlap length between two reads in pair to provide a confident overlap.", default=20, type=int, group="Combine reads method")
@@ -142,7 +175,7 @@ class MIAmSTag (MIAmSWf):
         # Retrieve size profile for each MSI
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, self.max_mismatch_ratio, self.min_pair_overlap])
-        msias = self.add_component("TagMSIAmplSize", [combine.out_report, self.targets, self.models, self.samples_names, 200])
+        msias = self.add_component("TagMSIAmplSize", [combine.out_report, self.targets, self.models, self.samples_names, self.min_reads_support/2])
 
         # Report
         self.reports_cmpt = self.add_component("MSIMergeReports", [msias.out_report, msings.aggreg_report])
@@ -179,6 +212,7 @@ class MIAmSTag (MIAmSWf):
                 results_by_sample[curr_spl] = json.load(FH_in)[0]
 
         # Write report
+        higher_peak_by_locus = getHigherPeakByLocus(self.models, self.min_reads_support)
         template_path = os.path.join(wf_src_path, "resources", "report.html")
         report_path = os.path.join(self.output_dir, "report.html")
         with open(report_path, "w") as FH_output:
@@ -186,4 +220,6 @@ class MIAmSTag (MIAmSWf):
                 for line in FH_template:
                     if "= ##DATA##" in line:
                         line = line.replace("##DATA##", json.dumps(results_by_sample))
+                    elif "= ##MODELS_HIGHER_PEAK##" in line:
+                        line = line.replace("##MODELS_HIGHER_PEAK##", json.dumps(higher_peak_by_locus))
                     FH_output.write(line)

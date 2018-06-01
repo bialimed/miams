@@ -51,7 +51,7 @@ def process(args):
             else:
                 msi_spl.addLocus(
                     MSILocus.fromDict({
-                        "pos": record["Position"],
+                        "position": record["Position"],
                         "name": record["Name"],
                         "results": {
                             "MSINGS": {

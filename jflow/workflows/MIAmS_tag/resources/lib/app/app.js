@@ -23,9 +23,9 @@ String.prototype.capitalize = function() {
 };
 
 
-function selectSample( spl_data, methods, pre_zoom_min=null, pre_zoom_max=null ){
+function selectSample( spl_data, methods, models_peaks_by_locus=null, pre_zoom_min=null, pre_zoom_max=null ){
 	fillSample('sample-summary', spl_data, "PairsCombi")
-	drawSizeGraph('length-graph', spl_data.loci, "PairsCombi", pre_zoom_min, pre_zoom_max)
+	drawSizeGraph('length-graph', spl_data.loci, "PairsCombi", models_peaks_by_locus, pre_zoom_min, pre_zoom_max)
 	drawTable('nb-seq-table', spl_data.loci, methods)
 }
 
@@ -76,9 +76,25 @@ function fillSample( container_id, data, method ){
 	)
 }
 
-function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_max=null ){
+function ntile(data, step, nb_shunk=100){
+    const sorted_data = data.sort(sortNumber)
+    let data_idx = null
+    let percentile_value = null
+    if( step == 0 ){
+        percentile_value = sorted_data[0]
+    } else if( step == nb_shunk ){
+        percentile_value = sorted_data[data.length - 1]
+    } else {
+        const data_idx = Math.ceil((step * sorted_data.length)/nb_shunk) - 1
+        percentile_value = sorted_data[data_idx]
+    }
+    return percentile_value
+}
+
+function drawSizeGraph( container_id, data, method, models_peaks_by_locus=null, pre_zoom_min=null, pre_zoom_max=null ){
 	// Transforms data to series
 	let series = []
+	let loci_idx = 0
 	const loci_ids = Object.keys(data).sort()
 	loci_ids.forEach(function (key) {
 		const locus = data[key]
@@ -91,8 +107,45 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
 		})
 		series.push({
 			"name": locus.name,
-			"data": series_data
-		})
+			"data": series_data,
+            "zIndex": 1,
+            "colorIndex": loci_idx
+        })
+        if( models_peaks_by_locus != null ){
+            const locus_peaks = models_peaks_by_locus[locus["position"]]
+            series.push({
+                "name": locus["name"] + " models higher peaks percentiles",
+                "type": 'area',
+                "linkedTo": ':previous',
+                "fillOpacity": 0.3,
+                "zIndex": 0,
+                "colorIndex": loci_idx,
+                "enableMouseTracking": false,
+                "marker": {
+                    enabled: false
+                },
+                "data": [
+                    [ntile(locus_peaks, 0), 0],
+                    [ntile(locus_peaks, 10), -50],
+                    [ntile(locus_peaks, 90), -50],
+                    [ntile(locus_peaks, 100), 0]
+                ]
+            })
+            series.push({
+                "name": locus["name"] + " models higher peaks median",
+                "type": 'column',
+                "linkedTo": ':previous',
+                "zIndex": 0,
+                "colorIndex": loci_idx,
+                "borderColor": null,
+                "enableMouseTracking": false,
+                "marker": {
+                    enabled: false
+                },
+                "data": [[ntile(locus_peaks, 50), -50]]
+            })
+        }
+        loci_idx += 1
 	})
 	// Draws graph
 	Highcharts.chart(
