@@ -23,9 +23,9 @@ String.prototype.capitalize = function() {
 };
 
 
-function selectSample( spl_data, methods, models_peaks_by_locus=null, pre_zoom_min=null, pre_zoom_max=null ){
+function selectSample( spl_data, methods, pre_zoom_min=null, pre_zoom_max=null ){
 	fillSample('sample-summary', spl_data, "PairsCombi")
-	drawSizeGraph('length-graph', spl_data.loci, "PairsCombi", models_peaks_by_locus, pre_zoom_min, pre_zoom_max)
+	drawSizeGraph('length-graph', spl_data.loci, "PairsCombi", pre_zoom_min, pre_zoom_max)
 	drawTable('nb-seq-table', spl_data.loci, methods)
 }
 
@@ -91,10 +91,30 @@ function ntile(data, step, nb_shunk=100){
     return percentile_value
 }
 
-function drawSizeGraph( container_id, data, method, models_peaks_by_locus=null, pre_zoom_min=null, pre_zoom_max=null ){
+function addMethodsInTable(methods){
+	methods.forEach(function (curr_method) {
+		const header_row = $("#nb-seq-table thead tr")
+		header_row.append("<th>" + curr_method + " nb reads</th>")
+		header_row.append("<th>" + curr_method + " score</th>")
+		header_row.append("<th>" + curr_method + " status</th>")
+	})
+}
+
+function getLocusIdByName(data_by_spl){
+	let locus_id_by_name = {}
+	for(let spl_id in data_by_spl){
+		const spl = data_by_spl[spl_id]
+		for(let locus_id in spl.loci){
+			const locus_name = spl.loci[locus_id].name
+			locus_id_by_name[locus_name] = locus_id
+		}
+	}
+	return locus_id_by_name
+}
+
+function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_max=null ){
 	// Transforms data to series
 	let series = []
-	let loci_idx = 0
 	const loci_ids = Object.keys(data).sort()
 	loci_ids.forEach(function (key) {
 		const locus = data[key]
@@ -108,45 +128,9 @@ function drawSizeGraph( container_id, data, method, models_peaks_by_locus=null, 
 		series.push({
 			"name": locus.name,
 			"data": series_data,
-            "zIndex": 1,
-            "colorIndex": loci_idx
+            "zIndex": 1
         })
-        if( models_peaks_by_locus != null ){
-            const locus_peaks = models_peaks_by_locus[locus["position"]]
-            series.push({
-                "name": locus["name"] + " models higher peaks percentiles",
-                "type": 'area',
-                "linkedTo": ':previous',
-                "fillOpacity": 0.3,
-                "zIndex": 0,
-                "colorIndex": loci_idx,
-                "enableMouseTracking": false,
-                "marker": {
-                    enabled: false
-                },
-                "data": [
-                    [ntile(locus_peaks, 0), 0],
-                    [ntile(locus_peaks, 10), -50],
-                    [ntile(locus_peaks, 90), -50],
-                    [ntile(locus_peaks, 100), 0]
-                ]
-            })
-            series.push({
-                "name": locus["name"] + " models higher peaks median",
-                "type": 'column',
-                "linkedTo": ':previous',
-                "zIndex": 0,
-                "colorIndex": loci_idx,
-                "borderColor": null,
-                "enableMouseTracking": false,
-                "marker": {
-                    enabled: false
-                },
-                "data": [[ntile(locus_peaks, 50), -50]]
-            })
-        }
-        loci_idx += 1
-	})
+    })
 	// Draws graph
 	Highcharts.chart(
 		container_id,
@@ -165,6 +149,44 @@ function drawSizeGraph( container_id, data, method, models_peaks_by_locus=null, 
 			},
 			title: {
 				text: 'Fragments lengths'
+			},
+			plotOptions: {
+				series: {
+					events: {
+						afterAnimate: function(evt){
+							const locus_id = locus_id_by_name[evt.target.name]
+							const locus_peaks = models_peaks_by_locus[locus_id]
+							if(locus_peaks.length != 0){
+								this.chart.xAxis[0].addPlotBand({
+									"from": ntile(locus_peaks, 0),
+									"to": ntile(locus_peaks, 100),
+									"color": evt.target.color,
+									"className": "max-interval",
+									"id": "models_peak_" + evt.target.name
+								})
+							}
+						},
+						hide: function (evt) {
+							this.chart.xAxis[0].removePlotBand(
+								"models_peak_" + evt.target.name
+							)
+						},
+						show: function (evt) {
+							const locus_id = locus_id_by_name[evt.target.name]
+							const locus_peaks = models_peaks_by_locus[locus_id]
+							if(locus_peaks.length != 0){
+								this.chart.xAxis[0].addPlotBand({
+									"from": ntile(locus_peaks, 0),
+									"to": ntile(locus_peaks, 100),
+									"color": evt.target.color,
+									"className": "max-interval",
+									"id": "models_peak_" + evt.target.name
+								})
+							}
+						}
+					}
+
+				}
 			},
 			xAxis: {
 				tickInterval: 1,

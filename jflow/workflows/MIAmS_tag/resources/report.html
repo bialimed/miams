@@ -88,20 +88,16 @@
 		</div>
 		<script type="text/javascript">
 			const methods = ["MSINGS", "PairsCombi"]
-			methods.forEach(function (curr_method) {
-				const header_row = $("#nb-seq-table thead tr")
-				header_row.append("<th>" + curr_method + " nb reads</th>")
-				header_row.append("<th>" + curr_method + " score</th>")
-				header_row.append("<th>" + curr_method + " status</th>")
-			})
 			const data_by_spl = ##DATA##
 			const models_peaks_by_locus = ##MODELS_HIGHER_PEAK##
+			const locus_id_by_name = getLocusIdByName(data_by_spl)
+			addMethodsInTable(methods)
 			let select_spl = $("#selected-spl")
 			Object.keys(data_by_spl).sort().forEach(function( curr_path ){
 				select_spl.append(new Option(curr_path, curr_path))
 			})
 			$('.selectpicker').selectpicker()
-			selectSample(data_by_spl[select_spl.val()], methods, models_peaks_by_locus)
+			selectSample(data_by_spl[select_spl.val()], methods)
 			navButtonUpdate(select_spl)
 
 			// Events
@@ -109,7 +105,7 @@
 				const select_spl = $("#selected-spl")
 				try {
 					$("#user-alert").addClass("d-none")
-					selectSample(data_by_spl[select_spl.val()], methods, models_peaks_by_locus)
+					selectSample(data_by_spl[select_spl.val()], methods)
 					navButtonUpdate(select_spl)
 				} catch(error) {
 					$("#user-alert").text('Error when loading data.')

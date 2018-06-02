@@ -121,3 +121,6 @@
 	margin-right: auto;
 	width: 300px;
 }
+.highcharts-plot-band.max-interval {
+	opacity: 0.25
+}
