@@ -33,7 +33,7 @@ submit conda install --yes --quiet bwa==0.7.8 > /dev/null
 submit conda install --yes --quiet samtools==1.8 > /dev/null
 submit conda install --yes --quiet cutadapt==1.9.1 > /dev/null
 submit conda install --yes --quiet scipy==1.0.1 > /dev/null
-submit conda install --yes --quiet scikit-sklearn==0.19.1 > /dev/null
+submit conda install --yes --quiet scikit-learn==0.19.1 > /dev/null
 submit conda install --yes --quiet cherrypy==14.0.1 > /dev/null
 submit conda install --yes --quiet pysam==0.14.1 > /dev/null
 submit conda install --yes --quiet openjdk==8.0.152 > /dev/null
