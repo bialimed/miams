@@ -122,5 +122,6 @@
 	width: 300px;
 }
 .highcharts-plot-band.max-interval {
-	opacity: 0.25
-}
+	opacity: 0.25;
+	animation: opac 0.8s;
+}@keyframes opac{from{opacity: 0} to {opacity:0.25}}
