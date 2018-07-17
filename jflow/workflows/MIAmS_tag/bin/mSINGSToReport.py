@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -48,6 +48,7 @@ def process(args):
                 msi_spl.loci[record["Position"]].name = record["Name"]
                 msi_spl.loci[record["Position"]].results["MSINGS"].data["std_dev"] = record["Standard_Deviation"]
                 msi_spl.loci[record["Position"]].results["MSINGS"].data["peaks"] = record["Peaks"]
+                msi_spl.loci[record["Position"]].results["MSINGS"].data["nb_peaks"] = record["Number_of_Peaks"]
             else:
                 msi_spl.addLocus(
                     MSILocus.fromDict({
@@ -58,7 +59,8 @@ def process(args):
                                 "status": Status.undetermined,
                                 "data": {
                                     "std_dev": record["Standard_Deviation"],
-                                    "peaks": record["Peaks"]
+                                    "peaks": record["Peaks"],
+                                    "nb_peaks": record["Number_of_Peaks"]
                                 }
                             }
                         }
