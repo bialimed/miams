@@ -19,13 +19,13 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import argparse
-from anacore.msi import MSILocus, MSIReport
-from anacore.msings import MSINGSAnalysis, MSINGSReport, Status
+from anacore.msi import MSIReport
+from anacore.msings import MSINGSAnalysis, MSINGSReport
 
 
 ########################################################################
@@ -35,7 +35,7 @@ from anacore.msings import MSINGSAnalysis, MSINGSReport, Status
 ########################################################################
 def process(args):
     """
-    Aggregates report and analysis information coming from mSINGS in serialisation of anacore.msi.MSISAmple object.
+    Aggregate report and analysis information coming from mSINGS in serialisation of anacore.msi.MSISAmple object.
 
     :param args: The namespace extracted from the script arguments.
     :type args: Namespace
@@ -44,28 +44,11 @@ def process(args):
     msi_spl = list(MSINGSReport(args.input_report).samples.values())[0]
     with MSINGSAnalysis(args.input_analysis) as FH_analysis:
         for record in FH_analysis:
-            if record["Position"] in msi_spl.loci:
-                msi_spl.loci[record["Position"]].name = record["Name"]
-                msi_spl.loci[record["Position"]].results["MSINGS"].data["std_dev"] = record["Standard_Deviation"]
-                msi_spl.loci[record["Position"]].results["MSINGS"].data["peaks"] = record["Peaks"]
-                msi_spl.loci[record["Position"]].results["MSINGS"].data["nb_peaks"] = record["Number_of_Peaks"]
+            if record.position in msi_spl.loci:
+                msi_spl.loci[record.position].name = record.name
+                msi_spl.loci[record.position].results["MSINGS"] = record.results["MSINGS"]
             else:
-                msi_spl.addLocus(
-                    MSILocus.fromDict({
-                        "position": record["Position"],
-                        "name": record["Name"],
-                        "results": {
-                            "MSINGS": {
-                                "status": Status.undetermined,
-                                "data": {
-                                    "std_dev": record["Standard_Deviation"],
-                                    "peaks": record["Peaks"],
-                                    "nb_peaks": record["Number_of_Peaks"]
-                                }
-                            }
-                        }
-                    })
-                )
+                msi_spl.addLocus(record)
     # Write report
     MSIReport.write([msi_spl], args.output_report)
 
