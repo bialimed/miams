@@ -21,7 +21,7 @@ cd ${INSTALL_DIR} && \
 git clone https://github.com/cooperative-computing-lab/cctools.git && \
 cd cctools && \
 git checkout release/${SOFT_VERSION} && \
-./configure --prefix ./build && \
+./configure --prefix ./build --without-system-sand --without-system-apps --without-system-allpairs --without-system-wavefront --without-system-ftp-lite --without-system-chirp --without-system-grow --without-system-umbrella --without-system-parrot --without-system-doc --without-system-prune --without-system-resource_monitor && \
 make install && \
 cd ${USER_PWD} && \
 mv ${INSTALL_DIR}/cctools/build/bin/makeflow ${INSTALL_DIR} && \
