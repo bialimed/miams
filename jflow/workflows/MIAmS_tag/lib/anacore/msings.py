@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 __email__ = 'frederic.escudie@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -27,6 +27,28 @@ from copy import deepcopy
 from anacore.abstractFile import isGzip
 from anacore.sv import HashedSVIO
 from anacore.msi import MSILocus, LocusRes, MSISample, MSISplRes, Status
+
+
+def locusResToAnalysisRecord(locus_id, locus_name, locus_res):
+    """
+    Return a dict corresponding to a MSINGSAnalysis record.
+
+    :param locus_id: The position of the locus chr:start-end (start is 0-based).
+    :type locus_id: str
+    :param locus_name: The name of the locus.
+    :type locus_id: str
+    :param locus_res: The result of mSINGS analysis for the locus.
+    :type locus_res: LocusRes
+    """
+    analysis_record = {
+        "Position": locus_id,
+        "Name": locus_name,
+        "Average_Depth": sum([curr_peak["DP"] for curr_peak in locus_res.data["peaks"]]),
+        "Number_of_Peaks": locus_res.data["nb_peaks"],
+        "Standard_Deviation": locus_res.data["std_dev"],
+        "peaks": locus_res.data["peaks"],
+    }
+    return analysis_record
 
 
 class MSINGSAnalysis(HashedSVIO):
@@ -42,6 +64,8 @@ class MSINGSAnalysis(HashedSVIO):
         :type mode: str
         """
         super().__init__(filepath, mode, "\t", "")
+        if mode == "w":
+            self.titles = ["Position", "Name", "Average_Depth", "Number_of_Peaks", "Standard_Deviation", "IndelLength:AlleleFraction:SupportingCalls"]
 
     def _parseLine(self):
         """
@@ -63,7 +87,7 @@ class MSINGSAnalysis(HashedSVIO):
                     "DP": int(DP)
                 }
         record.pop("IndelLength:AlleleFraction:SupportingCalls", None)
-        record["Peaks"] = peaks
+        record["peaks"] = peaks
         return record
 
     def recordToLine(self, record):
@@ -71,15 +95,20 @@ class MSINGSAnalysis(HashedSVIO):
         Return the record in SV format.
 
         :param record: The record to process.
-        :type record: dict
+        :type record: dict or MSILocus
         :return: The SV line corresponding to the record.
         :rtype: str
         """
-        formatted_record = deepcopy(record)
+        formatted_record = None
+        if issubclass(record.__class__, MSILocus):
+            formatted_record = locusResToAnalysisRecord(record.position, record.name, record.results["MSINGS"])
+        else:
+            formatted_record = deepcopy(record)
         formatted_record["IndelLength:AlleleFraction:SupportingCalls"] = " ".join(
-            ["{}:{}:{}".format(curr_peak["indel_length"], curr_peak["AF"], curr_peak["DP"]) for curr_peak in record["Peaks"]]
+            ["{}:{}:{}".format(curr_peak["indel_length"], curr_peak["AF"], curr_peak["DP"]) for curr_peak in formatted_record["peaks"]]
         )
-        return super.recordToLine(formatted_record)
+        formatted_record.pop("peaks", None)
+        return super().recordToLine(formatted_record)
 
 
 class MSINGSReport(object):
