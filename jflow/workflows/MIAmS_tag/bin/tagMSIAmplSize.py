@@ -26,7 +26,7 @@ __status__ = 'prod'
 import os
 import json
 import argparse
-from anacore.msi import MSILocus, MSISample, PairsCombiProcessor, MSIReport
+from anacore.msi import Status, MSILocus, MSISample, PairsCombiProcessor, MSIReport
 from anacore.sv import HashedSVIO
 
 
@@ -54,11 +54,12 @@ def process(args):
             with open(record["Filepath"]) as FH_locus:
                 locus_metrics = json.load(FH_locus)
             msi_locus = MSILocus.fromDict({
-                "name": record["Target"],
-                "position": record["Locus"],
+                "name": record["Locus_name"],
+                "position": record["Locus_position"],
                 "results": {
                     "PairsCombi": {
-                        "status": None,
+                        "_class": "LocusResPairsCombi",
+                        "status": Status.none,
                         "data": {
                             "nb_by_length": locus_metrics["nb_by_length"],
                             "nb_pairs_aligned": locus_metrics["nb_uncombined_pairs"] + locus_metrics["nb_combined_pairs"]

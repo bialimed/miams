@@ -54,7 +54,7 @@ def getHigherPeakByLocus(models, min_reads_support):
         for locus_id, curr_locus in curr_spl.loci.items():
             if locus_id not in higher_by_locus:
                 higher_by_locus[locus_id] = []
-            if curr_locus.results["Expected"].status == Status.stable and curr_locus.results["PairsCombi"].getNbPairs() > (min_reads_support / 2):
+            if curr_locus.results["Expected"].status == Status.stable and curr_locus.results["PairsCombi"].getNbFrag() > (min_reads_support / 2):
                 max_peak = None
                 max_count = -1
                 for length, count in curr_locus.results["PairsCombi"].data["nb_by_length"].items():

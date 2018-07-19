@@ -26,6 +26,11 @@ class Status:
     undetermined = "Undetermined"
     none = None
 
+    @staticmethod
+    def authorizedValues():
+        """Return the values authorized for stability status."""
+        return [attr_value for attr_name, attr_value in Status.__dict__.items() if attr_name != "authorizedValues" and not attr_name.startswith("__")]
+
 
 class MSILocus:
     """Manage a locus of a microsatellite (name, position and stability status)."""
@@ -44,13 +49,18 @@ class MSILocus:
             raise Exception('The result with method "{}" already exist for MSILocus "{}".'.format(method_name, self.position))
         self.results[method_name] = method
 
+    def delMethod(self, method_id):
+        self.results.pop(method_id, None)
+
     @staticmethod
     def fromDict(data):
         cleaned_data = deepcopy(data)
         if "results" in data:
             for method, result in data["results"].items():
-                if method == "PairsCombi":
+                if "_class" in result and result["_class"] == "LocusResPairsCombi":
                     cleaned_data["results"][method] = LocusResPairsCombi.fromDict(result)
+                elif "_class" in result and result["_class"] == "LocusResDistrib":
+                    cleaned_data["results"][method] = LocusResDistrib.fromDict(result)
                 else:
                     cleaned_data["results"][method] = LocusRes.fromDict(result)
         return MSILocus(**cleaned_data)
@@ -60,6 +70,7 @@ class LocusRes:
     """Manage the stability status for an anlysis of a locus."""
 
     def __init__(self, status, score=None, data=None):
+        self._class = "LocusRes"
         self.status = status
         self.score = score
         self.data = {} if data is None else data
@@ -67,13 +78,19 @@ class LocusRes:
     @staticmethod
     def fromDict(data):
         cleaned_data = deepcopy(data)
+        if "_class" in cleaned_data:
+            cleaned_data.pop("_class", None)
         return LocusRes(**cleaned_data)
 
 
-class LocusResPairsCombi(LocusRes):
-    """Manage the stability status for an anlysis PairsCombi of a locus."""
+class LocusResDistrib(LocusRes):
+    """Manage the stability status for an anlysis of a locus containing the count by length."""
 
-    def getNbPairs(self):
+    def __init__(self, status, score=None, data=None):
+        super().__init__(status, score, data)
+        self._class = "LocusResDistrib"
+
+    def getCount(self):
         return sum(list(self.data["nb_by_length"].values()))
 
     def getMinLength(self):
@@ -83,7 +100,7 @@ class LocusResPairsCombi(LocusRes):
         return max([int(elt) for elt in self.data["nb_by_length"]])
 
     def getDensePrct(self, start=None, end=None):
-        nb_pairs = self.getNbPairs()
+        nb_pairs = self.getCount()
         dense_prct = list()
         for curr_count in self.getDenseCount(start, end):
             prct = None
@@ -108,6 +125,26 @@ class LocusResPairsCombi(LocusRes):
     @staticmethod
     def fromDict(data):
         cleaned_data = deepcopy(data)
+        if "_class" in cleaned_data:
+            cleaned_data.pop("_class", None)
+        return LocusResDistrib(**cleaned_data)
+
+
+class LocusResPairsCombi(LocusResDistrib):
+    """Manage the stability status for an anlysis after reads pair combination of a locus."""
+
+    def __init__(self, status, score=None, data=None):
+        super().__init__(status, score, data)
+        self._class = "LocusResPairsCombi"
+
+    def getNbFrag(self):
+        return self.getCount()
+
+    @staticmethod
+    def fromDict(data):
+        cleaned_data = deepcopy(data)
+        if "_class" in cleaned_data:
+            cleaned_data.pop("_class", None)
         return LocusResPairsCombi(**cleaned_data)
 
 
@@ -144,6 +181,13 @@ class MSISample:
         if locus.__class__.__name__ != "MSILocus":
             raise Exception('The class "{}" cannot be used as locus for MSISample.'.format(locus.__class__.__name__))
         self.loci[locus.position] = locus
+
+    def delLoci(self, locus_ids):
+        for locus_id in locus_ids:
+            self.delLocus(locus_id)
+
+    def delLocus(self, locus_id):
+        self.loci.pop(locus_id, None)
 
     def _getStatusByMethod(self, method):
         status = list()
@@ -303,7 +347,7 @@ class PairsCombiProcessor:
         min_length = math.inf
         max_length = -1
         for curr_spl in self.models + self.evaluated:
-            if curr_spl.loci[self.locus_id].results["PairsCombi"].getNbPairs() >= self.param["min_pairs"]:
+            if curr_spl.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
                 min_length = min(
                     min_length,
                     curr_spl.loci[self.locus_id].results["PairsCombi"].getMinLength()
@@ -313,7 +357,7 @@ class PairsCombiProcessor:
                     curr_spl.loci[self.locus_id].results["PairsCombi"].getMaxLength()
                 )
         for curr_spl in self.models + self.evaluated:
-            if curr_spl.loci[self.locus_id].results["PairsCombi"].getNbPairs() >= self.param["min_pairs"]:
+            if curr_spl.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
                 self._used_samples.append(curr_spl.name)
                 prct_matrix.append(
                     curr_spl.loci[self.locus_id].results["PairsCombi"].getDensePrct(min_length, max_length)
@@ -385,10 +429,10 @@ class PairsCombiProcessor:
         nb_valid_eval = 0
         nb_valid_models = 0
         for curr_eval in self.evaluated:
-            if curr_eval.loci[self.locus_id].results["PairsCombi"].getNbPairs() >= self.param["min_pairs"]:
+            if curr_eval.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
                 nb_valid_eval += 1
         for curr_model in self.models:
-            if curr_model.loci[self.locus_id].results["PairsCombi"].getNbPairs() >= self.param["min_pairs"]:
+            if curr_model.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
                 nb_valid_models += 1
         if nb_valid_eval > 0 and nb_valid_models > 4:
             # Get status by model spl

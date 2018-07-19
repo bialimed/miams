@@ -71,7 +71,7 @@ class TagMSIAmplSize (Component):
             list_filepath = os.path.join(self.output_directory, "spl_{}_comb_reports_list.tsv".format(spl_idx))
             comb_reports_list_in_spl.append(list_filepath)
             with open(list_filepath, "w") as FH_out:
-                FH_out.write("#Locus\tTarget\tFilepath\n")
+                FH_out.write("#Locus_position\tLocus_name\tFilepath\n")
                 for target_idx, curr_report in enumerate(reports):
                     target_id = "{}:{}-{}".format(targets[target_idx].chrom, targets[target_idx].start - 1, targets[target_idx].end)
                     FH_out.write(
