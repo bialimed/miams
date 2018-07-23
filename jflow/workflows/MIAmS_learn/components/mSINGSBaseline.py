@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -29,7 +29,7 @@ from weaver.function import ShellFunction
 
 class MSINGSBaseline (Component):
 
-    def define_parameters(self, aln, targets, intervals, genome, java_mem=4):
+    def define_parameters(self, aln, targets, intervals, genome, status_annotations, java_mem=4):
         # Parameters
         self.add_parameter("java_mem", "", default=java_mem, type=int)
 
@@ -37,6 +37,7 @@ class MSINGSBaseline (Component):
         self.add_input_file_list("aln", "Pathes to alignment files for the samples to evaluate (format: BAM). These BAM must be ordered by coordinates and indexed.", default=aln, required=True)
         self.add_input_file("genome", "Path to the reference used to generate alignment files (format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.", default=genome, required=True)
         self.add_input_file("intervals", "Path to the MSI intervals file (format: TSV). See mSINGS create_intervals script.", default=intervals, required=True)
+        self.add_input_file("status_annotations", 'Path to the MSIAnnot file containing for each sample for each targeted locus the stability status (format: TSV). This file allows to filter loci used in each samples. First line must be: sample<tab>locus_position<tab>method_id<tab>key<tab>value<tab>type. An example of line content is: H2291-1_S15<tab>4:55598140-55598290<tab>model<tab>status<tab>MSS<tab>str.', default=status_annotations)
         self.add_input_file("targets", "The locations of the microsatellite of interest (format: BED). This file must be sorted numerically and must not have a header line.", default=targets, required=True)
 
         # Output Files
@@ -50,18 +51,24 @@ class MSINGSBaseline (Component):
             for curr_aln in self.aln:
                 FH_out.write(curr_aln + "\n")
         # Set commands
+        start_idx = 1
+        inputs = [self.genome, self.intervals, self.targets, list_filepath]
+        if self.status_annotations != None:
+            start_idx = 2
+            inputs.insert(0, self.status_annotations)
         cmd = self.get_exec_path("msings_venv") + " " + self.get_exec_path("create_baseline.py") + \
             " --java-path " + self.get_exec_path("java") + \
             " --java-mem " + str(self.java_mem) + \
-            " --input-genome $1" + \
-            " --input-intervals $2" + \
-            " --input-targets $3" + \
-            " --input-list $4" + \
-            " --output-baseline $5" + \
-            " 2> $6"
+            ("" if self.status_annotations == None else " --input-annotations $1") + \
+            " --input-genome ${}".format(start_idx) + \
+            " --input-intervals ${}".format(start_idx + 1) + \
+            " --input-targets ${}".format(start_idx + 2) + \
+            " --input-list ${}".format(start_idx + 3) + \
+            " --output-baseline ${}".format(start_idx + 4) + \
+            " 2> ${}".format(start_idx + 5)
         baseline_fct = ShellFunction(cmd, cmd_format='{EXE} {IN} {OUT}')
         baseline_fct(
-            inputs=[self.genome, self.intervals, self.targets, list_filepath],
+            inputs=inputs,
             outputs=[self.baseline, self.stderr],
             includes=self.aln
         )
