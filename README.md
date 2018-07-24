@@ -84,12 +84,15 @@ These folders are used to store intermediate files.
 
     # Set cluster parameters of some components
     [components]
-    CombinePairs.batch_options = -V -l h_vmem=2G -l mem=2G -q normal
     BamAreasToFastq.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
     BAMIndex.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
     BWAmem.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
+    CombinePairs.batch_options = -V -l h_vmem=2G -l mem=2G -q normal
+    CreateMSIRef.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
     Cutadapt.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
+    GatherLocusRes.batch_options = -V -l h_vmem=3G -l mem=3G -q normal
     MSINGS.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
+    MSINGSBaseline.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
     MSIMergeReports.batch_options = -V -l h_vmem=3G -l mem=3G -q normal
 
 Ressources booked by each component of the workflow. If your *batch system type*
@@ -132,24 +135,46 @@ third described in *Workflows management* that must be processed for each analys
       --input-bed ${APP_DIR}/test/data/msi.bed \
       --output ${APP_DIR}/test/out_model/msi_intervals.tsv
 
-### Build stable MSI reference model with *MIAmS Learn*
-The following command must be used on large number of stable samples coming from
-your laboratory. Take in mind the sentence of mSINGS's authors: "_Baseline statistics
-vary markedly from assay-to-assay and lab-to-lab. It is CRITICAL that you prepare
-a baseline file that is specific for your analytic process, and for which data
-have been generated using the same protocols._"
+### Build MSI reference with *MIAmS Learn*
+The following command must be used on large number of stable and instable samples
+coming from your laboratory. Take in mind the sentence of mSINGS's authors:
+"_Baseline statistics vary markedly from assay-to-assay and lab-to-lab. It is
+CRITICAL that you prepare a baseline file that is specific for your analytic
+process, and for which data have been generated using the same protocols._"
 
     source ${APP_DIR}/envs/miniconda3/bin/activate MIAmS
     ${APP_DIR}/jflow/bin/jflow_cli.py miamslearn \
       --R1 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R1.fastq.gz \
       --R2 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R2.fastq.gz \
-      --models ${APP_DIR}/test/data/models.json \
+      --R1 ${APP_DIR}/test/data/instable/I17G01612_S13_L001_R1.fastq.gz \
+      --R2 ${APP_DIR}/test/data/instable/I17G01612_S13_L001_R2.fastq.gz \
+      --annotations ${APP_DIR}/test/data/loci_annot.tsv \
       --targets ${APP_DIR}/test/data/msi.bed \
       --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
       --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
       --output-baseline ${APP_DIR}/test/out_model/baseline.tsv \
+      --output-training ${APP_DIR}/test/out_model/models.json \
       --output-log ${APP_DIR}/test/out_model/baseline_log.txt
     source ${APP_DIR}/envs/miniconda3/bin/deactivate
+
+The annotations file describe the status of all loci in all samples in TSV
+format.
+
+    sample	locus_position	method_id	key	value	type
+    splA	1:102-500	model	status	MSS
+    splA	1:9005-9105	model	status	Undetermined
+    splB	1:102-500	model	status	MSI
+    splB	1:9005-9105	model	status	MSI
+
+One row correspond to one locus in one sample and contains:
+
+* The sample name.
+* The locus position.
+* The name of the method storing information. In reference creation we use `model`.
+* The name used to index the annotation. In reference creation we add the MSI `status`.
+* The value for the annotation. In reference creation `MSS` or `MSI` or `Undetermined`.
+* The type of value.
+
 
 ## Workflows management
 ### Launch

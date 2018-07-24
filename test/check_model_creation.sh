@@ -41,10 +41,14 @@ submit ${APP_DIR}/envs/msings/scripts/create_intervals.py \
 submit ${APP_DIR}/jflow/bin/jflow_cli.py miamslearn \
   --R1 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R1.fastq.gz \
   --R2 ${APP_DIR}/test/data/stable/I17G01744_S19_L001_R2.fastq.gz \
+  --R1 ${APP_DIR}/test/data/stable/I17G01612_S13_L001_R1.fastq.gz \
+  --R2 ${APP_DIR}/test/data/stable/I17G01612_S13_L001_R2.fastq.gz \
+  --annotations ${APP_DIR}/test/data/loci_annot.tsv \
   --targets ${APP_DIR}/test/data/msi.bed \
   --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
   --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
   --output-baseline ${APP_DIR}/test/out_model/baseline.tsv \
+  --output-training ${APP_DIR}/test/out_model/models.json \
   --output-log ${APP_DIR}/test/out_model/baseline_log.txt > /dev/null
 
 submit rm -rf ${TEST_DIR}/out_model

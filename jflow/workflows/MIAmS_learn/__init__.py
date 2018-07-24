@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -29,8 +29,10 @@ import shutil
 from workflows.src.miamsWorkflows import MIAmSWf
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-LIB_DIR = os.path.join(CURRENT_DIR, "lib")
+LIB_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "lib")
 sys.path.append(LIB_DIR)
+
+from anacore.msiannot import MSIAnnot
 
 
 class MIAmSLearn (MIAmSWf):
@@ -38,17 +40,23 @@ class MIAmSLearn (MIAmSWf):
         super().__init__(*args, **kwargs)
         self.lib_dir = LIB_DIR
 
-
     def get_description(self):
         return "Build distribution model for stable microsatellites used as reference for MIAmS Tag workflow."
 
-
     def define_parameters(self, parameters_section=None):
+        self.add_parameter("min_support_fragment", "Minimum number of fragment in size distribution to keep the locus result of a sample in reference distributions.", default=200, type=int)
+
+        # Combine reads method
+        self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
+        self.add_parameter("min_pair_overlap", "The minimum required overlap length between two reads in pair to provide a confident overlap.", default=20, type=int, group="Combine reads method")
+        self.add_parameter("min_zoi_overlap", "A reads pair is selected for combine method only if this number of nucleotides of the target are covered by the each read.", default=12, type=int, group="Combine reads method")
+
         # Cleaning
         self.add_input_file("R1_end_adapter", "Path to sequence file containing the start of Illumina P7 adapter (format: fasta). This sequence is trimmed from the end of R1 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
         self.add_input_file("R2_end_adapter", "Path to sequence file containing the start of reverse complemented Illumina P5 adapter ((format: fasta). This sequence is trimmed from the end of R2 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
 
         # Inputs data
+        self.add_input_file("annotations", 'Path to the MSIAnnot file containing for each sample for each targeted locus the stability status (format: TSV). First line must be: sample<tab>locus_position<tab>method_id<tab>key<tab>value<tab>type. The method_id should be "model" and an example of line content is: H2291-1_S15<tab>4:55598140-55598290<tab>model<tab>status<tab>MSS<tab>str.', required=True, group="Inputs data")
         self.add_input_file_list("R1", "Pathes to R1 (format: fastq).", required=True, group="Inputs data")
         self.add_input_file_list("R2", "Pathes to R2 (format: fastq).", required=True, group="Inputs data")
 
@@ -58,9 +66,36 @@ class MIAmSLearn (MIAmSWf):
         self.add_input_file("genome_seq", "Path to the reference used to generate alignment files (format: fasta). This genome must be indexed (fai) and chromosomes names must not be prefixed by chr.", required=True, file_format="fasta", group="Inputs design")
 
         # Outputs data
-        self.add_parameter("output_baseline", "Path to the model file (format: TSV).", required=True, group="Output data")
+        self.add_parameter("output_baseline", "Path to the mSINGS model file (format: TSV).", required=True, group="Output data")
+        self.add_parameter("output_training", "Path to the training samples file (format: JSON).", required=True, group="Output data")
         self.add_parameter("output_log", "Path to the log file (format: txt).", required=True, group="Output data")
 
+    def pre_process(self):
+        super().pre_process()
+
+        # Get status by sample
+        unordered_spl_names = list()
+        self.with_MSS = dict()
+        for record in MSIAnnot(self.annotations):
+            if record["key"] == "status":
+                spl_name = record["sample"]
+                unordered_spl_names.append(spl_name)
+                if record["value"] == "MSS":
+                    self.with_MSS[spl_name] = 1
+
+        # Sort samples names by R1 and R2 order
+        self.samples_names = list()
+        for curr_R1, curr_R2 in zip(self.R1, self.R2):
+            selected_name = ""
+            selected_idx = None
+            for searched_idx, searched_spl in enumerate(unordered_spl_names):
+                if(os.path.basename(curr_R1).startswith(searched_spl) and os.path.basename(curr_R2).startswith(searched_spl)) and len(selected_name) < len(searched_spl):
+                    selected_name = searched_spl
+                    selected_idx = searched_idx
+            if selected_name == "":
+                raise Exception('The fastq files corresponding to the sample "{}" present in annotation file {} cannot be found.'.format(searched_spl, self.annotations))
+            self.samples_names.append(selected_name)
+            del(unordered_spl_names[selected_idx])
 
     def process(self):
         # Clean reads
@@ -74,13 +109,20 @@ class MIAmSLearn (MIAmSWf):
             cleaned_R2 = clean_R2.out_R1
 
         # Align reads
-        bwa = self.add_component("BWAmem", [self.genome_seq, cleaned_R1, cleaned_R2])
+        bwa = self.add_component("BWAmem", [self.genome_seq, cleaned_R1, cleaned_R2, self.samples_names])
         idx_aln = self.add_component("BAMIndex", [bwa.aln_files])
 
         # Create baseline for mSINGS with create_baseline.py
-        self.baseline_cmpt = self.add_component("MSINGSBaseline", [idx_aln.out_aln, self.targets, self.intervals, self.genome_seq])
+        MSS_aln = [idx_aln.out_aln[spl_idx] for spl_idx, spl_name in enumerate(self.samples_names) if spl_name in self.with_MSS]
+        self.baseline_cmpt = self.add_component("MSINGSBaseline", [MSS_aln, self.targets, self.intervals, self.genome_seq, self.annotations])
 
+        # Create models from pairs combination
+        on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
+        combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, self.max_mismatch_ratio, self.min_pair_overlap])
+        gather_locus = self.add_component("GatherLocusRes", [combine.out_report, self.targets, self.samples_names, "model", "LocusResPairsCombi"])
+        self.training_cmpt = self.add_component("CreateMSIRef", [gather_locus.out_report, self.targets, self.annotations, self.min_support_fragments])
 
     def post_process(self):
         self.write_log(self.output_log, __version__)
         shutil.copy(self.baseline_cmpt.baseline, self.output_baseline)
+        shutil.copy(self.training_cmpt.out_references, self.output_training)

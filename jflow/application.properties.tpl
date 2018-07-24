@@ -72,11 +72,13 @@ msings_venv = ###APP_FOLDER###/envs/msings/msings-env/bin/python
 
 # Set cluster parameters of some components
 [components]
-# CombinePairs.batch_options = -V -l h_vmem=2G -l mem=2G -q normal
 # BamAreasToFastq.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
 # BAMIndex.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
 # BWAmem.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
+# CombinePairs.batch_options = -V -l h_vmem=2G -l mem=2G -q normal
+# CreateMSIRef.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
 # Cutadapt.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
+# GatherLocusRes.batch_options = -V -l h_vmem=3G -l mem=3G -q normal
 # MSINGS.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
 # MSINGSBaseline.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
 # MSIMergeReports.batch_options = -V -l h_vmem=3G -l mem=3G -q normal
