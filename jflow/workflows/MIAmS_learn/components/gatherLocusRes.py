@@ -58,7 +58,7 @@ class GatherLocusRes (Component):
         self.add_input_file("targets_design", 'Path to the file containing targets positions and names (format: BED).', default=targets_design, required=True)
 
         # Outputs files
-        self.add_output_file_list("out_report", 'Pathes to the output reports (format: JSON). One report by sample.', pattern='{basename}_report.json', items=self.samples_names)
+        self.add_output_file_list("out_report", 'Pathes to the output reports (format: MSIReport). One report by sample.', pattern='{basename}_report.json', items=self.samples_names)
         self.add_output_file_list("stderr", 'Pathes to the stderr files (format: txt).', pattern='{basename}.stderr', items=self.samples_names)
 
 

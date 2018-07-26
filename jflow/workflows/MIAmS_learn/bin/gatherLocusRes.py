@@ -148,7 +148,7 @@ if __name__ == "__main__":
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-i', '--input-loci-metrics-list', required=True, help='The path to the file containing the list of metrics files by locus (format: TSV). The header must be: #Locus_position<tab>Locus_name<tab>Filepath. Each file referenced in "Filepath" must be in JSON format and must contain a dictionary of metrics for one locus of the sample.')
     group_output = parser.add_argument_group('Outputs')  # Outputs
-    group_output.add_argument('-o', '--output-report', required=True, help='The path to the output file (format: JSON).')
+    group_output.add_argument('-o', '--output-report', required=True, help='The path to the output file (format: MSIReport).')
     args = parser.parse_args()
 
     # Process

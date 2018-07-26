@@ -37,8 +37,8 @@ def createMSIRef_wrapper(exec_path, min_support_fragments, in_report_list, in_ta
         "--output-references", out_references,
         "--output-info", out_info,
         "--input-targets", in_targets,
-        "--input-locus-annot", in_annot,
-        "--inputs-reports"
+        "--input-loci-annot", in_annot,
+        "--inputs-report"
     ]
     # Add list of reports
     in_reports = []
@@ -58,12 +58,12 @@ class CreateMSIRef (Component):
         self.add_parameter("min_support_fragments", "Minimum number of fragment in size distribution to keep the locus result of a sample in reference distributions.", default=min_support_fragments, type=int)
 
         # Input Files
-        self.add_input_file_list("msi_reports", "Pathes to the MSIReport files evaluated in references creation process (format: JSON).", default=msi_reports, required=True)
+        self.add_input_file_list("msi_reports", "Pathes to the files evaluated in references creation process (format: MSIReport).", default=msi_reports, required=True)
         self.add_input_file("msi_targets", "Locations of the microsatellite of interest (format: BED).", default=msi_targets, required=True)
-        self.add_input_file("expected_status", 'Path to the MSIAnnot file containing for each sample for each targeted locus the stability status (format: TSV). First line must be: sample<tab>locus_position<tab>method_id<tab>key<tab>value<tab>type. The method_id should be "model" and an example of line content is: H2291-1_S15<tab>4:55598140-55598290<tab>model<tab>status<tab>MSS<tab>str', default=expected_status, required=True)
+        self.add_input_file("expected_status", 'Path to the file containing for each sample for each targeted locus the stability status (format: MSIAnnot). First line must be: sample<tab>locus_position<tab>method_id<tab>key<tab>value<tab>type. The method_id should be "model" and an example of line content is: H2291-1_S15<tab>4:55598140-55598290<tab>model<tab>status<tab>MSS<tab>str', default=expected_status, required=True)
 
         # Output Files
-        self.add_output_file("out_references", "Path to the MSIReport containing the references distribution for each locus (format: JSON).", filename='msiRef_references.json')
+        self.add_output_file("out_references", "Path to the file containing the references distribution for each locus (format: MSIReport).", filename='msiRef_references.json')
         self.add_output_file("out_info", "Path to the file describing the number of references by status for each locus (format: TSV).", filename='msiRef_info.tsv')
         self.add_output_file("stderr", "Pathes to the stderr files (format: txt).", filename='msiRef.stderr')
 

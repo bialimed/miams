@@ -191,11 +191,11 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--min-support-fragments', type=int, default=200, help='Minimum number of fragment in size distribution to keep the result. The distribution must contains a sufficient amount of data to be representative of length distribution profile for the current locus. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
-    group_input.add_argument('-r', '--inputs-reports', required=True, nargs='+', help='Path(es) to the MSIReport file(s) evaluated in references creation process (format: JSON).')
-    group_input.add_argument('-l', '--input-locus-annot', required=True, help='Path to the MSIAnnot file containing for each sample for each targeted locus the stability status (format: TSV). First line must be: sample<tab>locus_position<tab>method_id<tab>key<tab>value<tab>type. The method_id should be "model" and an example of line content is: H2291-1_S15<tab>4:55598140-55598290<tab>model<tab>status<tab>MSS<tab>str.')
+    group_input.add_argument('-r', '--inputs-report', required=True, nargs='+', help='Path(es) to the file(s) evaluated in references creation process (format: MSIReport).')
+    group_input.add_argument('-l', '--input-loci-annot', required=True, help='Path to the file containing for each sample for each targeted locus the stability status (format: MSIAnnot). First line must be: sample<tab>locus_position<tab>method_id<tab>key<tab>value<tab>type. The method_id should be "model" and an example of line content is: H2291-1_S15<tab>4:55598140-55598290<tab>model<tab>status<tab>MSS<tab>str.')
     group_input.add_argument('-t', '--input-targets', required=True, help='The locations of the microsatellite of interest (format: BED).')
     group_output = parser.add_argument_group('Outputs')  # Outputs
-    group_output.add_argument('-o', '--output-references', required=True, help='The path to the MSIReport containing the references distribution for each locus (format: JSON).')
+    group_output.add_argument('-o', '--output-references', required=True, help='The path to the file containing the references distribution for each locus (format: MSIReport).')
     group_output.add_argument('-i', '--output-info', required=True, help='The path to the file describing the number of references by status for each locus (format: TSV).')
     args = parser.parse_args()
 
