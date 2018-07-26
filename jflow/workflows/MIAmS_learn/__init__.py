@@ -44,7 +44,7 @@ class MIAmSLearn (MIAmSWf):
         return "Build distribution model for stable microsatellites used as reference for MIAmS Tag workflow."
 
     def define_parameters(self, parameters_section=None):
-        self.add_parameter("min_support_fragment", "Minimum number of fragment in size distribution to keep the locus result of a sample in reference distributions.", default=200, type=int)
+        self.add_parameter("min_support_fragments", "Minimum number of fragment in size distribution to keep the locus result of a sample in reference distributions.", default=200, type=int)
 
         # Combine reads method
         self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
