@@ -326,156 +326,105 @@ class MSISample:
         self.results[method] = result
 
 
-class PairsCombiProcessor:
-    def __init__(self, locus_id, models, evaluated, min_pairs=300, dist_method="euclidean", link_method="ward", dendro_valid_ratio=(2 / 3)):
-        self.version = "1.0.0"
-        self.models = models
-        self.evaluated = evaluated
-        self.locus_id = locus_id
-        self.param = {
-            'min_pairs': min_pairs,
-            'dist_method': dist_method,
-            'link_method': link_method,
-            'dendro_valid_ratio': dendro_valid_ratio
-        }
-        self._used_samples = None
-        self._distance_matrix = None
+class LocusClassifier:
+    """
+    clf = LocusClassifier(locus_id, method_name, classifier)
+    clf.fit(train_dataset)
+    clf.predict(test_dataset)
+    clf.predict_proba(test_dataset)
 
-    def getLengthsMatrix(self):
+
+    clf = LocusClassifier(locus_id, method_name, classifier)
+    clf.fit(train_dataset)
+    clf.set_status(test_dataset)
+    """
+    def __init__(self, locus_id, method_name, classifier, model_method_name="model"):
+        self.locus_id = locus_id
+        self.method_name = method_name
+        self.model_method_name = model_method_name
+        self.classifier = classifier
+        self._train_dataset = []
+        self._usable_train_dataset = []
+        self._test_dataset = []
+        self._min_len = None
+        self._max_len = None
+
+    def _get_min_max_len(self, dataset, method):
+        min_len = math.inf
+        max_len = -1
+        for curr_spl in dataset:
+            locus_res = curr_spl.loci[self.locus_id].results[method]
+            min_len = min(min_len, locus_res.getMinLength())
+            max_len = max(max_len, locus_res.getMaxLength())
+        return min_len, max_len
+
+    def _set_min_max_len(self):
+        train_min, train_max = self._get_min_max_len(self._usable_train_dataset, self.model_method_name)
+        test_min, test_max = self._get_min_max_len(self._test_dataset, self.method_name)
+        self._min_len = min(train_min, test_min)
+        self._max_len = max(train_max, test_max)
+
+    def _get_data(self, dataset, method):
         prct_matrix = []  # rows are sample and columns are length
-        self._used_samples = list()
-        min_length = math.inf
-        max_length = -1
-        for curr_spl in self.models + self.evaluated:
-            if curr_spl.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
-                min_length = min(
-                    min_length,
-                    curr_spl.loci[self.locus_id].results["PairsCombi"].getMinLength()
-                )
-                max_length = max(
-                    min_length,
-                    curr_spl.loci[self.locus_id].results["PairsCombi"].getMaxLength()
-                )
-        for curr_spl in self.models + self.evaluated:
-            if curr_spl.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
-                self._used_samples.append(curr_spl.name)
-                prct_matrix.append(
-                    curr_spl.loci[self.locus_id].results["PairsCombi"].getDensePrct(min_length, max_length)
-                )
+        if self._min_len is None and self._max_len is None:
+            self._set_min_max_len()
+        for curr_spl in dataset:
+            locus_res = curr_spl.loci[self.locus_id].results[method]
+            prct_matrix.append(
+                locus_res.getDensePrct(self._min_len, self._max_len)
+            )
         return np.matrix(prct_matrix)
 
-    def getDistanceMatrix(self):
-        return pdist(
-            self.getLengthsMatrix(),
-            self.param['dist_method']
-        )
+    def _get_test_data(self):
+        return self._get_data(self._test_dataset, self.method_name)
 
-    def getHierarchicalClustering(self):
-        return linkage(
-            self.getDistanceMatrix(),
-            self.param['link_method']
-        )
+    def _get_train_data(self):
+        return self._get_data(self._usable_train_dataset, self.model_method_name)
 
-    def getClusters(self, nb_clusters=2):
-        clusters = [[] for elt in range(nb_clusters)]
-        hc_data = self.getHierarchicalClustering()
-        for spl_idx, clstr_indices in enumerate(cut_tree(hc_data, nb_clusters)):
-            clstr_idx = clstr_indices[0]
-            clusters[clstr_idx].append(self._used_samples[spl_idx])
-        return clusters
+    def _get_train_labels(self):
+        labels = []
+        for curr_spl in self._usable_train_dataset:
+            locus_res = curr_spl.loci[self.locus_id].results[self.model_method_name]
+            labels.append(locus_res.status)
+        return np.array(labels)
 
-    def getDendroPlot(self, color_by_spl=None, graph_orientation="left"):
-        import matplotlib.pyplot as plt
-        # Build dendrogram
-        hc_data = self.getHierarchicalClustering()
-        dendro = dendrogram(hc_data, labels=self._used_samples, orientation=graph_orientation)
-        axis = plt.gca()
-        # Assignment of colors to labels
-        if color_by_spl is not None:
-            y_labels = axis.get_ymajorticklabels()
-            for curr_label in y_labels:
-                curr_label.set_color(color_by_spl[curr_label.get_text()])
-        return axis
+    def fit(self, train_dataset):
+        self._train_dataset = train_dataset
+        self._usable_train_dataset = [spl for spl in train_dataset if self.model_method_name in spl.loci[self.locus_id].results]
+        self.classifier.fit(self._get_train_data(), self._get_train_labels())
 
-    def get2dPCAPlot(self, color_by_spl=None):
-        import matplotlib.pyplot as plt
-        pca = PCA(n_components=2)
-        projected = pca.fit_transform(self.getLengthsMatrix())
-        colors = None
-        if color_by_spl is not None:
-            colors = [color_by_spl[spl] for spl in self._used_samples]
-        plt.scatter(projected[:, 0], projected[:, 1], color=colors)
-        plt.xlabel('Component 1')
-        plt.ylabel('Component 2')
-        return plt
+    def predict(self, test_dataset):
+         # ##################################################### must be filtered
+        self._test_dataset = test_dataset
+        test_min_len, test_max_len = self._get_min_max_len(self._test_dataset, self.method_name)
+        if test_min_len < self._min_len or test_max_len > self._max_len:
+            self.fit(self._train_dataset)
+        return self.classifier.predict(self._get_test_data())
 
-    def setLocusStatus(self):
-        res_by_spl = self.getSplRes()
-        for spl in self.evaluated:
-            if spl.name not in res_by_spl:
-                spl.loci[self.locus_id].results["PairsCombi"].status = Status.undetermined
-                spl.loci[self.locus_id].results["PairsCombi"].score = None
-            else:
-                spl.loci[self.locus_id].results["PairsCombi"].status = res_by_spl[spl.name].status
-                spl.loci[self.locus_id].results["PairsCombi"].score = res_by_spl[spl.name].score
+    def predict_proba(self, test_dataset):
+         # ##################################################### must be filtered
+        self._test_dataset = test_dataset
+        return self.classifier.predict_proba(self._get_test_data())
 
-    def getSplRes(self):
-        res_by_spl = {}
-        for spl in self.evaluated:
-            res_by_spl[spl.name] = LocusRes.fromDict({
-                "status": Status.undetermined,
-                "score": None
-            })
-        nb_valid_eval = 0
-        nb_valid_models = 0
-        for curr_eval in self.evaluated:
-            if curr_eval.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
-                nb_valid_eval += 1
-        for curr_model in self.models:
-            if curr_model.loci[self.locus_id].results["PairsCombi"].getNbFrag() >= self.param["min_pairs"]:
-                nb_valid_models += 1
-        if nb_valid_eval > 0 and nb_valid_models > 4:
-            # Get status by model spl
-            status_by_model_spl = dict()
-            for spl in self.models:
-                status_by_model_spl[spl.name] = spl.loci[self.locus_id].results["Expected"].status
-            # Get clusters fro dendrogram
-            clusters = self.getClusters()
-            cluster_by_spl = {spl: 0 for spl in clusters[0]}
-            for spl in clusters[1]:
-                cluster_by_spl[spl] = 1
-            count_status_by_clstr = {
-                0: {Status.instable: 0, Status.stable: 0},
-                1: {Status.instable: 0, Status.stable: 0}
-            }
-            for spl_name, spl_status in status_by_model_spl.items():
-                if spl_name in cluster_by_spl:
-                    clstr_id = cluster_by_spl[spl_name]
-                    count_status_by_clstr[clstr_id][spl_status] += 1
-            # Select MSI and MSS clusters
-            count_clstr_0 = count_status_by_clstr[0]
-            count_clstr_1 = count_status_by_clstr[1]
-            clstr_MSS_id = 0 if count_clstr_0[Status.stable] >= count_clstr_1[Status.stable] else 1
-            clstr_MSI_id = 0 if count_clstr_0[Status.instable] >= count_clstr_1[Status.instable] else 1
-            clstr_MSS = count_status_by_clstr[clstr_MSS_id]
-            clstr_MSI = count_status_by_clstr[clstr_MSI_id]
-            # Tag evaluated samples
-            nb_expected_MSS = sum([1 for spl, status in status_by_model_spl.items() if status == Status.stable and spl in cluster_by_spl])
-            nb_expected_MSI = sum([1 for spl, status in status_by_model_spl.items() if status == Status.instable and spl in cluster_by_spl])
-            if clstr_MSS_id != clstr_MSI_id and \
-               clstr_MSS[Status.stable] + clstr_MSI[Status.stable] >= 2 and \
-               clstr_MSS[Status.instable] + clstr_MSI[Status.instable] >= 2 and \
-               clstr_MSS[Status.stable] / nb_expected_MSS >= self.param["dendro_valid_ratio"] and \
-               clstr_MSI[Status.instable] / nb_expected_MSI >= self.param["dendro_valid_ratio"]:
-                for spl, clstr_id in cluster_by_spl.items():
-                    res_by_spl[spl] = LocusRes.fromDict({
-                        "status": Status.stable if clstr_id == clstr_MSS_id else Status.instable,
-                        "score": round(
-                            (clstr_MSS[Status.stable] / nb_expected_MSS + clstr_MSI[Status.instable] / nb_expected_MSI) / 2,  # ######################## Manque la prise en compte de la distance
-                            5
-                        )
-                    })
-        return res_by_spl
+    def _get_scores(self, pred_labels):
+        scores = None
+        proba_idx_by_label = {label: idx for idx, label in enumerate(self.classifier.classes_)}
+        try:
+            proba = self.predict_proba(self._test_dataset)
+            scores = [spl_proba[proba_idx_by_label[spl_label]] for spl_proba, spl_label in zip(proba, pred_labels)]
+        except Exception:
+            scores = [None for spl in self._test_dataset]
+        return scores
+
+    def set_status(self, test_dataset):
+         # ##################################################### must be filtered
+        self._test_dataset = test_dataset
+        pred_labels = self.predict(test_dataset)
+        pred_scores = self._get_scores(pred_labels)
+        for label, score, sample in zip(pred_labels, pred_scores, self._test_dataset):
+            locus_res = sample.loci[self.locus_id].results[self.method_name]
+            locus_res.status = label
+            locus_res.score = score
 
 
 class MSIReport:
