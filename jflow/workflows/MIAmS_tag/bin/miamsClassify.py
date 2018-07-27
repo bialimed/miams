@@ -42,7 +42,7 @@ def process(args):
                 spl.loci[locus_id].results[args.method_name].status = Status.undetermined
             else:
                 evaluated_test_dataset.append(spl)
-        clf = MIAmSClassifier(locus_id, args.method_name)
+        clf = MIAmSClassifier(locus_id, args.method_name, "model", args.random_seed)
         clf.fit(train_dataset)
         clf.set_status(evaluated_test_dataset)
 
@@ -62,7 +62,8 @@ if __name__ == "__main__":
     # Manage parameters
     parser = argparse.ArgumentParser(description='Predict classification (status and score) for all samples loci.')
     parser.add_argument('-m', '--method-name', default="MIAmS_combi", help='The name of the method storing locus metrics and where the status will be set. [Default: %(default)s]')
-    parser.add_argument('-s', '--min-support-fragments', default=150, type=int, help='The minimum numbers of fragment (reads pairs) for determine the status. [Default: %(default)s]')
+    parser.add_argument('-f', '--min-support-fragments', default=150, type=int, help='The minimum numbers of fragment (reads pairs) for determine the status. [Default: %(default)s]')
+    parser.add_argument('-s', '--random-seed', default=None, type=int, help='The seed used by the random number generator in the classifier.')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-r', '--input-references', required=True, help='Path to the file containing the references samples used in learn step (format: MSIReport).')

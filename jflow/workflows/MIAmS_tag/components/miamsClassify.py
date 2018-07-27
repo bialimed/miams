@@ -29,10 +29,11 @@ from weaver.function import ShellFunction
 
 class MIAmSClassify (Component):
 
-    def define_parameters(self, references_samples, evaluated_samples, min_support_fragments=150, method_name="MIAmS_combi"):
+    def define_parameters(self, references_samples, evaluated_samples, min_support_fragments=150, method_name="MIAmS_combi", random_seed=None):
         # Parameters
         self.add_parameter("method_name", "The name of the method storing locus metrics and where the status will be set.", default=method_name)
         self.add_parameter("min_support_fragments", "The minimum numbers of fragment (reads pairs) for determine the status.", default=min_support_fragments, type=int)
+        self.add_parameter("random_seed", "The seed used by the random number generator in the classifier.", default=random_seed, type=int)
 
         # Input Files
         self.add_input_file_list("evaluated_samples", "Pathes to the files containing the samples with loci to classify (format: MSIReport).", default=evaluated_samples, required=True)
@@ -44,6 +45,7 @@ class MIAmSClassify (Component):
 
     def process(self):
         cmd = self.get_exec_path("miamsClassify.py") + \
+            ("" if self.random_seed == None else " --random-seed " + str(self.random_seed)) + \
             " --method-name " + self.method_name + \
             " --min-support-fragments " + str(self.min_support_fragments) + \
             " --input-references " + self.references_samples + \
