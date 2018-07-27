@@ -36,15 +36,18 @@ def process(args):
     # Classification by locus
     loci_ids = sorted(train_dataset[0].loci.keys())
     for locus_id in loci_ids:
+        # Select the samples with a sufficient number of fragment for classify the distribution
         evaluated_test_dataset = []
         for spl in test_dataset:
             if spl.loci[locus_id].results[args.method_name].getNbFrag() < args.min_support_fragments:
                 spl.loci[locus_id].results[args.method_name].status = Status.undetermined
             else:
                 evaluated_test_dataset.append(spl)
-        clf = MIAmSClassifier(locus_id, args.method_name, "model", args.random_seed)
-        clf.fit(train_dataset)
-        clf.set_status(evaluated_test_dataset)
+        # Classify
+        if len(evaluated_test_dataset) != 0:
+            clf = MIAmSClassifier(locus_id, args.method_name, "model", args.random_seed)
+            clf.fit(train_dataset)
+            clf.set_status(evaluated_test_dataset)
 
     # Classification by sample
     for spl in test_dataset:
