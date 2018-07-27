@@ -54,14 +54,15 @@ def getHigherPeakByLocus(models, min_support_reads):
         for locus_id, curr_locus in curr_spl.loci.items():
             if locus_id not in higher_by_locus:
                 higher_by_locus[locus_id] = []
-            if curr_locus.results["model"].status == Status.stable and curr_locus.results["model"].getNbFrag() > (min_support_reads / 2):
-                max_peak = None
-                max_count = -1
-                for length, count in curr_locus.results["model"].data["nb_by_length"].items():
-                    if count >= max_count:  # "=" for select the tallest
-                        max_count = count
-                        max_peak = int(length)
-                higher_by_locus[locus_id].append(max_peak)
+            if "model" in curr_locus.results:
+                if curr_locus.results["model"].status == Status.stable and curr_locus.results["model"].getNbFrag() > (min_support_reads / 2):
+                    max_peak = None
+                    max_count = -1
+                    for length, count in curr_locus.results["model"].data["nb_by_length"].items():
+                        if count >= max_count:  # "=" for select the tallest
+                            max_count = count
+                            max_peak = int(length)
+                    higher_by_locus[locus_id].append(max_peak)
     return higher_by_locus
 
 
