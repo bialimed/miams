@@ -149,7 +149,7 @@ class MSINGSReport(object):
                     curr_status = Status.instable
             status[idx] = curr_status
         for spl_idx, curr_spl in enumerate(samples):
-            spl_res = MSISplRes(status[spl_idx], self.method_name, scores[spl_idx])
+            spl_res = MSISplRes(status[spl_idx], scores[spl_idx], self.method_name)
             self.samples[curr_spl] = MSISample(curr_spl, None, {self.method_name: spl_res})
         # Parse loci information
         for curr_line in FH:

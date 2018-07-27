@@ -33,7 +33,7 @@ def toDict(msi_object):
     Retuns a dictionary representing the object. This method is used in json.dump in argument named "default" for recursively convert an object to json.
 
     :param msi_object: The object to convert.
-    :type msi_object: a class of anacore.msi library.
+    :type msi_object: a class of anacore.msi library
     :return: The dictionary representing the object.
     :rtype: dict
     """
@@ -44,8 +44,8 @@ class Status:
     """Status for samples (MSISplRes) and loci (LocusRes) in anacore.msi library."""
     stable = "MSS"
     instable = "MSI"
-    undetermined = "Undetermined"
-    none = None
+    undetermined = "Undetermined"  # Cannot be determined
+    none = None  # Not evaluated
 
     @staticmethod
     def authorizedValues():
@@ -61,11 +61,11 @@ class MSILocus:
         Build and return an instance of MSILocus.
 
         :param position: The position of the locus with format chr:start-end (the start is 0-based).
-        :type position: str.
+        :type position: str
         :param name: The name of the locus (for example: NR21).
-        :type name: str.
+        :type name: str
         :param results: The results of the locus indexed by the name of the method used to produce these results.
-        :type results: dict.
+        :type results: dict
         :return: The new instance.
         :rtype: MSILocus
         """
@@ -78,7 +78,7 @@ class MSILocus:
         Delete result from locus.
 
         :param result_id: The ID used for index the results to delete.
-        :type result_id: str.
+        :type result_id: str
         """
         self.results.pop(result_id, None)
 
@@ -88,7 +88,7 @@ class MSILocus:
         Build and return an instance of MSILocus from a dict. This method is used for load instance from JSON.
 
         :param data: The locus information.
-        :type data: dict.
+        :type data: dict
         :return: The new instance.
         :rtype: MSILocus
         """
@@ -112,11 +112,11 @@ class LocusRes:
         Build and return an instance of LocusRes.
 
         :param status: The status of the locus.
-        :type status: msi.Status.
+        :type status: msi.Status
         :param score: The confidence score on the status prediction (0 to 1).
-        :type score: float.
+        :type score: float
         :param data: The data used to predict the status (example: the size distribution).
-        :type results: dict.
+        :type results: dict
         :return: The new instance.
         :rtype: LocusRes
         """
@@ -131,7 +131,7 @@ class LocusRes:
         Build and return an instance of LocusRes from a dict. This method is used for load instance from JSON.
 
         :param data: The locus result information.
-        :type data: dict.
+        :type data: dict
         :return: The new instance.
         :rtype: LocusRes
         """
@@ -149,11 +149,11 @@ class LocusResDistrib(LocusRes):
         Build and return an instance of LocusResDistrib.
 
         :param status: The status of the locus.
-        :type status: msi.Status.
+        :type status: msi.Status
         :param score: The confidence score on the status prediction (0 to 1).
-        :type score: float.
+        :type score: float
         :param data: The data used to predict the status (example: the size distribution).
-        :type results: dict.
+        :type results: dict
         :return: The new instance.
         :rtype: LocusResDistrib
         """
@@ -192,9 +192,9 @@ class LocusResDistrib(LocusRes):
         Return the percentage of elements by locus length for absolutely all lengths betwen start and end. The lengths with 0 are also indicated. The percentage is based on all the distribution not reduced at start and end.
 
         :param start: The first length of the returned distribution. [Default: the minimum length in the distribution]
-        :type start: int.
+        :type start: int
         :param end: The last length of the returned distribution. [Default: the maximum length in the distribution]
-        :type end: int.
+        :type end: int
         :return: The number of elements in each length.
         :rtype: list
         """
@@ -212,9 +212,9 @@ class LocusResDistrib(LocusRes):
         Return the number of elements by locus length for absolutely all lengths betwen start and end. The length with 0 are also indicated.
 
         :param start: The first length of the returned distribution. [Default: the minimum length in the distribution]
-        :type start: int.
+        :type start: int
         :param end: The last length of the returned distribution. [Default: the maximum length in the distribution]
-        :type end: int.
+        :type end: int
         :return: The number of elements in each length.
         :rtype: list
         """
@@ -236,7 +236,7 @@ class LocusResDistrib(LocusRes):
         Build and return an instance of LocusResDistrib from a dict. This method is used for load instance from JSON.
 
         :param data: The locus result information.
-        :type data: dict.
+        :type data: dict
         :return: The new instance.
         :rtype: LocusResDistrib
         """
@@ -254,11 +254,11 @@ class LocusResPairsCombi(LocusResDistrib):
         Build and return an instance of LocusResPairsCombi.
 
         :param status: The status of the locus.
-        :type status: msi.Status.
+        :type status: msi.Status
         :param score: The confidence score on the status prediction (0 to 1).
-        :type score: float.
+        :type score: float
         :param data: The data used to predict the status (example: the size distribution).
-        :type results: dict.
+        :type results: dict
         :return: The new instance.
         :rtype: LocusResPairsCombi
         """
@@ -280,7 +280,7 @@ class LocusResPairsCombi(LocusResDistrib):
         Build and return an instance of LocusResPairsCombi from a dict. This method is used for load instance from JSON.
 
         :param data: The locus result information.
-        :type data: dict.
+        :type data: dict
         :return: The new instance.
         :rtype: LocusResPairsCombi
         """
@@ -293,7 +293,23 @@ class LocusResPairsCombi(LocusResDistrib):
 class MSISplRes:
     """Manage the stability status for an anlysis of a sample."""
 
-    def __init__(self, status, method=None, score=None, param=None, version=None):
+    def __init__(self, status, score=None, method=None, param=None, version=None):
+        """
+        Build and return an instance of MSISplRes.
+
+        :param status: The status of the sample.
+        :type status: msi.Status
+        :param score: The confidence score on the status prediction (0 to 1).
+        :type score: float
+        :param method: The name of the method used to predict status.
+        :type method: str
+        :param param: The parameters of the status prediction.
+        :type param: dict
+        :param version: The version of the method used to predict status.
+        :type version: dict
+        :return: The new instance.
+        :rtype: MSISplRes
+        """
         self.status = status
         self.method = method
         self.score = score
@@ -306,7 +322,7 @@ class MSISplRes:
         Build and return an instance of MSISplRes from a dict. This method is used for load instance from JSON.
 
         :param data: The sample result information.
-        :type data: dict.
+        :type data: dict
         :return: The new instance.
         :rtype: MSISplRes
         """
@@ -315,12 +331,32 @@ class MSISplRes:
 
 
 class MSISample:
+    """Manage a sample in context of microsatellite instability analysis. This object contains information on loci and on analyses (at sample and loci levels)."""
+
     def __init__(self, name, loci=None, results=None):
+        """
+        Build and return an instance of MSISample.
+
+        :param name: The sample name.
+        :type name: str
+        :param loci: By ID (format: chr:start-end with start 0-based) the loci targeted in analysis.
+        :type loci: dict
+        :param results: By method name the analyses of sample status.
+        :type results: dict
+        :return: The new instance.
+        :rtype: MSISample
+        """
         self.name = name
         self.loci = {} if loci is None else loci
         self.results = {} if results is None else results
 
     def getLociMethods(self):
+        """
+        Return the different methods used in loci status analysis.
+
+        :return: The names of the methods used in analyses of loci.
+        :rtype: set
+        """
         methods = set()
         for curr_locus in self.loci:
             for curr_method in self.results.keys():
@@ -328,18 +364,44 @@ class MSISample:
         return methods
 
     def addLocus(self, locus):
+        """
+        Add one locus to the sample.
+
+        :param locus: The locus to add.
+        :type locus: MSILocus
+        """
         if locus.__class__.__name__ != "MSILocus":
             raise Exception('The class "{}" cannot be used as locus for MSISample.'.format(locus.__class__.__name__))
         self.loci[locus.position] = locus
 
     def delLoci(self, locus_ids):
+        """
+        Delete loci from the sample.
+
+        :param locus_ids: The IDs of the loci to delete.
+        :type locus_ids: list
+        """
         for locus_id in locus_ids:
             self.delLocus(locus_id)
 
     def delLocus(self, locus_id):
+        """
+        Delete one locus from the sample.
+
+        :param locus_id: The ID of the locus to delete.
+        :type locus_id: str
+        """
         self.loci.pop(locus_id, None)
 
     def _getStatusByMethod(self, method):
+        """
+        Return the list of loci status predicted by the selected method.
+
+        :param method: The selected method.
+        :type method: str
+        :return: The list of status.
+        :rtype: list
+        """
         status = list()
         for locus_id, locus in self.loci.items():
             if method in locus.results:
@@ -351,7 +413,7 @@ class MSISample:
         Returns the number of loci predicted as instable with the selected method.
 
         :param method: The selected method.
-        :type method: str.
+        :type method: str
         :return: The number of instable loci.
         :rtype: int
         """
@@ -367,7 +429,7 @@ class MSISample:
         Returns the number of loci predicted as stable with the selected method.
 
         :param method: The selected method.
-        :type method: str.
+        :type method: str
         :return: The number of stable loci.
         :rtype: int
         """
@@ -383,7 +445,7 @@ class MSISample:
         Return the number of loci where the status is undetermined after prediction with the selected method.
 
         :param method: The selected method.
-        :type method: str.
+        :type method: str
         :return: The number of undetermined loci.
         :rtype: int
         """
@@ -399,7 +461,7 @@ class MSISample:
         Return the number of loci with a prediction of status with the selected method.
 
         :param method: The selected method.
-        :type method: str.
+        :type method: str
         :return: The number of determined loci.
         :rtype: int
         """
@@ -415,7 +477,7 @@ class MSISample:
         Return the number of loci where the status has been evaluated for the sample with the selected method.
 
         :param method: The selected method.
-        :type method: str.
+        :type method: str
         :return: The number of processed loci.
         :rtype: int
         """
@@ -431,7 +493,7 @@ class MSISample:
         Return the number of loci in the sample.
 
         :param method: The selected method.
-        :type method: str.
+        :type method: str
         :return: The number of loci.
         :rtype: int
         """
@@ -443,7 +505,7 @@ class MSISample:
         Build and return an instance of MSISample from a dict. This method is used for load instance from JSON.
 
         :param data: The sample information.
-        :type data: dict.
+        :type data: dict
         :return: The new instance.
         :rtype: MSISample
         """
@@ -462,7 +524,21 @@ class MSISample:
         # Name
         return MSISample(**cleaned_data)
 
-    def _getScoreCalculation(self, eval_status, method, undetermined_ratio=(1 / 2)):
+    def _getScoreCalculation(self, eval_status, method, undetermined_weight=0.5):
+        """
+        Calculate and return a confidence score for the sample status prediction.
+        This score is calculation take into account each locus and his score with
+        the following formula: sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight).
+
+        :param eval_status: The score is calculated for this status (msi.Status.stable or msi.Status.instable). Except for undetermined_weight equals to 0 the score of the complementary status CANNOT be calculated by 1 - complementary score.
+        :type eval_status: msi.Status
+        :param method: The status of the loci are extracted from the results of this method.
+        :type method: str
+        :param undetermined_weight: The weight of the undetermined loci in score calculation.
+        :type undetermined_weight: float
+        :return: The prediction score. This score has a value between 0 and 1.
+        :rtype: float
+        """
         scores = list()
         nb_loci_undetermined = 0
         for locus_id, locus in self.loci.items():
@@ -482,10 +558,16 @@ class MSISample:
                             scores.append(0)
         score = None
         if len(scores) != 0:
-            score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_ratio)
+            score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight)
         return round(score, 5)
 
     def setStatusByMajority(self, method):
+        """
+        Add status and score for the sample by consensus on loci results for the selected method.
+
+        :param method: Name of the selected method.
+        :type method: str
+        """
         result = MSISplRes.fromDict({
             'status': Status.undetermined,
             'method': method,
@@ -510,15 +592,18 @@ class MSISample:
 
 class LocusClassifier:
     """
-    clf = LocusClassifier(locus_id, method_name, classifier)
-    clf.fit(train_dataset)
-    clf.predict(test_dataset)
-    clf.predict_proba(test_dataset)
+    Classifier for locus using MSISample objects.
+
+    Synopsis:
+        clf = LocusClassifier(locus_id, method_name, classifier)
+        clf.fit(train_dataset)
+        clf.predict(test_dataset)
+        clf.predict_proba(test_dataset)
 
 
-    clf = LocusClassifier(locus_id, method_name, classifier)
-    clf.fit(train_dataset)
-    clf.set_status(test_dataset)
+        clf = LocusClassifier(locus_id, method_name, classifier)
+        clf.fit(train_dataset)
+        clf.set_status(test_dataset)
     """
 
     def __init__(self, locus_id, method_name, classifier, model_method_name="model"):
