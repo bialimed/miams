@@ -24,8 +24,8 @@ String.prototype.capitalize = function() {
 
 
 function selectSample( spl_data, methods, pre_zoom_min=null, pre_zoom_max=null ){
-	fillSample('sample-summary', spl_data, "PairsCombi")
-	drawSizeGraph('length-graph', spl_data.loci, "PairsCombi", pre_zoom_min, pre_zoom_max)
+	fillSample('sample-summary', spl_data, "MIAmSClassif")
+	drawSizeGraph('length-graph', spl_data.loci, "MIAmSClassif", pre_zoom_min, pre_zoom_max)
 	drawTable('nb-seq-table', spl_data.loci, methods)
 }
 
@@ -230,7 +230,7 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
 
 function getNbReads(method, result){
     let nb_reads = null
-    if(method == "PairsCombi"){
+    if(method == "MIAmSClassif"){
         nb_reads = 0
         const lengths = Object.keys(result.data["nb_by_length"])
         lengths.forEach(function (curr_length) {

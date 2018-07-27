@@ -19,7 +19,7 @@ __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
 __version__ = '1.0.0'
-__email__ = 'frederic.escudie@iuct-oncopole.fr'
+__email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import math
@@ -348,8 +348,12 @@ class MSISample:
 
     def getNbUnstable(self, method):
         """
-        @summary: Returns the number of instable loci for the sample.
-        @return: [int] The number of instable loci.
+        Returns the number of loci predicted as instable with the selected method.
+
+        :param method: The selected method.
+        :type method: str.
+        :return: The number of instable loci.
+        :rtype: int
         """
         nb_unstable = 0
         status = self._getStatusByMethod(method)
@@ -360,8 +364,12 @@ class MSISample:
 
     def getNbStable(self, method):
         """
-        @summary: Returns the number of stable loci for the sample.
-        @return: [int] The number of stable loci.
+        Returns the number of loci predicted as stable with the selected method.
+
+        :param method: The selected method.
+        :type method: str.
+        :return: The number of stable loci.
+        :rtype: int
         """
         nb_stable = 0
         status = self._getStatusByMethod(method)
@@ -372,8 +380,12 @@ class MSISample:
 
     def getNbUndetermined(self, method):
         """
-        @summary: Returns the number of where the status is undetermined after evaluation.
-        @return: [int] The number of undetermined loci.
+        Return the number of loci where the status is undetermined after prediction with the selected method.
+
+        :param method: The selected method.
+        :type method: str.
+        :return: The number of undetermined loci.
+        :rtype: int
         """
         nb_undetermined = 0
         status = self._getStatusByMethod(method)
@@ -382,22 +394,30 @@ class MSISample:
                 nb_undetermined += 1
         return nb_undetermined
 
-    def getNbUsable(self, method):
+    def getNbDetermined(self, method):
         """
-        @summary: Returns the number of loci usable in MSI evaluation for the sample.
-        @return: [int] The number of instable loci.
+        Return the number of loci with a prediction of status with the selected method.
+
+        :param method: The selected method.
+        :type method: str.
+        :return: The number of determined loci.
+        :rtype: int
         """
-        nb_usable = 0
+        nb_determined = 0
         status = self._getStatusByMethod(method)
         for curr_status in status:
             if curr_status is not None and curr_status != Status.undetermined:
-                nb_usable += 1
-        return nb_usable
+                nb_determined += 1
+        return nb_determined
 
     def getNbProcessed(self, method):
         """
-        @summary: Returns the number of loci where the status has been evaluated for the sample.
-        @return: [int] The number of processed loci.
+        Return the number of loci where the status has been evaluated for the sample with the selected method.
+
+        :param method: The selected method.
+        :type method: str.
+        :return: The number of processed loci.
+        :rtype: int
         """
         nb_processed = 0
         status = self._getStatusByMethod(method)
@@ -408,8 +428,12 @@ class MSISample:
 
     def getNbLoci(self):
         """
-        @summary: Returns the number of loci in the sample.
-        @return: [int] The number of loci.
+        Return the number of loci in the sample.
+
+        :param method: The selected method.
+        :type method: str.
+        :return: The number of loci.
+        :rtype: int
         """
         return len(self.loci)
 

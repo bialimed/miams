@@ -37,14 +37,14 @@ from anacore.illumina import getLibNameFromReadsPath
 from anacore.msi import MSIReport, Status
 
 
-def getHigherPeakByLocus(models, min_reads_support):
+def getHigherPeakByLocus(models, min_support_reads):
     """
     Returns length of the higher peak of each model by locus.
 
     :param models: The list of MSIReport representing the models (status known and stored in Expected result).
     :type models: list
-    :param min_reads_support: The minimum number of reads on locus to use the stability status of the current model.
-    :type min_reads_support: int
+    :param min_support_reads: The minimum number of reads on locus to use the stability status of the current model.
+    :type min_support_reads: int
     :return: By locus the list of higher peak length.
     :rtype
     """
@@ -54,10 +54,10 @@ def getHigherPeakByLocus(models, min_reads_support):
         for locus_id, curr_locus in curr_spl.loci.items():
             if locus_id not in higher_by_locus:
                 higher_by_locus[locus_id] = []
-            if curr_locus.results["Expected"].status == Status.stable and curr_locus.results["PairsCombi"].getNbFrag() > (min_reads_support / 2):
+            if curr_locus.results["model"].status == Status.stable and curr_locus.results["model"].getNbFrag() > (min_support_reads / 2):
                 max_peak = None
                 max_count = -1
-                for length, count in curr_locus.results["PairsCombi"].data["nb_by_length"].items():
+                for length, count in curr_locus.results["model"].data["nb_by_length"].items():
                     if count >= max_count:  # "=" for select the tallest
                         max_count = count
                         max_peak = int(length)
@@ -120,7 +120,7 @@ class MIAmSTag (MIAmSWf):
 
 
     def define_parameters(self, parameters_section=None):
-        self.add_parameter("min_reads_support", "The minimum number of reads on locus for analyse the stability status of this locus in this sample.", default=300, type=int, group="Classification parameters")
+        self.add_parameter("min_support_reads", "The minimum number of reads on locus for analyse the stability status of this locus in this sample.", default=300, type=int, group="Classification parameters")
 
         # Combine reads method
         self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
@@ -175,10 +175,11 @@ class MIAmSTag (MIAmSWf):
         # Retrieve size profile for each MSI
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, self.max_mismatch_ratio, self.min_pair_overlap])
-        msias = self.add_component("TagMSIAmplSize", [combine.out_report, self.targets, self.models, self.samples_names, self.min_reads_support/2])
+        gather = self.add_component("GatherLocusRes", [combine.out_report, self.targets, self.samples_names, "MIAmSClassif", "LocusResPairsCombi"])
+        classif = self.add_component("MIAmSClassify", [self.models, gather.out_report, self.min_support_reads/2, "MIAmSClassif"])
 
         # Report
-        self.reports_cmpt = self.add_component("MSIMergeReports", [msias.out_report, msings.aggreg_report])
+        self.reports_cmpt = self.add_component("MSIMergeReports", [classif.out_report, msings.aggreg_report])
 
 
     def post_process(self):
@@ -212,7 +213,7 @@ class MIAmSTag (MIAmSWf):
                 results_by_sample[curr_spl] = json.load(FH_in)[0]
 
         # Write report
-        higher_peak_by_locus = getHigherPeakByLocus(self.models, self.min_reads_support)
+        higher_peak_by_locus = getHigherPeakByLocus(self.models, self.min_support_reads)
         template_path = os.path.join(wf_src_path, "resources", "report.html")
         report_path = os.path.join(self.output_dir, "report.html")
         with open(report_path, "w") as FH_output:

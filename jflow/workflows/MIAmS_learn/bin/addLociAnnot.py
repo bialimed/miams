@@ -19,13 +19,13 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.0.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import argparse
-from anacore.msi import Status, LocusRes, MSIReport
-from anacore.msings import MSINGSAnalysis, MSINGSReport
+from anacore.msi import MSIReport
+from anacore.msiannot import getLocusAnnotDict, addLociResToSpl
 
 
 ########################################################################
@@ -35,24 +35,17 @@ from anacore.msings import MSINGSAnalysis, MSINGSReport
 ########################################################################
 def process(args):
     """
-    Aggregate report and analysis information coming from mSINGS in serialisation of anacore.msi.MSISAmple object.
+    ********************************************************.
 
     :param args: The namespace extracted from the script arguments.
     :type args: Namespace
     """
-    # Aggregate data
-    msi_spl = list(MSINGSReport(args.input_report).samples.values())[0]
-    with MSINGSAnalysis(args.input_analysis) as FH_analysis:
-        for record in FH_analysis:
-            if record.position in msi_spl.loci:
-                msi_spl.loci[record.position].name = record.name
-                if "MSINGS" not in msi_spl.loci[record.position].results:
-                    msi_spl.loci[record.position].results["MSINGS"] = LocusRes(Status.none)
-                msi_spl.loci[record.position].results["MSINGS"].data = record.results["MSINGS"].data
-            else:
-                msi_spl.addLocus(record)
-    # Write report
-    MSIReport.write([msi_spl], args.output_report)
+
+    data_by_spl = getLocusAnnotDict(args.input_loci_annotations)
+    msi_samples = MSIReport.parse(args.input_report)
+    for curr_spl in msi_samples:
+        addLociResToSpl(curr_spl, data_by_spl[curr_spl.name])
+    MSIReport.write(msi_samples, args.output_report)
 
 
 ########################################################################
@@ -62,11 +55,11 @@ def process(args):
 ########################################################################
 if __name__ == "__main__":
     # Manage parameters
-    parser = argparse.ArgumentParser(description='Aggregates report and analysis information coming from mSINGS in serialisation of anacore.msi.MSISAmple object.')
+    parser = argparse.ArgumentParser(description='****************************.')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_input = parser.add_argument_group('Inputs')  # Inputs
-    group_input.add_argument('-r', '--input-report', required=True, help='The path to the file containing status for one sample and the evaluated loci (format: TSV). This file is outputted by command "msi count_msi_samples" of mSINGS.')
-    group_input.add_argument('-a', '--input-analysis', required=True, help='The path to the file containing the profiles of evaluated loci for one sample (format: TSV). This file is outputted by command "msi analyzer" of mSINGS.')
+    group_input.add_argument('-r', '--input-report', required=True, nargs='+', help='******************************************************** (format: MSIReport).')
+    group_input.add_argument('-l', '--input-loci-annot', required=True, help='******************************************************** (format: LocusAnnot).')
     group_output = parser.add_argument_group('Outputs')  # Outputs
     group_output.add_argument('-o', '--output-report', required=True, help='The path to the output file (format: JSON).')
     args = parser.parse_args()

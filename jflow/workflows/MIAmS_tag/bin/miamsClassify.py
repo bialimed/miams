@@ -33,6 +33,7 @@ def process(args):
     train_dataset = MSIReport.parse(args.input_references)
     test_dataset = MSIReport.parse(args.input_evaluated)
 
+    # Classification by locus
     loci_ids = sorted(train_dataset[0].loci.keys())
     for locus_id in loci_ids:
         evaluated_test_dataset = []
@@ -44,6 +45,10 @@ def process(args):
         clf = MIAmSClassifier(locus_id, args.method_name)
         clf.fit(train_dataset)
         clf.set_status(evaluated_test_dataset)
+
+    # Classification by sample
+    for spl in test_dataset:
+        spl.setStatusByMajority(args.method_name)
 
     MSIReport.write(test_dataset, args.output_report)
 

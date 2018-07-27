@@ -39,9 +39,9 @@ submit ${APP_DIR}/jflow/bin/jflow_cli.py miamstag \
  --R1 ${TEST_DIR}/data/stable/I17G01744_S19_L001_R1.fastq.gz \
  --R2 ${TEST_DIR}/data/stable/I17G01744_S19_L001_R2.fastq.gz \
  --models ${TEST_DIR}/data/models.json \
- --targets ${TEST_DIR}/data/msi.bed \
- --intervals ${TEST_DIR}/data/msi_intervals.tsv \
- --baseline ${TEST_DIR}/data/MSI_BASELINE.tsv \
+ --targets ${TEST_DIR}/data/targets.bed \
+ --intervals ${TEST_DIR}/data/intervals.tsv \
+ --baseline ${TEST_DIR}/data/baseline.tsv \
  --genome-seq ${TEST_DIR}/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
  --output-dir ${TEST_DIR}/out_detection > /dev/null
 

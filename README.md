@@ -91,6 +91,7 @@ These folders are used to store intermediate files.
     CreateMSIRef.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
     Cutadapt.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
     GatherLocusRes.batch_options = -V -l h_vmem=3G -l mem=3G -q normal
+    MIAmSClassify.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
     MSINGS.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
     MSINGSBaseline.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
     MSIMergeReports.batch_options = -V -l h_vmem=3G -l mem=3G -q normal
