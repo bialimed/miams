@@ -261,10 +261,10 @@ You can rerun failed/incomplete steps with the following command:
 
 
 ## License
-
+GNU GPL v3
 
 ## Copyright
-
+2018 IUC Toulouse Oncopole and CHU de Montpellier.
 
 ## Authors
 * Charles Van Goethem Laboratoire de Biologie des Tumeurs Solides Hôpital Arnaud

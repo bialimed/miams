@@ -607,17 +607,41 @@ class LocusClassifier:
     """
 
     def __init__(self, locus_id, method_name, classifier, model_method_name="model"):
+        """
+        Build and return an instance of LocusClassifier.
+
+        :param locus_id: The ID (format: chr:start-end with start 0-based) of the loci targeted in analysis.
+        :type locus_id: str
+        :param method_name: By method name the analyses of sample status.
+        :type method_name: dict
+        :param classifier: The classifier used to predict status.
+        :type classifier: A sklearn classifier object
+        :param model_method_name: The name of the method used in models loci to stire expected status and lengths distributions.
+        :type model_method_name: str
+        :return: The new instance.
+        :rtype: LocusClassifier
+        """
         self.locus_id = locus_id
         self.method_name = method_name
         self.model_method_name = model_method_name
         self.classifier = classifier
-        self._train_dataset = []
-        self._usable_train_dataset = []
+        self._train_dataset = []  # The MSISample provided for fitting. These samples are filtered before fit (see _usable_train_dataset)
+        self._usable_train_dataset = []  # The MSISample containing status information for the locus
         self._test_dataset = []
-        self._min_len = None
-        self._max_len = None
+        self._min_len = None  # This value is used to uniformise lengths distributions in the comparison
+        self._max_len = None  # This value is used to uniformise lengths distributions in the comparison
 
     def _get_min_max_len(self, dataset, method):
+        """
+        Return the minimum and maximum length for the locus in the dataset.
+
+        :param dataset: The list of MSISample.
+        :type dataset: list
+        :param method: The lengths distribution of the loci are extracted from the results of this method.
+        :type method: str
+        :return: The list of MSISample.
+        :rtype: list
+        """
         min_len = math.inf
         max_len = -1
         for curr_spl in dataset:
@@ -627,13 +651,24 @@ class LocusClassifier:
         return min_len, max_len
 
     def _set_min_max_len(self):
+        """Set the minimum and maximum length for the locus in the dataset (train + test)."""
         train_min, train_max = self._get_min_max_len(self._usable_train_dataset, self.model_method_name)
         test_min, test_max = self._get_min_max_len(self._test_dataset, self.method_name)
         self._min_len = min(train_min, test_min)
         self._max_len = max(train_max, test_max)
 
     def _get_data(self, dataset, method):
-        prct_matrix = []  # rows are sample and columns are length
+        """
+        Return uniformised lengths distribution from the dataset.
+
+        :param dataset: The list of MSISample.
+        :type dataset: list
+        :param method: The lengths distribution of the loci are extracted from the results of this method.
+        :type method: str
+        :return: The uniformised lengths distribution. Rows are samples, columns are lengths and values are percentages of counts in the sample.
+        :rtype: np.matrix
+        """
+        prct_matrix = []  # rows are samples, columns are lengths and values are percentages of counts in the sample.
         if self._min_len is None and self._max_len is None:
             self._set_min_max_len()
         for curr_spl in dataset:
@@ -644,12 +679,30 @@ class LocusClassifier:
         return np.matrix(prct_matrix)
 
     def _get_test_data(self):
+        """
+        Return uniformised lengths distribution for samples in test dataset.
+
+        :return: The uniformised lengths distribution. Rows are samples, columns are lengths and values are percentages of counts in the sample.
+        :rtype: np.matrix
+        """
         return self._get_data(self._test_dataset, self.method_name)
 
     def _get_train_data(self):
+        """
+        Return uniformised lengths distribution for samples in usable train dataset.
+
+        :return: The uniformised lengths distribution. Rows are samples, columns are lengths and values are percentages of counts in the sample.
+        :rtype: np.matrix
+        """
         return self._get_data(self._usable_train_dataset, self.model_method_name)
 
     def _get_train_labels(self):
+        """
+        Return the list of labels for samples in usable train dataset.
+
+        :return: The list of labels for samples in usable train dataset.
+        :rtype: np.array
+        """
         labels = []
         for curr_spl in self._usable_train_dataset:
             locus_res = curr_spl.loci[self.locus_id].results[self.model_method_name]
@@ -657,12 +710,25 @@ class LocusClassifier:
         return np.array(labels)
 
     def fit(self, train_dataset):
+        """
+        Fit the model using train_dataset as training data and their status as target values.
+
+        :param train_dataset: The list of MSISample containing the locus to classify and in LocusRes the data of the selected method and the status ecpected.
+        :type test_dataset: list
+        """
         self._train_dataset = train_dataset
         self._usable_train_dataset = [spl for spl in train_dataset if self.model_method_name in spl.loci[self.locus_id].results]
         self.classifier.fit(self._get_train_data(), self._get_train_labels())
 
     def predict(self, test_dataset):
-         # ##################################################### must be filtered
+        """
+        Predict the status of the locus in the list of samples.
+
+        :param test_dataset: The list of MSISample containing the locus to classify and in LocusRes the data of the selected method. These samples must already be filtered, for eaxmple on count of elements in length distribution.
+        :type test_dataset: list
+        :return: The predicted class for the selected locus in each sample.
+        :rtype: np.array
+        """
         self._test_dataset = test_dataset
         test_min_len, test_max_len = self._get_min_max_len(self._test_dataset, self.method_name)
         if test_min_len < self._min_len or test_max_len > self._max_len:
@@ -670,11 +736,26 @@ class LocusClassifier:
         return self.classifier.predict(self._get_test_data())
 
     def predict_proba(self, test_dataset):
-         # ##################################################### must be filtered
+        """
+        Return estimated probabilities for the test_dataset.
+
+        :param test_dataset: The list of MSISample containing the locus to classify and in LocusRes the data of the selected method. These samples must already be filtered, for eaxmple on count of elements in length distribution.
+        :type test_dataset: list
+        :return: The estimated probabilities for the test_dataset.
+        :rtype: np.array
+        """
         self._test_dataset = test_dataset
         return self.classifier.predict_proba(self._get_test_data())
 
     def _get_scores(self, pred_labels):
+        """
+        Return confidence scores for the predictions of the test_dataset.
+
+        :param pred_labels: The list of predicted status for the test_dataset.
+        :type pred_labels: list
+        :return: The scores for the predictions. The values are between 0 and 1.
+        :rtype: list
+        """
         scores = None
         proba_idx_by_label = {label: idx for idx, label in enumerate(self.classifier.classes_)}
         try:
@@ -685,7 +766,12 @@ class LocusClassifier:
         return scores
 
     def set_status(self, test_dataset):
-         # ##################################################### must be filtered
+        """
+        Set status and score for the selected locus in the list of samples.
+
+        :param test_dataset: The list of MSISample containing the locus to classify and in LocusRes the data of the selected method. These samples must already be filtered, for eaxmple on count of elements in length distribution.
+        :type test_dataset: list
+        """
         self._test_dataset = test_dataset
         pred_labels = self.predict(test_dataset)
         pred_scores = self._get_scores(pred_labels)
@@ -696,8 +782,18 @@ class LocusClassifier:
 
 
 class MSIReport:
+    """Read/write the JSON file used to store a list of MSISample."""
+
     @staticmethod
     def parse(in_path):
+        """
+        Return the list of MSISample stored in a MSIReport file.
+
+        :param in_path: Path to the file storing MSISamples (format: MSIReport).
+        :type in_path: str
+        :return: The list of MSISample.
+        :rtype: list
+        """
         spl_data = []
         with open(in_path) as FH_in:
             spl_data = json.load(FH_in)
@@ -705,5 +801,13 @@ class MSIReport:
 
     @staticmethod
     def write(msi_samples, out_path):
+        """
+        Write the list of MSISample in a MSIReport file.
+
+        :param msi_samples: The list of MSISample.
+        :type msi_samples: list
+        :param out_path: Path to the output file storing MSISamples (format: MSIReport).
+        :type in_path: str
+        """
         with open(out_path, "w") as FH_out:
             json.dump(msi_samples, FH_out, sort_keys=True, default=toDict)
