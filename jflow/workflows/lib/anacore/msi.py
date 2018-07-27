@@ -1,10 +1,31 @@
+#
+# Copyright (C) 2018 IUCT-O
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+__author__ = 'Frederic Escudie'
+__copyright__ = 'Copyright (C) 2018 IUCT-O'
+__license__ = 'GNU General Public License'
+__version__ = '1.0.0'
+__email__ = 'frederic.escudie@iuct-oncopole.fr'
+__status__ = 'prod'
+
 import math
 import json
 import numpy as np
 from copy import deepcopy
-from scipy.spatial.distance import pdist
-from scipy.cluster.hierarchy import linkage, dendrogram, cut_tree
-from sklearn.decomposition import PCA
 
 
 def toDict(msi_object):
@@ -36,24 +57,41 @@ class MSILocus:
     """Manage a locus of a microsatellite (name, position and stability status)."""
 
     def __init__(self, position, name=None, results=None):
+        """
+        Build and return an instance of MSILocus.
+
+        :param position: The position of the locus with format chr:start-end (the start is 0-based).
+        :type position: str.
+        :param name: The name of the locus (for example: NR21).
+        :type name: str.
+        :param results: The results of the locus indexed by the name of the method used to produce these results.
+        :type results: dict.
+        :return: The new instance.
+        :rtype: MSILocus
+        """
         self.position = position
         self.name = name
         self.results = {} if results is None else results
 
-    def addMethods(self, method):
-        method_name = method.__class__.__name__
-        if not method_name.startswith("LocusRes"):
-            raise Exception('The class "{}" cannot be used as an method for MSILocus.'.format(method_name))
-        method_name = method_name[6:]
-        if method_name in self.results:
-            raise Exception('The result with method "{}" already exist for MSILocus "{}".'.format(method_name, self.position))
-        self.results[method_name] = method
+    def delResult(self, result_id):
+        """
+        Delete result from locus.
 
-    def delMethod(self, method_id):
-        self.results.pop(method_id, None)
+        :param result_id: The ID used for index the results to delete.
+        :type result_id: str.
+        """
+        self.results.pop(result_id, None)
 
     @staticmethod
     def fromDict(data):
+        """
+        Build and return an instance of MSILocus from a dict. This method is used for load instance from JSON.
+
+        :param data: The locus information.
+        :type data: dict.
+        :return: The new instance.
+        :rtype: MSILocus
+        """
         cleaned_data = deepcopy(data)
         if "results" in data:
             for method, result in data["results"].items():
@@ -70,6 +108,18 @@ class LocusRes:
     """Manage the stability status for an anlysis of a locus."""
 
     def __init__(self, status, score=None, data=None):
+        """
+        Build and return an instance of LocusRes.
+
+        :param status: The status of the locus.
+        :type status: msi.Status.
+        :param score: The confidence score on the status prediction (0 to 1).
+        :type score: float.
+        :param data: The data used to predict the status (example: the size distribution).
+        :type results: dict.
+        :return: The new instance.
+        :rtype: LocusRes
+        """
         self._class = "LocusRes"
         self.status = status
         self.score = score
@@ -77,6 +127,14 @@ class LocusRes:
 
     @staticmethod
     def fromDict(data):
+        """
+        Build and return an instance of LocusRes from a dict. This method is used for load instance from JSON.
+
+        :param data: The locus result information.
+        :type data: dict.
+        :return: The new instance.
+        :rtype: LocusRes
+        """
         cleaned_data = deepcopy(data)
         if "_class" in cleaned_data:
             cleaned_data.pop("_class", None)
@@ -87,19 +145,59 @@ class LocusResDistrib(LocusRes):
     """Manage the stability status for an anlysis of a locus containing the count by length."""
 
     def __init__(self, status, score=None, data=None):
+        """
+        Build and return an instance of LocusResDistrib.
+
+        :param status: The status of the locus.
+        :type status: msi.Status.
+        :param score: The confidence score on the status prediction (0 to 1).
+        :type score: float.
+        :param data: The data used to predict the status (example: the size distribution).
+        :type results: dict.
+        :return: The new instance.
+        :rtype: LocusResDistrib
+        """
         super().__init__(status, score, data)
         self._class = "LocusResDistrib"
 
     def getCount(self):
+        """
+        Return the number of elements in size distribution.
+
+        :return: The number of elements in size distribution.
+        :rtype: int
+        """
         return sum(list(self.data["nb_by_length"].values()))
 
     def getMinLength(self):
+        """
+        Return the minimum length of the locus.
+
+        :return: The minimum length of the locus.
+        :rtype: int
+        """
         return min([int(elt) for elt in self.data["nb_by_length"]])
 
     def getMaxLength(self):
+        """
+        Return the maximum length of the locus.
+
+        :return: The maximum length of the locus.
+        :rtype: int
+        """
         return max([int(elt) for elt in self.data["nb_by_length"]])
 
     def getDensePrct(self, start=None, end=None):
+        """
+        Return the percentage of elements by locus length for absolutely all lengths betwen start and end. The lengths with 0 are also indicated. The percentage is based on all the distribution not reduced at start and end.
+
+        :param start: The first length of the returned distribution. [Default: the minimum length in the distribution]
+        :type start: int.
+        :param end: The last length of the returned distribution. [Default: the maximum length in the distribution]
+        :type end: int.
+        :return: The number of elements in each length.
+        :rtype: list
+        """
         nb_pairs = self.getCount()
         dense_prct = list()
         for curr_count in self.getDenseCount(start, end):
@@ -110,6 +208,16 @@ class LocusResDistrib(LocusRes):
         return dense_prct
 
     def getDenseCount(self, start=None, end=None):
+        """
+        Return the number of elements by locus length for absolutely all lengths betwen start and end. The length with 0 are also indicated.
+
+        :param start: The first length of the returned distribution. [Default: the minimum length in the distribution]
+        :type start: int.
+        :param end: The last length of the returned distribution. [Default: the maximum length in the distribution]
+        :type end: int.
+        :return: The number of elements in each length.
+        :rtype: list
+        """
         if start is None:
             start = self.getMinLength()
         if end is None:
@@ -124,6 +232,14 @@ class LocusResDistrib(LocusRes):
 
     @staticmethod
     def fromDict(data):
+        """
+        Build and return an instance of LocusResDistrib from a dict. This method is used for load instance from JSON.
+
+        :param data: The locus result information.
+        :type data: dict.
+        :return: The new instance.
+        :rtype: LocusResDistrib
+        """
         cleaned_data = deepcopy(data)
         if "_class" in cleaned_data:
             cleaned_data.pop("_class", None)
@@ -134,14 +250,40 @@ class LocusResPairsCombi(LocusResDistrib):
     """Manage the stability status for an anlysis after reads pair combination of a locus."""
 
     def __init__(self, status, score=None, data=None):
+        """
+        Build and return an instance of LocusResPairsCombi.
+
+        :param status: The status of the locus.
+        :type status: msi.Status.
+        :param score: The confidence score on the status prediction (0 to 1).
+        :type score: float.
+        :param data: The data used to predict the status (example: the size distribution).
+        :type results: dict.
+        :return: The new instance.
+        :rtype: LocusResPairsCombi
+        """
         super().__init__(status, score, data)
         self._class = "LocusResPairsCombi"
 
     def getNbFrag(self):
+        """
+        Return the number of fragments in size distribution.
+
+        :return: The number of fragments in size distribution.
+        :rtype: int
+        """
         return self.getCount()
 
     @staticmethod
     def fromDict(data):
+        """
+        Build and return an instance of LocusResPairsCombi from a dict. This method is used for load instance from JSON.
+
+        :param data: The locus result information.
+        :type data: dict.
+        :return: The new instance.
+        :rtype: LocusResPairsCombi
+        """
         cleaned_data = deepcopy(data)
         if "_class" in cleaned_data:
             cleaned_data.pop("_class", None)
@@ -160,6 +302,14 @@ class MSISplRes:
 
     @staticmethod
     def fromDict(data):
+        """
+        Build and return an instance of MSISplRes from a dict. This method is used for load instance from JSON.
+
+        :param data: The sample result information.
+        :type data: dict.
+        :return: The new instance.
+        :rtype: MSISplRes
+        """
         cleaned_data = deepcopy(data)
         return MSISplRes(**cleaned_data)
 
@@ -265,6 +415,14 @@ class MSISample:
 
     @staticmethod
     def fromDict(data):
+        """
+        Build and return an instance of MSISample from a dict. This method is used for load instance from JSON.
+
+        :param data: The sample information.
+        :type data: dict.
+        :return: The new instance.
+        :rtype: MSISample
+        """
         cleaned_data = deepcopy(data)
         # Loci
         if "loci" in data:
@@ -303,12 +461,12 @@ class MSISample:
             score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_ratio)
         return round(score, 5)
 
-    def setStatus(self, method):
+    def setStatusByMajority(self, method):
         result = MSISplRes.fromDict({
             'status': Status.undetermined,
-            'method': "majority",
+            'method': method,
             'score': None,
-            'param': None,
+            'param': {"aggregation_method": "majority"},
             'version': "1.0.0"
         })
         nb_stable = self.getNbStable(method)
@@ -338,6 +496,7 @@ class LocusClassifier:
     clf.fit(train_dataset)
     clf.set_status(test_dataset)
     """
+
     def __init__(self, locus_id, method_name, classifier, model_method_name="model"):
         self.locus_id = locus_id
         self.method_name = method_name

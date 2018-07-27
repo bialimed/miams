@@ -129,9 +129,9 @@ def pruneResults(msi_samples, result_id, min_support_fragments):
         for locus_id, msi_locus in spl.loci.items():
             if result_id in msi_locus.results:
                 if msi_locus.results[result_id].status not in [Status.stable, Status.instable]:
-                    msi_locus.delMethod(result_id)
+                    msi_locus.delResult(result_id)
                 elif msi_locus.results[result_id].getNbFrag() < min_support_fragments:
-                    msi_locus.delMethod(result_id)
+                    msi_locus.delResult(result_id)
                 else:
                     nb_results += 1
         if nb_results == 0:
@@ -150,7 +150,7 @@ def process(args):
     """
     # Get method name from annotations file
     method_names = set()
-    for record in MSIAnnot(args.input_locus_annot):
+    for record in MSIAnnot(args.input_loci_annot):
         method_names.add(record["method_id"])
     if len(method_names) != 1:
         raise ValueError('The annotation file must contain only one value for method_id. The file "{}" contains {}.'.format(args.input_reports, method_names))
@@ -166,9 +166,9 @@ def process(args):
                 )
             )
     # Aggregate samples
-    msi_samples = getAggregatedSpl(args.inputs_reports)
+    msi_samples = getAggregatedSpl(args.inputs_report)
     # Add locus result info
-    data_by_spl = getLocusAnnotDict(args.input_locus_annot)
+    data_by_spl = getLocusAnnotDict(args.input_loci_annot)
     for curr_spl in msi_samples:
         addLociResToSpl(curr_spl, data_by_spl[curr_spl.name], LocusResPairsCombi)
     # Filter locus results
