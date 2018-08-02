@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -606,7 +606,7 @@ class LocusClassifier:
         clf.set_status(test_dataset)
     """
 
-    def __init__(self, locus_id, method_name, classifier, model_method_name="model"):
+    def __init__(self, locus_id, method_name, classifier, model_method_name="model", data_method_name=None):
         """
         Build and return an instance of LocusClassifier.
 
@@ -616,20 +616,23 @@ class LocusClassifier:
         :type method_name: dict
         :param classifier: The classifier used to predict status.
         :type classifier: A sklearn classifier object
-        :param model_method_name: The name of the method used in models loci to stire expected status and lengths distributions.
+        :param model_method_name: The name of the method used in models loci to store expected status and lengths distributions.
         :type model_method_name: str
+        :param data_method_name: The data used for the prediction are extracted from the results of this method. By default the selected method is the same of the classifier method_name.
+        :type data_method_name: str
         :return: The new instance.
         :rtype: LocusClassifier
         """
+        self.classifier = classifier
+        self.data_method_name = method_name if data_method_name is None else data_method_name
         self.locus_id = locus_id
         self.method_name = method_name
         self.model_method_name = model_method_name
-        self.classifier = classifier
+        self._max_len = None  # This value is used to uniformise lengths distributions in the comparison
+        self._min_len = None  # This value is used to uniformise lengths distributions in the comparison
+        self._test_dataset = []
         self._train_dataset = []  # The MSISample provided for fitting. These samples are filtered before fit (see _usable_train_dataset)
         self._usable_train_dataset = []  # The MSISample containing status information for the locus
-        self._test_dataset = []
-        self._min_len = None  # This value is used to uniformise lengths distributions in the comparison
-        self._max_len = None  # This value is used to uniformise lengths distributions in the comparison
 
     def _get_min_max_len(self, dataset, method):
         """
@@ -653,7 +656,7 @@ class LocusClassifier:
     def _set_min_max_len(self):
         """Set the minimum and maximum length for the locus in the dataset (train + test)."""
         train_min, train_max = self._get_min_max_len(self._usable_train_dataset, self.model_method_name)
-        test_min, test_max = self._get_min_max_len(self._test_dataset, self.method_name)
+        test_min, test_max = self._get_min_max_len(self._test_dataset, self.data_method_name)
         self._min_len = min(train_min, test_min)
         self._max_len = max(train_max, test_max)
 
@@ -685,7 +688,7 @@ class LocusClassifier:
         :return: The uniformised lengths distribution. Rows are samples, columns are lengths and values are percentages of counts in the sample.
         :rtype: np.matrix
         """
-        return self._get_data(self._test_dataset, self.method_name)
+        return self._get_data(self._test_dataset, self.data_method_name)
 
     def _get_train_data(self):
         """
@@ -730,7 +733,7 @@ class LocusClassifier:
         :rtype: np.array
         """
         self._test_dataset = test_dataset
-        test_min_len, test_max_len = self._get_min_max_len(self._test_dataset, self.method_name)
+        test_min_len, test_max_len = self._get_min_max_len(self._test_dataset, self.data_method_name)
         if test_min_len < self._min_len or test_max_len > self._max_len:
             self.fit(self._train_dataset)
         return self.classifier.predict(self._get_test_data())
@@ -776,7 +779,11 @@ class LocusClassifier:
         pred_labels = self.predict(test_dataset)
         pred_scores = self._get_scores(pred_labels)
         for label, score, sample in zip(pred_labels, pred_scores, self._test_dataset):
-            locus_res = sample.loci[self.locus_id].results[self.method_name]
+            if self.method_name not in sample.loci[self.locus_id].results:  # If the method does not exist in locus results
+                sample.loci[self.locus_id].result[self.method_name] = LocusRes(Status.none)
+            locus_res = sample.loci[self.locus_id].result[self.method_name]
+            if self.method_name != self.data_method_name:  # If data used in prediction come from an other method
+                locus_res.data["data_source"] = self.data_method_name
             locus_res.status = label
             locus_res.score = score
 
