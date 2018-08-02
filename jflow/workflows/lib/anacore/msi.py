@@ -42,6 +42,7 @@ def toDict(msi_object):
 
 class Status:
     """Status for samples (MSISplRes) and loci (LocusRes) in anacore.msi library."""
+
     stable = "MSS"
     instable = "MSI"
     undetermined = "Undetermined"  # Cannot be determined
@@ -410,7 +411,7 @@ class MSISample:
 
     def getNbUnstable(self, method):
         """
-        Returns the number of loci predicted as instable with the selected method.
+        Return the number of loci predicted as instable with the selected method.
 
         :param method: The selected method.
         :type method: str
@@ -426,7 +427,7 @@ class MSISample:
 
     def getNbStable(self, method):
         """
-        Returns the number of loci predicted as stable with the selected method.
+        Return the number of loci predicted as stable with the selected method.
 
         :param method: The selected method.
         :type method: str
@@ -526,9 +527,7 @@ class MSISample:
 
     def _getScoreCalculation(self, eval_status, method, undetermined_weight=0.5):
         """
-        Calculate and return a confidence score for the sample status prediction.
-        This score is calculation take into account each locus and his score with
-        the following formula: sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight).
+        Calculate and return a confidence score for the sample status prediction. This score is calculation take into account each locus and his score with the following formula: sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight).
 
         :param eval_status: The score is calculated for this status (msi.Status.stable or msi.Status.instable). Except for undetermined_weight equals to 0 the score of the complementary status CANNOT be calculated by 1 - complementary score.
         :type eval_status: msi.Status
@@ -780,8 +779,8 @@ class LocusClassifier:
         pred_scores = self._get_scores(pred_labels)
         for label, score, sample in zip(pred_labels, pred_scores, self._test_dataset):
             if self.method_name not in sample.loci[self.locus_id].results:  # If the method does not exist in locus results
-                sample.loci[self.locus_id].result[self.method_name] = LocusRes(Status.none)
-            locus_res = sample.loci[self.locus_id].result[self.method_name]
+                sample.loci[self.locus_id].results[self.method_name] = LocusRes(Status.none)
+            locus_res = sample.loci[self.locus_id].results[self.method_name]
             if self.method_name != self.data_method_name:  # If data used in prediction come from an other method
                 locus_res.data["data_source"] = self.data_method_name
             locus_res.status = label
