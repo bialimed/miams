@@ -91,12 +91,12 @@ class MSINGSAnalysis(HashedSVIO):
         formatted_record = {
             "Position": record.position,
             "Name": record.name,
-            "Average_Depth": record.data["avg_depth"],
-            "Number_of_Peaks": record.data["nb_peaks"],
-            "Standard_Deviation": record.data["std_dev"]
+            "Average_Depth": record.results["MSINGS"].data["avg_depth"],
+            "Number_of_Peaks": record.results["MSINGS"].data["nb_peaks"],
+            "Standard_Deviation": record.results["MSINGS"].data["std_dev"]
         }
         formatted_record["IndelLength:AlleleFraction:SupportingCalls"] = " ".join(
-            ["{}:{}:{}".format(curr_peak["indel_length"], curr_peak["AF"], curr_peak["DP"]) for curr_peak in record.data["peaks"]]
+            ["{}:{}:{}".format(curr_peak["indel_length"], curr_peak["AF"], curr_peak["DP"]) for curr_peak in record.results["MSINGS"].data["peaks"]]
         )
         return super().recordToLine(formatted_record)
 
