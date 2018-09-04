@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -29,8 +29,10 @@ from weaver.function import ShellFunction
 
 class CombinePairs (Component):
 
-    def define_parameters(self, R1, R2, names=None, mismatch_ratio=0.25, min_overlap=20):
+    def define_parameters(self, R1, R2, names=None, mismatch_ratio=0.25, min_overlap=20, min_frag_length=None, max_frag_length=None):
         # Parameters
+        self.add_parameter("max_frag_length", "Maximum length for the resulting fragment. This filter is applied after best overlap selection.", default=max_frag_length, type=int)
+        self.add_parameter("min_frag_length", "Minimum length for the resulting fragment. This filter is applied after best overlap selection.", default=min_frag_length, type=int)
         self.add_parameter("min_overlap", "The minimum required overlap length between two reads to provide a confident overlap.", default=min_overlap, type=int)
         self.add_parameter("mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=mismatch_ratio, type=float)
         self.add_parameter_list("names", "The basenames of the output fastq in order of the R1. By default the basename is automatically determined.", default=names)
@@ -51,6 +53,8 @@ class CombinePairs (Component):
 
     def process(self):
         cmd = self.get_exec_path("combinePairs.py") + \
+            ("" if self.max_frag_length == None else " --max-frag-length " + str(self.max_frag_length)) + \
+            ("" if self.min_frag_length == None else " --min-frag-length " + str(self.min_frag_length)) + \
             " --min-overlap " + str(self.min_overlap) + \
             " --max-contradict-ratio " + str(self.mismatch_ratio) + \
             " --input-R1 $1" + \
