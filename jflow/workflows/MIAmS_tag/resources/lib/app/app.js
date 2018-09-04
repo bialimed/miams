@@ -48,7 +48,7 @@ function fillSample( container_id, data, method ){
 	$("#" + container_id + " #spl-status").text(status.capitalize())
 	$("#" + container_id + " #spl-status").removeClass("status-MSS status-MSI status-Undetermined")
 	$("#" + container_id + " #spl-status").addClass("status-" + status)
-	$("#" + container_id + " #spl-score").text(data.results[method].score)
+	$("#" + container_id + " #spl-score").text(displayedScore(data.results[method].score))
 	let loci_metrics = {
 		"nb_undefined": 0,
 		"nb_instable": 0,
@@ -248,6 +248,19 @@ function getNbReads(method, result){
     return nb_reads
 }
 
+function displayedScore(val, prec=3, fixed=true){
+    let displayed = null
+    if( val != null ){
+        displayed = Number.parseFloat(
+            Math.round(val * 10**prec)/(10**prec)
+        )
+        if(fixed){
+            displayed.toFixed(prec)
+        }
+    }
+    return displayed
+}
+
 function drawTable( container_id, data, methods ){
     // Prepare data
     let status_columns = []
@@ -259,7 +272,7 @@ function drawTable( container_id, data, methods ){
         methods.forEach(function (curr_method) {
             curr_row = curr_row.concat([
                 getNbReads(curr_method, locus.results[curr_method]),
-                locus.results[curr_method].score,
+                displayedScore(locus.results[curr_method].score),
                 locus.results[curr_method].status
             ])
             status_columns.push(curr_row.length - 1)
