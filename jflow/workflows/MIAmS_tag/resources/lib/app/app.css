@@ -15,81 +15,75 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 .content {
-	margin-top: 10px;
-	margin-left: 20px;
-	margin-right: 20px;
-	margin-bottom: 20px;
+    margin-top: 10px;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 20px;
 }
 .alert-info {
-	color: #31708f;
-	background-color: #d9edf7;
-	border-color: #bce8f1;
+    color: #31708f;
+    background-color: #d9edf7;
+    border-color: #bce8f1;
 }
 .alert-danger {
-	color: #a94442;
-	background-color: #f2dede;
-	border-color: #ebccd1;
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
 }
 .alert {
-	padding: 15px;
-	margin-bottom: 20px;
-	border: 1px solid transparent;
-	border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
 }
 .top-bar {
-	background-color: #6C757D;
-	position: -webkit-sticky;
-	position: sticky;
-	top: 0;
-	z-index: 1071;
-	padding-top: 6px;
-	padding-bottom: 6px;
+    background-color: #6C757D;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 1071;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
 #samples-nav {
-	max-width: 400px;
-	width: 96%;
-	margin-right: auto;
-	margin-left: auto;
+    max-width: 400px;
+    width: 96%;
+    margin-right: auto;
+    margin-left: auto;
 }
 .block {
-	border-radius: .25rem;
-	border-left: .25rem solid #007BFF;
-	border-top: 1px solid #eee;
-	border-right: 1px solid #eee;
-	border-bottom: 1px solid #eee;
-	margin: 5px;
-	margin-bottom: 20px;
-	padding: 10px;
+    border-radius: .25rem;
+    border-left: .25rem solid #007BFF;
+    border-top: 1px solid #eee;
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin: 5px;
+    margin-bottom: 20px;
+    padding: 10px;
 }
 .title {
-	background-color: #007BFF;
-	font-size: 15px;
-	color: white;
-	width: 100px;
-	margin-left: -10px;
-	margin-top: -10px;
-	padding:3px;
+    background-color: #007BFF;
+    font-size: 15px;
+    color: white;
+    width: 100px;
+    margin-left: -10px;
+    margin-top: -10px;
+    padding:3px;
 }
 .title:after {
-	content: " ";
-	width: 10px;
-	background-color: #007BFF;
-	transform: skewX(-15deg);
+    content: " ";
+    width: 10px;
+    background-color: #007BFF;
+    transform: skewX(-15deg);
 }
 .badge.status-MSS {
-	background-color: #28A745;
+    background-color: #28A745;
 }
 .badge.status-MSI {
-/*
-	background-color: #DC3545;
-*/
-	background-color: #FF9800;
+    background-color: #FF9800;
 }
 .badge.status-Undetermined {
-/*
-	background-color: #FF9800;
-*/
-	background-color: #DC3545;
+    background-color: #DC3545;
 }
 .sticker {
   border: solid 0.3em transparent;
@@ -97,31 +91,79 @@
   vertical-align: middle;
 }
 .sticker.status-MSS {
+    /*
     border-left-color: #4CAF50;
-	background-color: #E8F5E9;
+    background-color: #E8F5E9;
+    */
+	border-left-color: #673ab7;
+    background-color: #ede7f6;
 }
 .sticker.status-MSI {
-/*
-    border-left-color: #F44336;
-    background-color: #FFEBEE;
-*/
+    /*
     border-left-color: #FF9800;
     background-color: #FFF3E0;
+    */
+    border-left-color: #009688;
+    background-color: #e0f2f1;
 }
 .sticker.status-Undetermined {
     border-left-color: #F44336;
     background-color: #FFEBEE;
-/*
+}
+.sticker.status-good {
+    border-left-color: #4CAF50;
+    background-color: #E8F5E9;
+}
+.sticker.status-valid {
+    border-left-color: #03a9f4;
+    background-color: #e1f5fe;
+}
+.sticker.status-warning {
     border-left-color: #FF9800;
     background-color: #FFF3E0;
-*/
+}
+.sticker.status-error {
+    border-left-color: #F44336;
+    background-color: #FFEBEE;
 }
 #sample-summary ul {
-	margin-left: auto;
-	margin-right: auto;
-	width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 300px;
 }
 .highcharts-plot-band.max-interval {
-	opacity: 0.25;
-	animation: opac 0.8s;
+    opacity: 0.25;
+    animation: opac 0.8s;
 }@keyframes opac{from{opacity: 0} to {opacity:0.25}}
+.center-block {
+  display: block;
+  margin: auto;
+  margin: auto;
+}
+.status-tag {
+    border-radius: .25em;
+    color: white;
+    width: 230px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.status-tag.status-MSS {
+    background-color: #673ab7; /* #4CAF50; */
+}
+.status-tag.status-MSI {
+    background-color: #009688; /* #FF9800; */
+}
+.status-tag.status-Undetermined {
+    background-color: #F44336;
+}
+.status-tag.status-Ambiguous {
+    background-color: #F44336;
+}
+#sample-summary-table {
+    border: none;
+}
+.text-center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

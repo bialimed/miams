@@ -24,56 +24,97 @@ String.prototype.capitalize = function() {
 
 
 function selectSample( spl_data, methods, pre_zoom_min=null, pre_zoom_max=null ){
-	fillSample('sample-summary', spl_data, "MIAmSClassif")
-	drawSizeGraph('length-graph', spl_data.loci, "MIAmSClassif", pre_zoom_min, pre_zoom_max)
-	drawTable('nb-seq-table', spl_data.loci, methods)
+    drawSampleStatus('sample-status', spl_data, methods)
+    drawSampleTable('sample-summary-table', spl_data, methods)
+    drawSizeGraph('length-graph', spl_data.loci, "MIAmSClassif", pre_zoom_min, pre_zoom_max)
+    drawLociTable('nb-seq-table', spl_data.loci, methods)
 }
 
 function navButtonUpdate(select_spl){
-	const curr_idx = select_spl.prop('selectedIndex')
-	if(curr_idx == Object.keys(data_by_spl).length - 1){
-		$("#next-spl").addClass("disabled")
-	} else {
-		$("#next-spl").removeClass("disabled")
-	}
-	if(curr_idx == 0){
-		$("#prev-spl").addClass("disabled")
-	} else {
-		$("#prev-spl").removeClass("disabled")
-	}
+    const curr_idx = select_spl.prop('selectedIndex')
+    if(curr_idx == Object.keys(data_by_spl).length - 1){
+        $("#next-spl").addClass("disabled")
+    } else {
+        $("#next-spl").removeClass("disabled")
+    }
+    if(curr_idx == 0){
+        $("#prev-spl").addClass("disabled")
+    } else {
+        $("#prev-spl").removeClass("disabled")
+    }
 }
 
-function fillSample( container_id, data, method ){
-	const status = data.results[method].status
-	$("#" + container_id + " #spl-status").text(status.capitalize())
-	$("#" + container_id + " #spl-status").removeClass("status-MSS status-MSI status-Undetermined")
-	$("#" + container_id + " #spl-status").addClass("status-" + status)
-	$("#" + container_id + " #spl-score").text(displayedScore(data.results[method].score))
-	let loci_metrics = {
-		"nb_undefined": 0,
-		"nb_instable": 0,
-		"nb_stable": 0
-	}
-	const loci_ids = Object.keys(data["loci"]).sort()
-	loci_ids.forEach(function (key) {
-		const locus_res = data.loci[key].results[method]
-		if(locus_res.status == "Undetermined"){
-			loci_metrics["nb_undefined"] += 1
-		} else if(locus_res.status == "MSS"){
-			loci_metrics["nb_stable"] += 1
-		} else {
-			loci_metrics["nb_instable"] += 1
-		}
-	})
-	$("#" + container_id + " #spl-stable-loci").text(
-		loci_metrics["nb_stable"] + "/" + loci_ids.length
-	)
-	$("#" + container_id + " #spl-instable-loci").text(
-		loci_metrics["nb_instable"] + "/" + loci_ids.length
-	)
-	$("#" + container_id + " #spl-unknown-loci").text(
-		loci_metrics["nb_undefined"] + "/" + loci_ids.length
-	)
+function drawSampleStatus( container_id, sample_data, methods ){
+    // Get consensus status
+    let pred_status = []
+    methods.forEach(function (curr_method) {
+        pred_status.push(
+            sample_data.results[curr_method].status
+        )
+    })
+    pred_status = Array.from(new Set(pred_status))
+    status = null
+    if( pred_status.length == 1 ){
+        status = pred_status[0]
+    } else {
+        status = "Ambiguous"
+    }
+    // Display
+    $("#" + container_id).html(status)
+    $("#" + container_id).removeClass("status-MSI")
+    $("#" + container_id).removeClass("status-MSS")
+    $("#" + container_id).removeClass("status-Ambiguous")
+    $("#" + container_id).removeClass("status-Undetermined")
+    $("#" + container_id).addClass("status-" + status)
+}
+
+
+function drawSampleTable( container_id, sample_data, methods ){
+    // Prepare data
+    let rows_data = new Array()
+    methods.forEach(function (curr_method) {
+        rows_data.push([
+            curr_method,
+            displayedScore(sample_data.results[curr_method].score),
+            sample_data.results[curr_method].status
+        ])
+    })
+    // Create/Clear datatable
+    $("#" + container_id).removeClass("d-none")
+    let datatable = null
+    if($.fn.dataTable.isDataTable("#" + container_id)){
+        datatable = $("#" + container_id).DataTable()
+        datatable.clear()
+    } else {
+        datatable = $("#" + container_id).DataTable({"bPaginate": false, "info": false, "searching": false})
+    }
+    // Add data
+    datatable.rows.add(rows_data)
+    // Add class on status cells
+    datatable.columns(2).nodes()
+        .flatten()
+        .to$()
+        .each( function (idx, td) {
+            td.className = 'sticker status-' + td.textContent
+        })
+    // Add class on score cells
+    datatable.columns(1).nodes()
+        .flatten()
+        .to$()
+        .each( function (idx, td) {
+            const score = Number.parseFloat(td.textContent)
+            thresholds = {1: "good", 0.9: "valid", 0.5: "warning", 0: "error"}
+            category = "error"
+            const asc_thresholds = Object.keys(thresholds).sort(function (a, b) {  return parseFloat(a) - parseFloat(b) ;  });
+            asc_thresholds.forEach(function(curr_threshold){
+                if( Number.parseFloat(curr_threshold) <= score ){
+                    category = thresholds[curr_threshold] ;
+                }
+            });
+            td.className = 'sticker status-' + category
+        })
+    // Draw
+    datatable.draw()
 }
 
 function ntile(data, step, nb_shunk=100){
@@ -92,52 +133,52 @@ function ntile(data, step, nb_shunk=100){
 }
 
 function addMethodsInTable(methods){
-	methods.forEach(function (curr_method) {
-		const header_row = $("#nb-seq-table thead tr")
-		header_row.append("<th>" + curr_method + " nb reads</th>")
-		header_row.append("<th>" + curr_method + " score</th>")
-		header_row.append("<th>" + curr_method + " status</th>")
-	})
+    methods.forEach(function (curr_method) {
+        const header_row = $("#nb-seq-table thead tr")
+        header_row.append("<th>" + curr_method + " nb reads</th>")
+        header_row.append("<th>" + curr_method + " score</th>")
+        header_row.append("<th>" + curr_method + " status</th>")
+    })
 }
 
 function getLocusIdByName(data_by_spl){
-	let locus_id_by_name = {}
-	for(let spl_id in data_by_spl){
-		const spl = data_by_spl[spl_id]
-		for(let locus_id in spl.loci){
-			const locus_name = spl.loci[locus_id].name
-			locus_id_by_name[locus_name] = locus_id
-		}
-	}
-	return locus_id_by_name
+    let locus_id_by_name = {}
+    for(let spl_id in data_by_spl){
+        const spl = data_by_spl[spl_id]
+        for(let locus_id in spl.loci){
+            const locus_name = spl.loci[locus_id].name
+            locus_id_by_name[locus_name] = locus_id
+        }
+    }
+    return locus_id_by_name
 }
 
 function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_max=null ){
-	// Transforms data to series
-	let series = []
-	const loci_ids = Object.keys(data).sort()
-	loci_ids.forEach(function (key) {
-		const locus = data[key]
-		const nb_by_length = locus.results[method].data["nb_by_length"]
-		const lengths = Object.keys(nb_by_length).sort(sortNumber)
+    // Transforms data to series
+    let series = []
+    const loci_ids = Object.keys(data).sort()
+    loci_ids.forEach(function (key) {
+        const locus = data[key]
+        const nb_by_length = locus.results[method].data["nb_by_length"]
+        const lengths = Object.keys(nb_by_length).sort(sortNumber)
         // Set series
-		let series_data = []
-		lengths.forEach(function (key) {
-			series_data.push([parseInt(key), nb_by_length[key]])
-		})
-		series.push({
-			"name": locus.name,
-			"data": series_data,
+        let series_data = []
+        lengths.forEach(function (key) {
+            series_data.push([parseInt(key), nb_by_length[key]])
+        })
+        series.push({
+            "name": locus.name,
+            "data": series_data,
             "zIndex": 1
         })
     })
-	// Draws graph
-	Highcharts.chart(
-		container_id,
-		{
-			chart: {
-				type: "column",
-				zoomType: "x",
+    // Draws graph
+    Highcharts.chart(
+        container_id,
+        {
+            chart: {
+                type: "column",
+                zoomType: "x",
                 events: {
                     load: function(){
                         if(pre_zoom_min != null || pre_zoom_max != null){
@@ -146,59 +187,59 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
                         }
                     }
                 }
-			},
-			title: {
-				text: 'Fragments lengths'
-			},
-			plotOptions: {
-				series: {
-					events: {
-						afterAnimate: function(evt){
-							const locus_id = locus_id_by_name[evt.target.name]
-							const locus_peaks = models_peaks_by_locus[locus_id]
-							if(locus_peaks.length != 0){
-								this.chart.xAxis[0].addPlotBand({
-									"from": ntile(locus_peaks, 0),
-									"to": ntile(locus_peaks, 100),
-									"color": evt.target.color,
-									"className": "max-interval",
-									"id": "models_peak_" + evt.target.name
-								})
-							}
-						},
-						hide: function (evt) {
-							this.chart.xAxis[0].removePlotBand(
-								"models_peak_" + evt.target.name
-							)
-						},
-						show: function (evt) {
-							const locus_id = locus_id_by_name[evt.target.name]
-							const locus_peaks = models_peaks_by_locus[locus_id]
-							if(locus_peaks.length != 0){
-								this.chart.xAxis[0].addPlotBand({
-									"from": ntile(locus_peaks, 0),
-									"to": ntile(locus_peaks, 100),
-									"color": evt.target.color,
-									"className": "max-interval",
-									"id": "models_peak_" + evt.target.name
-								})
-							}
-						}
-					}
+            },
+            title: {
+                text: 'Fragments lengths'
+            },
+            plotOptions: {
+                series: {
+                    events: {
+                        afterAnimate: function(evt){
+                            const locus_id = locus_id_by_name[evt.target.name]
+                            const locus_peaks = models_peaks_by_locus[locus_id]
+                            if(locus_peaks.length != 0){
+                                this.chart.xAxis[0].addPlotBand({
+                                    "from": ntile(locus_peaks, 0),
+                                    "to": ntile(locus_peaks, 100),
+                                    "color": evt.target.color,
+                                    "className": "max-interval",
+                                    "id": "models_peak_" + evt.target.name
+                                })
+                            }
+                        },
+                        hide: function (evt) {
+                            this.chart.xAxis[0].removePlotBand(
+                                "models_peak_" + evt.target.name
+                            )
+                        },
+                        show: function (evt) {
+                            const locus_id = locus_id_by_name[evt.target.name]
+                            const locus_peaks = models_peaks_by_locus[locus_id]
+                            if(locus_peaks.length != 0){
+                                this.chart.xAxis[0].addPlotBand({
+                                    "from": ntile(locus_peaks, 0),
+                                    "to": ntile(locus_peaks, 100),
+                                    "color": evt.target.color,
+                                    "className": "max-interval",
+                                    "id": "models_peak_" + evt.target.name
+                                })
+                            }
+                        }
+                    }
 
-				}
-			},
-			xAxis: {
-				tickInterval: 1,
-				title: {
-					text: "Length"
-				}
-			},
-			yAxis: {
-				title: {
-					text: "Nb amplicons"
-				}
-			},
+                }
+            },
+            xAxis: {
+                tickInterval: 1,
+                title: {
+                    text: "Length"
+                }
+            },
+            yAxis: {
+                title: {
+                    text: "Nb amplicons"
+                }
+            },
             tooltip: {
                 crosshairs: [true],
                 shared: true,
@@ -214,18 +255,18 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
                     return lines.join('<br />')
                 }
             },
-			credits: {
-				enabled: false
-			},
-			series: series
-		},
-		/*function(e){ // Redraw chart to prevent problem with scrollbar
-			setTimeout(function() {
-				const container = $("#" + container_id)
-				e.setSize(container.width(), container.height());
-			}, 1)
-		}*/
-	);
+            credits: {
+                enabled: false
+            },
+            series: series
+        },
+        /*function(e){ // Redraw chart to prevent problem with scrollbar
+            setTimeout(function() {
+                const container = $("#" + container_id)
+                e.setSize(container.width(), container.height());
+            }, 1)
+        }*/
+    );
 }
 
 function getNbReads(method, result){
@@ -261,7 +302,7 @@ function displayedScore(val, prec=3, fixed=true){
     return displayed
 }
 
-function drawTable( container_id, data, methods ){
+function drawLociTable( container_id, data, methods ){
     // Prepare data
     let status_columns = []
     const loci_ids = Object.keys(data).sort()
