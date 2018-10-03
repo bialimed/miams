@@ -26,6 +26,8 @@ import os
 import sys
 import json
 import shutil
+import fnmatch
+import argparse
 
 from workflows.src.miamsWorkflows import MIAmSWf
 
@@ -135,8 +137,11 @@ class MIAmSTag (MIAmSWf):
         self.add_input_file("R2_end_adapter", "Path to sequence file containing the start of reverse complemented Illumina P5 adapter ((format: fasta). This sequence is trimmed from the end of R2 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
 
         # Inputs data
-        self.add_input_file_list("R1", "Pathes to R1 (format: fastq).", required=True, group="Inputs data")
-        self.add_input_file_list("R2", "Pathes to R2 (format: fastq).", required=True, group="Inputs data")
+        self.add_input_file_list("R1", "Pathes to R1 (format: fastq).", rules="Exclude=R1_pattern,R2_pattern,exclusion_pattern;ToBeRequired=R2;RequiredIf?ALL[R1_pattern=None]", group="Inputs data")
+        self.add_input_file_list("R2", "Pathes to R2 (format: fastq).", rules="Exclude=R1_pattern,R2_pattern,exclusion_pattern;ToBeRequired=R1;RequiredIf?ALL[R1_pattern=None]", group="Inputs data")
+        self.add_input_file_list("R1_pattern", "Pattern to find R1 files (format: fastq). This pattern use Unix shell-style wildcards (see https://docs.python.org/3/library/fnmatch.html).", type="regexpfiles", rules="Exclude=R1,R2;ToBeRequired=R2_pattern;RequiredIf?ALL[R1=None]", group="Inputs data by pattern")
+        self.add_input_file_list("R2_pattern", "Pattern to find R2 files (format: fastq). This pattern use Unix shell-style wildcards (see https://docs.python.org/3/library/fnmatch.html).", type="regexpfiles", rules="Exclude=R1,R2;ToBeRequired=R1_pattern;RequiredIf?ALL[R1=None]", group="Inputs data by pattern")
+        self.add_parameter("exclusion_pattern", "Pattern to exclude files from files retrieved by R1_pattern and R2_pattern. This pattern use Unix shell-style wildcards (see https://docs.python.org/3/library/fnmatch.html).", rules="Exclude=R1,R2", group="Inputs data by pattern")
 
         # Inputs design
         self.add_input_file("targets", "The locations of the microsatellite of interest (format: BED). This file must be sorted numerically and must not have a header line.", required=True, group="Inputs design")
@@ -151,6 +156,18 @@ class MIAmSTag (MIAmSWf):
 
     def pre_process(self):
         super().pre_process()
+
+        # Get R1 and R2
+        if len(self.R1) == 0 and len(self.R1_pattern) == 0:
+            raise argparse.ArgumentTypeError("the following arguments are required: --R1, --R2 or --R1-pattern --R2-pattern")
+        if len(self.R1_pattern) != 0:
+            self.R1 = sorted(self.R1_pattern)
+            self.R2 = sorted(self.R2_pattern)
+            if self.exclusion_pattern != None:
+                self.R1 = [path for path in self.R1 if not fnmatch.fnmatch(path, self.exclusion_pattern)]
+                self.R2 = [path for path in self.R2 if not fnmatch.fnmatch(path, self.exclusion_pattern)]
+
+        # Get samples names
         try:
             self.samples_names = [getLibNameFromReadsPath(str(elt)) for elt in self.R1]
         except:
