@@ -58,6 +58,7 @@ class MIAmSLearn (MIAmSWf):
         self.add_input_file("R2_end_adapter", "Path to sequence file containing the start of reverse complemented Illumina P5 adapter ((format: fasta). This sequence is trimmed from the end of R2 of the amplicons with a size lower than read length.", file_format="fasta", required=False, group="Cleaning")
 
         # Inputs data
+        self.add_input_file("annotations", 'Path to the MSIAnnot file containing for each sample for each targeted locus the stability status (format: TSV). First line must be: sample<tab>locus_position<tab>method_id<tab>key<tab>value<tab>type. The method_id should be "model" and an example of line content is: H2291-1_S15<tab>4:55598140-55598290<tab>model<tab>status<tab>MSS<tab>str.', required=True, group="Inputs data")
         self.add_input_file_list("R1", "Pathes to R1 (format: fastq).", rules="Exclude=R1_pattern,R2_pattern,exclusion_pattern;ToBeRequired=R2;RequiredIf?ALL[R1_pattern=None]", group="Inputs data")
         self.add_input_file_list("R2", "Pathes to R2 (format: fastq).", rules="Exclude=R1_pattern,R2_pattern,exclusion_pattern;ToBeRequired=R1;RequiredIf?ALL[R1_pattern=None]", group="Inputs data")
         self.add_input_file_list("R1_pattern", "Pattern to find R1 files (format: fastq). This pattern use Unix shell-style wildcards (see https://docs.python.org/3/library/fnmatch.html).", type="regexpfiles", rules="Exclude=R1,R2;ToBeRequired=R2_pattern;RequiredIf?ALL[R1=None]", group="Inputs data by pattern")
