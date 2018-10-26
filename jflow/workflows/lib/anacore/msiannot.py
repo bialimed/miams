@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -45,7 +45,9 @@ class MSIAnnot(HashedSVIO):
         """
         super().__init__(filepath, mode, separator="\t", title_starter="")
         valid_titles = ["sample", "locus_position", "method_id", "key", "value", "type"]
-        if self.titles != valid_titles:
+        if mode == "w":
+            self.titles = valid_titles
+        elif self.titles != valid_titles:
             raise Exception('The column present in "{}" are invalid they must be: {}.'.format(filepath, valid_titles))
 
     def _parseLine(self):
