@@ -108,7 +108,11 @@ class MIAmSLearn (MIAmSWf):
                     selected_name = searched_spl
                     selected_idx = searched_idx
             if selected_name == "":
-                raise Exception('The fastq files corresponding to the sample "{}" present in annotation file {} cannot be found.'.format(searched_spl, self.annotations))
+                raise Exception(
+                    'The annotation for the sample corresponding to the fastq "{}" and "{}" cannot be found in annotation file {}.'.format(
+                        os.path.basename(curr_R1), os.path.basename(curr_R2), self.annotations
+                    )
+                )
             self.samples_names.append(selected_name)
             del(unordered_spl_names[selected_idx])
 
