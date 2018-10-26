@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -518,10 +518,9 @@ class MSISample:
                 cleaned_data["loci"][locus_id] = MSILocus.fromDict(locus)
         # Results
         if "results" in data:
+            cleaned_data["results"] = dict()
             for method, result in data["results"].items():
-                cleaned_data["results"] = {
-                    method: MSISplRes.fromDict(result)
-                }
+                cleaned_data["results"][method] = MSISplRes.fromDict(result)
         # Name
         return MSISample(**cleaned_data)
 
