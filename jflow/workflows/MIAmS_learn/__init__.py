@@ -46,7 +46,7 @@ class MIAmSLearn (MIAmSWf):
         return "Build distribution model for stable microsatellites used as reference for MIAmS Tag workflow."
 
     def define_parameters(self, parameters_section=None):
-        self.add_parameter("min_support_fragments", "Minimum number of fragment in size distribution to keep the locus result of a sample in reference distributions.", default=200, type=int)
+        self.add_parameter("min_support_reads", "Minimum number of reads in size distribution to keep the locus result of a sample in reference distributions.", default=400, type=int)
 
         # Combine reads method
         self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
@@ -139,7 +139,7 @@ class MIAmSLearn (MIAmSWf):
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, self.max_mismatch_ratio, self.min_pair_overlap])
         gather_locus = self.add_component("GatherLocusRes", [combine.out_report, self.targets, self.samples_names, "model", "LocusResPairsCombi"])
-        self.training_cmpt = self.add_component("CreateMSIRef", [gather_locus.out_report, self.targets, self.annotations, self.min_support_fragments])
+        self.training_cmpt = self.add_component("CreateMSIRef", [gather_locus.out_report, self.targets, self.annotations, self.min_support_reads/2])
 
     def post_process(self):
         self.write_log(self.output_log, __version__)
