@@ -29,7 +29,7 @@ submit conda config --add channels conda-forge > /dev/null
 submit conda config --add channels bioconda > /dev/null
 submit conda install --yes --quiet git > /dev/null
 submit conda install --yes --quiet make > /dev/null
-submit conda install --yes --quiet bwa==0.7.8 > /dev/null
+submit conda install --yes --quiet bwa==0.7.17 > /dev/null
 submit conda install --yes --quiet samtools==1.8 > /dev/null
 submit conda install --yes --quiet cutadapt==1.9.1 > /dev/null
 submit conda install --yes --quiet scipy==1.0.1 > /dev/null
