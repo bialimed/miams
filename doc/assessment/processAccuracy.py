@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'dev'
 
@@ -31,7 +31,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from matplotlib_venn import venn2
 sns.set_style("whitegrid")
 
 
@@ -58,7 +57,8 @@ def execTime(dataset_df, out_path):
         time_rows.append([time / 60, "tag"])
     time_df = pd.DataFrame.from_records(time_rows, columns=["exec_time", "workflow"])
     # Plot
-    sns.boxplot(x="workflow", y="exec_time", data=time_df, medianprops=dict(linewidth=2, color='firebrick'))
+    ax = sns.boxplot(x="workflow", y="exec_time", data=time_df, medianprops=dict(linewidth=2, color='firebrick'))
+    ax.set(ylabel='execution time (min)')
     plt.subplots_adjust(top=0.95)
     plt.gcf().suptitle("MIAmS execution time ({} executions)".format(len(dataset_df)))
     plt.savefig(out_path)
@@ -101,7 +101,7 @@ def getSplConsensus(row, method="bethesda"):
     return fct_by_method[method](row)
 
 def getSplConsensusMajority(row):
-    spl_status = "undetermined"
+    spl_status = "Undetermined"
     nb_by_status = {"MSI": 0, "MSS": 0, "Undetermined": 0}
     for col in row.keys():
         if col.endswith("observed_status") and col != "spl_observed_status":
@@ -113,7 +113,7 @@ def getSplConsensusMajority(row):
     return spl_status
 
 def getSplConsensusBethesda(row):
-    spl_status = "undetermined"
+    spl_status = "Undetermined"
     nb_by_status = {"MSI": 0, "MSS": 0, "Undetermined": 0}
     for col in row.keys():
         if col.endswith("observed_status") and col != "spl_observed_status":
@@ -132,12 +132,12 @@ def getFilteredObservation(row, locus, min_nb_support=None, min_score=None):
     return status
 
 def getPredStatusEval(row, locus):
-    status = "undetermined"
+    status = "Undetermined"
     if row["{}_observed_status".format(locus)] != "Undetermined":
         if row["{}_expected_status".format(locus)] == row["{}_observed_status".format(locus)]:
-            status = "valid"
+            status = "Valid"
         else:
-            status = "invalid"
+            status = "Invalid"
     return status
 
 def getAccuracyDf(loci, results_df):
@@ -151,7 +151,7 @@ def getAccuracyDf(loci, results_df):
                 (results_df["method_name"] == method_name)
             ]
             ct_status_by_locus = {
-                locus: {"valid": 0, "invalid": 0, "undetermined": 0} for locus in loci
+                locus: {"Valid": 0, "Invalid": 0, "Undetermined": 0} for locus in loci
             }
             for idx, row in dataset.iterrows():
                 for locus in loci:
@@ -159,15 +159,15 @@ def getAccuracyDf(loci, results_df):
                         status = getPredStatusEval(row, locus)
                         ct_status_by_locus[locus][status] += 1
             for locus in loci:
-                nb_determined = ct_status_by_locus[locus]["valid"] + ct_status_by_locus[locus]["invalid"]
+                nb_determined = ct_status_by_locus[locus]["Valid"] + ct_status_by_locus[locus]["Invalid"]
                 accuracy_rows.append([
                     dataset_id,
                     locus,
                     method_name,
-                    (None if nb_determined == 0 else ct_status_by_locus[locus]["valid"] / nb_determined),
-                    ct_status_by_locus[locus]["valid"],
-                    ct_status_by_locus[locus]["invalid"],
-                    ct_status_by_locus[locus]["undetermined"]
+                    (None if nb_determined == 0 else ct_status_by_locus[locus]["Valid"] / nb_determined),
+                    ct_status_by_locus[locus]["Valid"],
+                    ct_status_by_locus[locus]["Invalid"],
+                    ct_status_by_locus[locus]["Undetermined"]
                 ])
     accuracy_df = pd.DataFrame.from_records(accuracy_rows, columns=["dataset_id", "locus", "method", "accuracy", "nb_true_prediction", "nb_false_prediction", "nb_without_prediction"])
     return accuracy_df
@@ -239,33 +239,6 @@ def writePredStatus(loci, results_df, out_path):
     plt.gcf().suptitle("Prediction status")
     plt.savefig(out_path)
     plt.close()
-
-def multiMethodStatus(results_df):
-    results_df["spl_pred_status"] = results_df.apply(lambda row: getPredStatusEval(row, "spl"), axis=1)
-    methods = sorted(list(set(results_df["method_name"])))
-    for curr_status in ["valid", "invalid", "undetermined"]:
-        lib_by_method = {}
-        for curr_method in methods:
-            sub_df = results_df[
-                (results_df["spl_expected_status"] != "Undetermined") &
-                (results_df["method_name"] == curr_method) &
-                (results_df["spl_pred_status"] == curr_status)
-            ]
-            lib_by_method[curr_method] = set(sub_df["lib_name"])
-        venn2(subsets=[lib_by_method[curr_method] for curr_method in methods], set_labels=methods)
-        plt.title("Prediction status: {}".format(curr_status))
-        plt.savefig("combi_pred_status_{}.svg".format(curr_status))
-        plt.close()
-        if curr_status == "invalid":
-            for idx, curr_method in enumerate(methods):
-                filtered_df = results_df[
-                    (results_df["lib_name"].isin(lib_by_method[curr_method])) &
-                    (results_df["method_name"] == curr_method)
-                ]
-                write_mode = "w" if idx == 0 else "a"
-                write_header = True if idx == 0 else False
-                with open("invalid_spl.tsv", write_mode) as FH_out:
-                    filtered_df.to_csv(FH_out, sep="\t", header=write_header)
 
 def getBalancedDf(locus, results_df, random_seed):
     balanced_results_df = pd.DataFrame(columns=results_df.columns)
@@ -341,6 +314,51 @@ def writeBalancedPredStatus(loci, results_df, out_path, random_seed=None):
     plt.savefig(out_path)
     plt.close()
 
+def getMajority(status):
+    consensus = "Undetermined"
+    nb_by_status = {"MSI": 0, "MSS": 0, "Undetermined": 0}
+    for curr_status in status:
+        nb_by_status[curr_status] += 1
+    if nb_by_status["MSI"] > nb_by_status["MSS"]:
+        consensus = "MSI"
+    elif nb_by_status["MSI"] < nb_by_status["MSS"]:
+        consensus = "MSS"
+    return consensus
+
+def getMethodConsensusDf(res_df, loci):
+    methods = sorted(list(set(res_df["method_name"])))
+    nb_methods = len(methods)
+    consensus_data = {}
+    consensus_rows = []
+    for idx_row, curr_row in res_df.iterrows():
+        res_id = "{}_{}".format(curr_row["dataset_id"], curr_row["lib_name"])
+        if res_id not in consensus_data:
+            consensus_data[res_id] = {
+                "dataset_id": curr_row["dataset_id"],
+                "lib_name": curr_row["lib_name"],
+                "spl_name": curr_row["spl_name"]
+            }
+            for elt in ["spl"] + loci:
+                consensus_data[res_id][elt + "_expected_status"] = curr_row[elt + "_expected_status"]
+                consensus_data[res_id][elt + "_observed_status"] = [curr_row[elt + "_observed_status"]]
+        else:
+            for elt in ["spl"] + loci:
+                consensus_data[res_id][elt + "_observed_status"].append(curr_row[elt + "_observed_status"])
+        if len(consensus_data[res_id]["spl_observed_status"]) == nb_methods:
+            cons_row = {k: v for k, v in consensus_data[res_id].items()}
+            cons_row["method_name"] = "consensus"
+            for elt in ["spl"] + loci:
+                cons_row[elt + "_observed_status"] = getMajority(cons_row[elt + "_observed_status"])
+                cons_row[elt + "_pred_score"] = None
+                cons_row[elt + "_pred_is_ok"] = None
+                if elt != "spl":
+                    cons_row[elt + "_pred_support"] = None
+            for elt in ["spl"] + loci:
+                cons_row[elt + "_pred_is_ok"] = getPredStatusEval(cons_row, elt)
+            consensus_rows.append(cons_row)
+            del(consensus_data[res_id])
+    return pd.DataFrame(consensus_rows)
+
 
 ########################################################################
 #
@@ -376,6 +394,7 @@ if __name__ == "__main__":
     results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensus(row, args.consensus_method), axis=1)
     # results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensus(row, args.consensus_method), axis=1)
     results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
+    results_df = pd.concat([results_df, getMethodConsensusDf(results_df, loci)], sort=False)
 
     # Datasets informations
     execTime(dataset_df, os.path.join(args.output_folder, "exectimes.svg"))
@@ -389,4 +408,3 @@ if __name__ == "__main__":
     writePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_spl.svg"))
     writeBalancedPredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci_balanced.svg"), args.random_seed)
     writeBalancedPredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_balanced.svg"), args.random_seed)
-    # multiMethodStatus(results_df)
