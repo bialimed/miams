@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -149,6 +149,15 @@ class MSINGSReport(object):
                     curr_status = Status.instable
             status[idx] = curr_status
         for spl_idx, curr_spl in enumerate(samples):
+            if status[spl_idx] == Status.stable:
+                """
+                Convert mSINGS score (ratio unstable / determined) to a confidence score.
+                Nb loci unstables:    0    1    2    3    4
+                mSINGS score:         0 0.25 0.50 0.75    1
+                confi unstable:       0 0.25 0.50 0.75    1
+                confi stable:         1 0.75 0.50 0.25    0
+                """
+                scores[spl_idx] = 1 - scores[spl_idx]
             spl_res = MSISplRes(status[spl_idx], scores[spl_idx], self.method_name)
             self.samples[curr_spl] = MSISample(curr_spl, None, {self.method_name: spl_res})
         # Parse loci information
