@@ -19,12 +19,12 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import argparse
-from anacore.msi import Status, LocusRes, MSIReport
+from anacore.msi import Status, LocusResDistrib, MSIReport
 from anacore.msings import MSINGSAnalysis, MSINGSReport
 
 
@@ -47,7 +47,9 @@ def process(args):
             if record.position in msi_spl.loci:
                 msi_spl.loci[record.position].name = record.name
                 if "MSINGS" not in msi_spl.loci[record.position].results:
-                    msi_spl.loci[record.position].results["MSINGS"] = LocusRes(Status.none)
+                    msi_spl.loci[record.position].results["MSINGS"] = LocusResDistrib(Status.none)
+                else:
+                    msi_spl.loci[record.position].results["MSINGS"]._class = "LocusResDistrib"
                 msi_spl.loci[record.position].results["MSINGS"].data = record.results["MSINGS"].data
             else:
                 msi_spl.addLocus(record)

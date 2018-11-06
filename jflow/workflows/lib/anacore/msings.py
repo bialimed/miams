@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.1'
+__version__ = '1.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -53,6 +53,7 @@ class MSINGSAnalysis(HashedSVIO):
         """
         record = super()._parseLine()
         peaks = record["IndelLength:AlleleFraction:SupportingCalls"].split(" ")
+        nb_by_length = {}
         if len(peaks) == 1 and peaks[0] == "0:0.0:0":
             peaks = []
         else:
@@ -63,17 +64,21 @@ class MSINGSAnalysis(HashedSVIO):
                     "AF": float(AF),
                     "DP": int(DP)
                 }
+                nb_by_length[int(indel_length)] = int(DP)
+
         return MSILocus.fromDict({
             "position": record["Position"],
             "name": record["Name"],
             "results": {
                 "MSINGS": {
+                    "_class": "LocusResDistrib",
                     "status": Status.undetermined,
                     "data": {
                         "avg_depth": record["Average_Depth"],
                         "nb_peaks": record["Number_of_Peaks"],
                         "peaks": peaks,
                         "std_dev": record["Standard_Deviation"],
+                        "nb_by_length": nb_by_length
                     }
                 }
             }
