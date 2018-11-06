@@ -124,7 +124,11 @@ class MIAmSTag (MIAmSWf):
 
     def define_parameters(self, parameters_section=None):
         # Classifier
+        self.add_parameter("loci_consensus_method", "Method used to determine the sample status from the loci status. Count: if the number of unstable is upper or equal than instability-threshold the sample will be unstable otherwise it will be stable ; Ratio: if the ratio of unstable/determined loci is upper or equal than instability-threshold the sample will be unstable otherwise it will be stable ; Majority: if the ratio of unstable/determined loci is upper than 0.5 the sample will be unstable, if it is lower than stable the sample will be stable.", choices=['count', 'majority', 'ratio'], default='ratio')
+        self.add_parameter("instability_count", 'Only if consensus-method is equal to "count". The threshold to determine if the sample is stable or unstable. If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable.', default=3, type=int)
+        self.add_parameter("instability_ratio", 'Only if consensus-method is equal to "ratio". The threshold to determine if the sample is stable or unstable. If the ratio of unstable/determined loci is upper or equal than this value the sample will be unstable otherwise it will be stable.', default=0.5, type=float)
         self.add_parameter("min_support_reads", "The minimum number of reads on locus for analyse the stability status of this locus in this sample.", default=300, type=int, group="Classification parameters")
+        self.add_parameter("min_voting_loci", "Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined.", default=3, type=int, group="Classification parameters")
         self.add_parameter("random_seed", "The seed used by the random number generator in MIAmSClassifier.", type=int, group="Classification parameters")
 
         # Combine reads method
@@ -195,6 +199,10 @@ class MIAmSTag (MIAmSWf):
             "in_reports": msings.aggreg_report,
             "method_name": "MSINGS",
             "min_distrib_support": self.min_support_reads,
+            "consensus_method": self.loci_consensus_method,
+            "instability_count": self.instability_count,
+            "instability_ratio": self.instability_ratio,
+            "min_voting_loci": self.min_voting_loci,
             "undetermined_weight": 0
         })
 
@@ -202,7 +210,17 @@ class MIAmSTag (MIAmSWf):
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, self.max_mismatch_ratio, self.min_pair_overlap])
         gather = self.add_component("GatherLocusRes", [combine.out_report, self.targets, self.samples_names, "MIAmSClassif", "LocusResPairsCombi"])
-        classif = self.add_component("MIAmSClassify", [self.models, gather.out_report, self.min_support_reads/2, "MIAmSClassif", self.random_seed])
+        classif = self.add_component("MIAmSClassify", kwargs={
+            "references_samples": self.models,
+            "evaluated_samples": gather.out_report,
+            "method_name": "MIAmSClassif",
+            "min_support_fragments": self.min_support_reads / 2,
+            "consensus_method": self.loci_consensus_method,
+            "instability_count": self.instability_count,
+            "instability_ratio": self.instability_ratio,
+            "min_voting_loci": self.min_voting_loci,
+            "random_seed": self.random_seed
+        })
 
         # Report
         self.reports_cmpt = self.add_component("MSIMergeReports", [classif.out_report, filtered_msings.out_report])

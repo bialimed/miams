@@ -625,7 +625,7 @@ class MSISample:
         nb_unstable = self.getNbUnstable(method)
         result.status = Status.undetermined
         if nb_stable + nb_unstable >= min_voting_loci:
-            if nb_unstable / (nb_stable + nb_unstable) > instability_threshold:
+            if nb_unstable / (nb_stable + nb_unstable) >= instability_threshold:
                 result.status = Status.instable
             else:
                 result.status = Status.stable
