@@ -31,8 +31,8 @@ class MSIMergeReports (Component):
 
     def define_parameters(self, first_report, second_report):
         # Inputs files
-        self.add_input_file_list("first_report", 'Pathes to the first file to merge (format: JSON). It contains a list of JSON serialisation of anacore.msi.MSISAmple.', default=first_report, required=True)
-        self.add_input_file_list("second_report", 'Pathes to the second file to merge (format: JSON). It contains a list of JSON serialisation of anacore.msi.MSISAmple.', default=second_report, required=True)
+        self.add_input_file_list("first_report", 'Pathes to the first file to merge (format: JSON). It contains a list of JSON serialisation of anacore.msi.MSISample.', default=first_report, required=True)
+        self.add_input_file_list("second_report", 'Pathes to the second file to merge (format: JSON). It contains a list of JSON serialisation of anacore.msi.MSISample.', default=second_report, required=True)
 
         # Outputs files
         self.add_output_file_list("out_report", 'Pathes to the merged reports (format: JSON).', pattern='{basename_woext}.json', items=self.first_report)
