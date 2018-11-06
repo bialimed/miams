@@ -191,6 +191,12 @@ class MIAmSTag (MIAmSWf):
 
         # Call MSI with run_msings.py
         msings = self.add_component("MSINGS", [idx_aln.out_aln, self.targets, self.intervals, self.baseline, self.genome_seq])
+        filtered_msings = self.add_component("MSIFilter", kwargs={
+            "in_reports": msings.aggreg_report,
+            "method_name": "MSINGS",
+            "min_distrib_support": self.min_support_reads,
+            "undetermined_weight": 0
+        })
 
         # Retrieve size profile for each MSI
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
@@ -199,7 +205,7 @@ class MIAmSTag (MIAmSWf):
         classif = self.add_component("MIAmSClassify", [self.models, gather.out_report, self.min_support_reads/2, "MIAmSClassif", self.random_seed])
 
         # Report
-        self.reports_cmpt = self.add_component("MSIMergeReports", [classif.out_report, msings.aggreg_report])
+        self.reports_cmpt = self.add_component("MSIMergeReports", [classif.out_report, filtered_msings.out_report])
 
 
     def post_process(self):
