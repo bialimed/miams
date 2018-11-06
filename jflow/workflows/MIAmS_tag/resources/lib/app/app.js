@@ -1,19 +1,25 @@
-/*
-# Copyright (C) 2018 IUCT-O
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ *
+ * Copyright (C) 2018 IUCT-O
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author  Frederic Escudie
+ * @license  GNU General Public License
+ * @version  1.0.0
+ */
+
 function sortNumber(a,b) {
     return a - b;
 }
@@ -259,13 +265,7 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
                 enabled: false
             },
             series: series
-        },
-        /*function(e){ // Redraw chart to prevent problem with scrollbar
-            setTimeout(function() {
-                const container = $("#" + container_id)
-                e.setSize(container.width(), container.height());
-            }, 1)
-        }*/
+        }
     );
 }
 
@@ -293,7 +293,8 @@ function displayedScore(val, prec=3, fixed=true){
     let displayed = null
     if( val != null ){
         displayed = Number.parseFloat(
-            Math.round(val * 10**prec)/(10**prec)
+            Math.round(val * Math.pow(10, prec))/
+            Math.pow(10, prec)
         )
         if(fixed){
             displayed.toFixed(prec)
