@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'dev'
 
@@ -93,14 +93,58 @@ def datasetsComposition(dataset_df, out_path, mode="rate"):
     plt.savefig(out_path)
     plt.close()
 
-def getSplConsensus(row, method="bethesda"):
+def getSplConsensusScore(row, loci):
+    eval_status = row["spl_expected_status"]
+    undetermined_weight = 0 if row["method_name"] == "MSINGS" else 0.5
+    scores = list()
+    nb_loci_undetermined = 0
+    for locus in loci:
+        if row["{}_observed_status".format(locus)] == "Undetermined":
+            nb_loci_undetermined += 1
+        else:
+            if row["{}_observed_status".format(locus)] == eval_status:
+                scores.append(1)
+            elif row["{}_observed_status".format(locus)] != "Undetermined":
+                scores.append(0)
+    score = None
+    if len(scores) != 0:
+        score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight)
+        score = round(score, 5)
+    return score
+
+# def getSplConsensusScore(row, loci):
+#     eval_status = row["spl_expected_status"]
+#     undetermined_weight = 0 if row["method_name"] == "MSINGS" else 0.5
+#     scores = list()
+#     nb_loci_undetermined = 0
+#     for locus in loci:
+#         if row["{}_observed_status".format(locus)] == "Undetermined":
+#             nb_loci_undetermined += 1
+#         else:
+#             if row["{}_observed_status".format(locus)] == eval_status:
+#                 if not pd.isnull(row["{}_pred_score".format(locus)]):
+#                     scores.append(row["{}_pred_score".format(locus)])
+#                 else:
+#                     scores.append(1)
+#             elif row["{}_observed_status".format(locus)] != "Undetermined":
+#                 if not pd.isnull(row["{}_pred_score".format(locus)]):
+#                     scores.append(1 - row["{}_pred_score".format(locus)])
+#                 else:
+#                     scores.append(0)
+#     score = None
+#     if len(scores) != 0:
+#         score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight)
+#         score = round(score, 5)
+#     return score
+
+def getSplConsensusStatus(row, method="bethesda"):
     fct_by_method = {
-        "bethesda": getSplConsensusBethesda,
-        "majority": getSplConsensusMajority
+        "bethesda": getSplConsensusStatusBethesda,
+        "majority": getSplConsensusStatusMajority
     }
     return fct_by_method[method](row)
 
-def getSplConsensusMajority(row):
+def getSplConsensusStatusMajority(row):
     spl_status = "Undetermined"
     nb_by_status = {"MSI": 0, "MSS": 0, "Undetermined": 0}
     for col in row.keys():
@@ -112,7 +156,7 @@ def getSplConsensusMajority(row):
         spl_status = "MSS"
     return spl_status
 
-def getSplConsensusBethesda(row):
+def getSplConsensusStatusBethesda(row):
     spl_status = "Undetermined"
     nb_by_status = {"MSI": 0, "MSS": 0, "Undetermined": 0}
     for col in row.keys():
@@ -215,7 +259,7 @@ def writePredStatus(loci, results_df, out_path):
 
     # Plot status
     prediction_status_order = ["true", "false", "without"]
-    g = sns.factorplot(y="rate", x="prediction_status", hue="method", col="locus", data=status_df, kind="box", order=prediction_status_order)
+    g = sns.catplot(y="rate", x="prediction_status", hue="method", col="locus", data=status_df, kind="box", order=prediction_status_order)
     for ax in g.axes.flat:
         locus_name = ax.get_title().split(" ")[-1]
         locus_df = status_df[status_df["locus"] == locus_name]
@@ -289,7 +333,7 @@ def writeBalancedPredStatus(loci, results_df, out_path, random_seed=None):
 
     # Plot status
     prediction_status_order = ["true", "false", "without"]
-    g = sns.factorplot(y="rate", x="prediction_status", hue="method", col="locus", data=status_df, kind="box", order=prediction_status_order)
+    g = sns.catplot(y="rate", x="prediction_status", hue="method", col="locus", data=status_df, kind="box", order=prediction_status_order)
     for ax in g.axes.flat:
         locus_name = ax.get_title().split(" ")[-1]
         locus_df = status_df[status_df["locus"] == locus_name]
@@ -359,6 +403,95 @@ def getMethodConsensusDf(res_df, loci):
             del(consensus_data[res_id])
     return pd.DataFrame(consensus_rows)
 
+def getLociDf(loci, results_df):
+    loci_rows = []
+    for idx, row in results_df.iterrows():
+        for locus in loci:
+            if row["{}_expected_status".format(locus)] != "Undetermined":
+                loci_rows.append([
+                    row["dataset_id"],
+                    locus,
+                    row["method_name"],
+                    row["{}_pred_score".format(locus)],
+                    getPredStatusEval(row, locus)
+                ])
+    loci_df = pd.DataFrame.from_records(loci_rows, columns=["dataset_id", "locus", "method", "prediction_score", "prediction_status"])
+    return loci_df
+
+def addCount(df, graph, x_column, y_column, hue_column, x_order=None, hue_order=None, label_margin=0.05):
+    if x_order is None:
+        x_order = sorted(list(set(df[x_column])))
+    if hue_order is None:
+        hue_order = sorted(list(set(df[hue_column])))
+    box_width = 0.8 / len(hue_order)
+    for x_idx, label in enumerate(graph.axes.get_xticklabels()):
+        tick_start = x_idx - 0.4
+        curr_x = x_order[x_idx]
+        for hue_idx, curr_hue in enumerate(hue_order):
+            filtered_y = df[
+                (df[x_column] == curr_x) &
+                (df[hue_column] == curr_hue)
+            ][y_column].dropna()
+            x_pos = tick_start + hue_idx * box_width
+            count = len(filtered_y)
+            max = (0 if count == 0 else np.max(filtered_y))
+            if count != 0:
+                graph.axes.text(x_pos + box_width / 2, max + label_margin, 'n:{}'.format(count), horizontalalignment='center', size='x-small', color='gray', weight='semibold')
+
+def writeScorePredStatus(loci, results_df, out_path):
+    loci_df = getLociDf(loci, results_df)
+    prediction_status_order = ["Valid", "Invalid", "Undetermined"]
+    graph = sns.catplot(
+        x="method",
+        y="prediction_score",
+        hue="prediction_status",
+        col="locus",
+        data=loci_df,
+        kind="box",
+        medianprops=dict(linewidth=2, color='firebrick'),
+        order=sorted(list(set(loci_df["method"]))),
+        hue_order=prediction_status_order
+    )
+    for ax in graph.axes.flat:
+        locus_name = ax.get_title().split(" ")[-1]
+        curr_locus_df = loci_df[loci_df["locus"] == locus_name]
+        addCount(curr_locus_df, ax, "method", "prediction_score", "prediction_status", None, prediction_status_order, 0.02)
+    plt.subplots_adjust(top=0.8)
+    plt.gcf().suptitle("Prediction status")
+    plt.savefig(out_path)
+    plt.close()
+
+def writeBalancedScorePredStatus(loci, results_df, out_path, random_seed=None):
+    loci_balanced_df = None
+    for locus in loci:
+        balanced_df = getBalancedDf(locus, results_df, random_seed)
+        curr_locus_df = getLociDf([locus], balanced_df)  # One locus the others are not balanced
+        if loci_balanced_df is None:
+            loci_balanced_df = pd.DataFrame(columns=curr_locus_df.columns)
+        loci_balanced_df = loci_balanced_df.append(curr_locus_df, sort=False, ignore_index=True)
+
+    # Plot scores
+    prediction_status_order = ["Valid", "Invalid", "Undetermined"]
+    graph = sns.catplot(
+        x="method",
+        y="prediction_score",
+        hue="prediction_status",
+        col="locus",
+        data=loci_balanced_df,
+        kind="box",
+        medianprops=dict(linewidth=2, color='firebrick'),
+        order=sorted(list(set(loci_balanced_df["method"]))),
+        hue_order=prediction_status_order
+    )
+    for ax in graph.axes.flat:
+        locus_name = ax.get_title().split(" ")[-1]
+        curr_locus_df = loci_balanced_df[loci_balanced_df["locus"] == locus_name]
+        addCount(curr_locus_df, ax, "method", "prediction_score", "prediction_status", None, prediction_status_order, 0.02)
+    plt.subplots_adjust(top=0.8)
+    plt.gcf().suptitle("Prediction status")
+    plt.savefig(out_path)
+    plt.close()
+
 
 ########################################################################
 #
@@ -380,6 +513,11 @@ if __name__ == "__main__":
     group_output.add_argument('-f', '--output-folder', default=".", help='The path to the output folder. [Default: %(default)s]')
     args = parser.parse_args()
 
+    ############################################################################
+    import warnings
+    warnings.warn("The sample prediction score in MIAmS is calculated like MSINGS.")
+    ############################################################################
+
     dataset_df = pd.read_csv(args.input_datasets, sep='\t')
     results_df = pd.read_csv(args.input_results, sep='\t')
     loci = getLoci(dataset_df)
@@ -391,20 +529,24 @@ if __name__ == "__main__":
     for locus in loci:
         results_df["{}_observed_status".format(locus)] = results_df.apply(lambda row: getFilteredObservation(row, locus, args.min_reads_support, args.min_score), axis=1)
         results_df["{}_pred_is_ok".format(locus)] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
-    results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensus(row, args.consensus_method), axis=1)
-    # results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensus(row, args.consensus_method), axis=1)
+    results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensusStatus(row, args.consensus_method), axis=1)
+    results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci), axis=1)
     results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
     results_df = pd.concat([results_df, getMethodConsensusDf(results_df, loci)], sort=False)
 
-    # Datasets informations
+    # Datasets information
     execTime(dataset_df, os.path.join(args.output_folder, "exectimes.svg"))
     datasetsComposition(dataset_df, os.path.join(args.output_folder, "datasets_composition_rate.svg"), "rate")
     datasetsComposition(dataset_df, os.path.join(args.output_folder, "datasets_composition_count.svg"), "count")
 
-    # Predictions informations
+    # Predictions information
     writeAccuracy(loci, results_df, os.path.join(args.output_folder, "accuracy_loci.svg"))
     writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"))
     writePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci.svg"))
     writePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_spl.svg"))
+    writeScorePredStatus(["spl"] + loci, results_df, os.path.join(args.output_folder, "score_pred_status.svg"))
+
+    # Balanced predictions information
     writeBalancedPredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci_balanced.svg"), args.random_seed)
     writeBalancedPredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_balanced.svg"), args.random_seed)
+    writeBalancedScorePredStatus(["spl"] + loci, results_df, os.path.join(args.output_folder, "score_pred_status_balanced.svg"), args.random_seed)
