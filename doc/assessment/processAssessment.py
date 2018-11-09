@@ -34,7 +34,7 @@ import subprocess
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit
 
-from anacore.msi import MSIReport, MSISample
+from anacore.msi import MSIReport, MSISample, LocusResPairsCombi, Status
 from anacore.msiannot import MSIAnnot
 from anacore.bed import getAreas
 
@@ -135,11 +135,11 @@ def execCommand(cmd):
         shell=True
     )
 
-def train(samples, annotations_file, design_folder, out_baseline, out_models, out_log):
+def train(samples, annotations_file, design_folder, out_baseline, out_models, out_log, args):
     app_folder = "../.."
     train_cmd = list(map(str, [
         os.path.join(app_folder, "jflow", "bin", "jflow_cli.py"), "miamslearn",
-        "--min-support-reads", 400,
+        "--min-support-reads", args.learn_min_support_reads,
         "--max-mismatch-ratio", 0.25,
         "--min-pair-overlap", 40,
         "--min-zoi-overlap", 12,
@@ -160,15 +160,19 @@ def train(samples, annotations_file, design_folder, out_baseline, out_models, ou
         ])
     execCommand(train_cmd)
 
-def predict(samples, design_folder, baseline, models, out_folder):
+def predict(samples, design_folder, baseline, models, out_folder, args):
     app_folder = "../.."
     predict_cmd = list(map(str, [
         os.path.join(app_folder, "jflow", "bin", "jflow_cli.py"), "miamstag",
-        "--min-support-reads", 300,
-        "--random-seed", "42",
+        "--min-support-reads", args.tag_min_support_reads,
+        "--random-seed", 42,
         "--max-mismatch-ratio", 0.25,
         "--min-pair-overlap", 40,
         "--min-zoi-overlap", 12,
+        "--loci-consensus-method", args.consensus_method,
+        "--min-voting-loci", args.min_voting_loci,
+        "--instability-ratio", args.instability_ratio,
+        "--instability-count", args.instability_count,
         "--R1-end-adapter", os.path.join(design_folder, "trimmed_R1.fasta"),
         "--R2-end-adapter", os.path.join(design_folder, "trimmed_R2.fasta"),
         "--targets", os.path.join(design_folder, "targets.bed"),
@@ -206,33 +210,42 @@ def getResInfoTitles(loci_id_by_name):
         ])
     return titles
 
-def getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, methods):
+def getMethodResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, method_name, res_method_name=None):
+    if res_method_name is None:
+        res_method_name = method_name
     dataset_res = []
     for curr_report in reports:
         expected = samples_by_name[curr_report.name.replace("_L001", "")]
-        for method_name in methods:
-            row = [dataset_id, curr_report.name, method_name]  # Dataset id, sample name and method
+        row = [dataset_id, curr_report.name, res_method_name]  # Dataset id, sample name and method
+        row.extend([
+            expected["sample"],  # expected
+            curr_report.results[method_name].status,  # observed
+            curr_report.results[method_name].score  # score
+        ])
+        for locus_name in sorted(loci_id_by_name):
+            loci_pos = loci_id_by_name[locus_name]
+            nb_support = None
+            if method_name == "MSINGS":
+                nb_support = 0
+                for curr_peak in curr_report.loci[loci_pos].results[method_name].data["peaks"]:
+                    nb_support += curr_peak["DP"]
+            else:
+                nb_support = curr_report.loci[loci_pos].results[method_name].getNbFrag() * 2
             row.extend([
-                expected["sample"],  # expected
-                curr_report.results[method_name].status,  # observed
-                curr_report.results[method_name].score  # score
+                expected[locus_name],  # expected
+                curr_report.loci[loci_pos].results[method_name].status,  # observed
+                curr_report.loci[loci_pos].results[method_name].score,  # score
+                nb_support  # support
             ])
-            for locus_name in sorted(loci_id_by_name):
-                loci_pos = loci_id_by_name[locus_name]
-                nb_support = None
-                if method_name == "MSINGS":
-                    nb_support = 0
-                    for curr_peak in curr_report.loci[loci_pos].results[method_name].data["peaks"]:
-                        nb_support += curr_peak["DP"]
-                else:
-                    nb_support = curr_report.loci[loci_pos].results[method_name].getNbFrag() * 2
-                row.extend([
-                    expected[locus_name],  # expected
-                    curr_report.loci[loci_pos].results[method_name].status,  # observed
-                    curr_report.loci[loci_pos].results[method_name].score,  # score
-                    nb_support  # support
-                ])
-            dataset_res.append(row)
+        dataset_res.append(row)
+    return dataset_res
+
+def getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, methods):
+    dataset_res = []
+    for method_name in methods:
+        dataset_res.extend(
+            getMethodResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, method_name)
+        )
     return dataset_res
 
 def getDatasetsInfoTitles(loci_id_by_name):
@@ -313,6 +326,53 @@ def getMSISamples(in_folder):
         samples_res.append(curr_spl)
     return samples_res
 
+def lociInitData(reports, src_method, dest_method):
+    for curr_report in reports:
+        for locus_id, locus in curr_report.loci.items():
+            src_data = locus.results[src_method].data
+            locus.results[dest_method] = LocusResPairsCombi(Status.none, None, src_data)
+
+def submitAddClf(train_path, test_path, res_path, args, method_name, clf, clf_params=None):
+    app_folder = "../.."
+    cmd = list(map(str, [
+        os.path.join(app_folder, "jflow", "workflows", "MIAmS_tag", "bin", "miamsClassify.py"),
+        "--classifier", clf,
+        "--random-seed", 42,
+        "--method-name", method_name,
+        "--min-support-fragments", int(args.tag_min_support_reads / 2),
+        "--consensus-method", args.consensus_method,
+        "--min-voting-loci", args.min_voting_loci,
+        "--instability-ratio", args.instability_ratio,
+        "--instability-count", args.instability_count,
+        "--input-references", train_path,
+        "--input-evaluated", test_path,
+        "--output-report", res_path
+    ]))
+    if clf_params is not None:
+        cmd.extend([
+            "--classifier-params", "'" + clf_params + "'"
+        ])
+    if "PYTHONPATH" in os.environ:
+        os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + os.path.dirname(__file__)
+    else:
+        os.environ["PYTHONPATH"] = os.path.dirname(__file__)
+    execCommand(cmd)
+
+def launchAddClf(reports_path, args):
+    for clf_name in args.add_classifiers:
+        method_name = clf_name
+        clf_params = None
+        if clf_name.startswith("RandomForestClassifier:"):
+            n_estimators = clf_name.split(":")[1]
+            clf_name = "RandomForestClassifier"
+            clf_params = '{"n_estimators": ' + n_estimators + '}'
+        # Copy combination produced by MIAmS in data of the new method
+        reports = MSIReport.parse(out_reports_path)
+        lociInitData(reports, "MIAmSClassif", method_name)
+        MSIReport.write(reports, out_reports_path)
+        # Submit classification
+        submitAddClf(models_path, out_reports_path, out_reports_path, args, method_name, clf_name, clf_params)
+
 
 ########################################################################
 #
@@ -321,17 +381,30 @@ def getMSISamples(in_folder):
 ########################################################################
 if __name__ == "__main__":
     # Manage parameters
-    parser = argparse.ArgumentParser(description="*****************.")
-    parser.add_argument('-i', '--start-dataset-id', type=int, default=0, help="********************************. [Default: %(default)s]")
-    parser.add_argument('-n', '--nb-test', type=int, default=200, help="********************************. [Default: %(default)s]")
-    parser.add_argument('-m', '--reference-method', default="ngs", help="********************************. [Default: %(default)s]")
+    parser = argparse.ArgumentParser(description="Launch classification on *****************************************************.")
+    parser.add_argument('-i', '--start-dataset-id', type=int, default=0, help="This option allow you to skip the n first test. [Default: %(default)s]")
+    parser.add_argument('-n', '--nb-test', type=int, default=200, help="The number of couple of test and train datasets created from the original dataset. [Default: %(default)s]")
+    parser.add_argument('-m', '--reference-method', default="ngs", help="The prefix of the columns in status_by_spl.tsv used as expected values (example: ngs, electro). [Default: %(default)s]")
+    parser.add_argument('-c', '--add-classifiers', default=[], nargs='+', help="The additional sklearn classifiers evaluates on MIAmS pairs combination results (example: DecisionTreeClassifier, KNeighborsClassifier, LogisticRegression, RandomForestClassifier, RandomForestClassifier:n).")
     parser.add_argument('-v', '--version', action='version', version=__version__)
-    group_input = parser.add_argument_group('Inputs')  # Inputs
-    group_input.add_argument('-d', '--data-folder', required=True, help="***************.")
-    group_input.add_argument('-w', '--work-folder', default="work", help="********************************. [Default: %(default)s]")
-    group_output = parser.add_argument_group('Outputs')  # Outputs
-    group_output.add_argument('-r', '--results-path', default="results.tsv", help='********************************. [Default: %(default)s]')
-    group_output.add_argument('-s', '--datasets-path', default="datasets.tsv", help='********************************. [Default: %(default)s]')
+    # Loci classification
+    group_loci = parser.add_argument_group('Loci classification')
+    group_loci.add_argument('-t', '--tag-min-support-reads', default=100, type=int, help='The minimum numbers of reads for determine the status. [Default: %(default)s]')
+    group_loci.add_argument('-e', '--learn-min-support-reads', default=400, type=int, help='The minimum numbers of reads for use loci in learning step. [Default: %(default)s]')
+    # Sample classification
+    group_spl = parser.add_argument_group('Sample classification')
+    group_spl.add_argument('--consensus-method', default='ratio', choices=['count', 'majority', 'ratio'], help='Method used to determine the sample status from the loci status. Count: if the number of unstable is upper or equal than instability-count the sample will be unstable otherwise it will be stable ; Ratio: if the ratio of unstable/determined loci is upper or equal than instability-ratio the sample will be unstable otherwise it will be stable ; Majority: if the ratio of unstable/determined loci is upper than 0.5 the sample will be unstable, if it is lower than stable the sample will be stable. [Default: %(default)s]')
+    group_spl.add_argument('--min-voting-loci', default=3, type=int, help='Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined. [Default: %(default)s]')
+    group_spl.add_argument('--instability-ratio', default=0.2, type=float, help='[Only with consensus-method = ratio] If the ratio unstable/(stable + unstable) is superior than this value the status of the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
+    group_spl.add_argument('--instability-count', default=3, type=int, help='[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
+    # Inputs
+    group_input = parser.add_argument_group('Inputs')
+    group_input.add_argument('-d', '--data-folder', required=True, help="*************************************************************.")
+    group_input.add_argument('-w', '--work-folder', default=os.getcwd(), help="The working directory. [Default: %(default)s]")
+    # Outputs
+    group_output = parser.add_argument_group('Outputs')
+    group_output.add_argument('-r', '--results-path', default="results.tsv", help='Path to the output file containing the description of the results and expected value for each samples in each datasets (format: TSV). [Default: %(default)s]')
+    group_output.add_argument('-s', '--datasets-path', default="datasets.tsv", help='Path to the output file containing the description of the datasets (format: TSV). [Default: %(default)s]')
     args = parser.parse_args()
 
     # Parameters
@@ -371,16 +444,21 @@ if __name__ == "__main__":
             models_path = os.path.join(args.work_folder, "models_dataset-{}.tsv".format(dataset_id))
             learn_log_path = os.path.join(args.work_folder, "log_dataset-{}.tsv".format(dataset_id))
             out_folder = os.path.join(args.work_folder, "out_dataset-{}".format(dataset_id))
+            out_reports_path = os.path.join(args.work_folder, "out_reports_dataset-{}.json".format(dataset_id))
             # Create datasets
             train_names = {getSplFromLibName(spl["name"]): 0 for idx, spl in enumerate(spl_wout_replicates) if idx in train_idx}
             test_names = {getSplFromLibName(spl["name"]): 0 for idx, spl in enumerate(spl_wout_replicates) if idx in test_idx}
             train_samples = [spl for spl in samples if getSplFromLibName(spl["name"]) in train_names]
             test_samples = [spl for spl in samples if getSplFromLibName(spl["name"]) in test_names]
             # Process learn and tag
-            train(train_samples, annotations_path, design_folder, baseline_path, models_path, learn_log_path)
-            predict(test_samples, design_folder, baseline_path, models_path, out_folder)
+            train(train_samples, annotations_path, design_folder, baseline_path, models_path, learn_log_path, args)
+            predict(test_samples, design_folder, baseline_path, models_path, out_folder, args)
             models = MSIReport.parse(models_path)
             reports = getMSISamples(os.path.join(out_folder, "data"))
+            if len(args.add_classifiers) > 0:
+                MSIReport.write(reports, out_reports_path)
+                launchAddClf(out_reports_path, args)
+                reports = MSIReport.parse(out_reports_path)
             # Write results and dataset
             use_header = False
             out_mode = "a"
@@ -402,12 +480,12 @@ if __name__ == "__main__":
             datasets_df = pd.DataFrame.from_records(datasets_df_rows, columns=getDatasetsInfoTitles(loci_id_by_name))
             with open(args.datasets_path, out_mode) as FH_out:
                 datasets_df.to_csv(FH_out, header=use_header, sep='\t')
-            res_df_rows = getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, ["MSINGS", "MIAmSClassif"])
+            res_df_rows = getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, ["MSINGS", "MIAmSClassif"] + args.add_classifiers)
             res_df = pd.DataFrame.from_records(res_df_rows, columns=getResInfoTitles(loci_id_by_name))
             with open(args.results_path, out_mode) as FH_out:
                 res_df.to_csv(FH_out, header=use_header, sep='\t')
             # Clean tmp
-            for tmp_file in [baseline_path, models_path, learn_log_path, out_folder]:
+            for tmp_file in [baseline_path, models_path, learn_log_path, out_folder, out_reports_path]:
                 if os.path.isdir(tmp_file):
                     shutil.rmtree(tmp_file)
                 else:
