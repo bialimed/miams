@@ -216,7 +216,7 @@ def getAccuracyDf(loci, results_df):
     accuracy_df = pd.DataFrame.from_records(accuracy_rows, columns=["dataset_id", "locus", "method", "accuracy", "nb_true_prediction", "nb_false_prediction", "nb_without_prediction"])
     return accuracy_df
 
-def writeAccuracy(loci, results_df, out_path):
+def writeAccuracy(loci, results_df, out_path, label_margin=0.01):
     accuracy_df = getAccuracyDf(loci, results_df)
     plt.figure(figsize=(8,5))
     g = sns.boxplot(x="locus", y="accuracy", hue="method", data=accuracy_df, medianprops=dict(linewidth=2, color='firebrick'))
@@ -235,8 +235,8 @@ def writeAccuracy(loci, results_df, out_path):
                 (accuracy_df['locus'] == curr_locus) &
                 (accuracy_df['method'] == curr_method)
             ]["accuracy"])
-            g.axes.text(x_pos + box_width / 2, max + 0.01, '{:.1f}'.format(median * 100), horizontalalignment='center', size='x-small', color='gray', weight='semibold')
-    plt.subplots_adjust(top=0.95)
+            g.axes.text(x_pos + box_width / 2, max + label_margin, '{:.1f}'.format(median * 100), rotation='vertical', horizontalalignment='center', size='x-small', color='gray', weight='semibold')
+    plt.subplots_adjust(top=0.90)
     plt.gcf().suptitle("Classification accuracy")
     plt.savefig(out_path)
     plt.close()
@@ -369,38 +369,50 @@ def getMajority(status):
         consensus = "MSS"
     return consensus
 
-def getMethodConsensusDf(res_df, loci):
-    methods = sorted(list(set(res_df["method_name"])))
-    nb_methods = len(methods)
+def getAgreement(status):
+    agreement = "Undetermined"
+    list_of_pred = [curr_status for curr_status in status]
+    if len(set(list_of_pred)) == 1:
+        agreement = list_of_pred[0]
+    return agreement
+
+def getMethodsConsensusDf(res_df, loci, used_methods=None, consensus_method="majority"):
+    if used_methods is None:
+        used_methods = sorted(list(set(res_df["method_name"])))
+    nb_used_methods = len(used_methods)
     consensus_data = {}
     consensus_rows = []
     for idx_row, curr_row in res_df.iterrows():
         res_id = "{}_{}".format(curr_row["dataset_id"], curr_row["lib_name"])
-        if res_id not in consensus_data:
-            consensus_data[res_id] = {
-                "dataset_id": curr_row["dataset_id"],
-                "lib_name": curr_row["lib_name"],
-                "spl_name": curr_row["spl_name"]
-            }
-            for elt in ["spl"] + loci:
-                consensus_data[res_id][elt + "_expected_status"] = curr_row[elt + "_expected_status"]
-                consensus_data[res_id][elt + "_observed_status"] = [curr_row[elt + "_observed_status"]]
-        else:
-            for elt in ["spl"] + loci:
-                consensus_data[res_id][elt + "_observed_status"].append(curr_row[elt + "_observed_status"])
-        if len(consensus_data[res_id]["spl_observed_status"]) == nb_methods:
-            cons_row = {k: v for k, v in consensus_data[res_id].items()}
-            cons_row["method_name"] = "consensus"
-            for elt in ["spl"] + loci:
-                cons_row[elt + "_observed_status"] = getMajority(cons_row[elt + "_observed_status"])
-                cons_row[elt + "_pred_score"] = None
-                cons_row[elt + "_pred_is_ok"] = None
-                if elt != "spl":
-                    cons_row[elt + "_pred_support"] = None
-            for elt in ["spl"] + loci:
-                cons_row[elt + "_pred_is_ok"] = getPredStatusEval(cons_row, elt)
-            consensus_rows.append(cons_row)
-            del(consensus_data[res_id])
+        if curr_row["method_name"] in used_methods:
+            if res_id not in consensus_data:
+                consensus_data[res_id] = {
+                    "dataset_id": curr_row["dataset_id"],
+                    "lib_name": curr_row["lib_name"],
+                    "spl_name": curr_row["spl_name"]
+                }
+                for elt in ["spl"] + loci:
+                    consensus_data[res_id][elt + "_expected_status"] = curr_row[elt + "_expected_status"]
+                    consensus_data[res_id][elt + "_observed_status"] = [curr_row[elt + "_observed_status"]]
+            else:
+                for elt in ["spl"] + loci:
+                    consensus_data[res_id][elt + "_observed_status"].append(curr_row[elt + "_observed_status"])
+            if len(consensus_data[res_id]["spl_observed_status"]) == nb_used_methods:
+                cons_row = {k: v for k, v in consensus_data[res_id].items()}
+                cons_row["method_name"] = consensus_method
+                for elt in ["spl"] + loci:
+                    if consensus_method == "majority":
+                        cons_row[elt + "_observed_status"] = getMajority(cons_row[elt + "_observed_status"])
+                    else:
+                        cons_row[elt + "_observed_status"] = getAgreement(cons_row[elt + "_observed_status"])
+                    cons_row[elt + "_pred_score"] = None
+                    cons_row[elt + "_pred_is_ok"] = None
+                    if elt != "spl":
+                        cons_row[elt + "_pred_support"] = None
+                for elt in ["spl"] + loci:
+                    cons_row[elt + "_pred_is_ok"] = getPredStatusEval(cons_row, elt)
+                consensus_rows.append(cons_row)
+                del(consensus_data[res_id])
     return pd.DataFrame(consensus_rows)
 
 def getLociDf(loci, results_df):
@@ -532,7 +544,8 @@ if __name__ == "__main__":
     results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensusStatus(row, args.consensus_method), axis=1)
     results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci), axis=1)
     results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
-    results_df = pd.concat([results_df, getMethodConsensusDf(results_df, loci)], sort=False)
+    results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "MIAmSClassif"], "majority")], sort=False)
+    results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "MIAmSClassif"], "agreement")], sort=False)
 
     # Datasets information
     execTime(dataset_df, os.path.join(args.output_folder, "exectimes.svg"))
@@ -540,8 +553,8 @@ if __name__ == "__main__":
     datasetsComposition(dataset_df, os.path.join(args.output_folder, "datasets_composition_count.svg"), "count")
 
     # Predictions information
-    writeAccuracy(loci, results_df, os.path.join(args.output_folder, "accuracy_loci.svg"))
-    writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"))
+    writeAccuracy(loci, results_df, os.path.join(args.output_folder, "accuracy_loci.svg"), 0.04)
+    writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"), 0.01)
     writePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci.svg"))
     writePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_spl.svg"))
     writeScorePredStatus(["spl"] + loci, results_df, os.path.join(args.output_folder, "score_pred_status.svg"))
