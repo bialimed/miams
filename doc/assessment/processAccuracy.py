@@ -137,35 +137,53 @@ def getSplConsensusScore(row, loci):
 #         score = round(score, 5)
 #     return score
 
-def getSplConsensusStatus(row, method="bethesda"):
+def getSplConsensusStatus(row, args):
     fct_by_method = {
-        "bethesda": getSplConsensusStatusBethesda,
-        "majority": getSplConsensusStatusMajority
+        "count": getSplConsensusStatusCount,
+        "ratio": getSplConsensusStatusRatio,
+        "majority": getSplConsensusStatusMajority,
+        "odd": getSplConsensusStatusOdd
     }
-    return fct_by_method[method](row)
-
-def getSplConsensusStatusMajority(row):
-    spl_status = "Undetermined"
     nb_by_status = {"MSI": 0, "MSS": 0, "Undetermined": 0}
     for col in row.keys():
         if col.endswith("observed_status") and col != "spl_observed_status":
             nb_by_status[row[col]] += 1
-    if nb_by_status["MSI"] > nb_by_status["MSS"] and nb_by_status["MSI"] >= 3:
-        spl_status = "MSI"
-    elif nb_by_status["MSI"] < nb_by_status["MSS"] and nb_by_status["MSS"] >= 3:
-        spl_status = "MSS"
+    spl_status = "Undetermined"
+    if nb_by_status["MSS"] + nb_by_status["MSI"] >= args.min_voting_loci:
+        spl_status = fct_by_method[args.consensus_method](nb_by_status, args)
     return spl_status
 
-def getSplConsensusStatusBethesda(row):
+def getSplConsensusStatusOdd(nb_by_status, args):
     spl_status = "Undetermined"
-    nb_by_status = {"MSI": 0, "MSS": 0, "Undetermined": 0}
-    for col in row.keys():
-        if col.endswith("observed_status") and col != "spl_observed_status":
-            nb_by_status[row[col]] += 1
     if nb_by_status["MSI"] >= 3:
         spl_status = "MSI"
     elif nb_by_status["MSS"] >= 3:
         spl_status = "MSS"
+    return spl_status
+
+def getSplConsensusStatusCount(nb_by_status, args):
+    spl_status = "Undetermined"
+    if nb_by_status["MSI"] >= args.instability_count:
+        spl_status = "MSI"
+    else:
+        spl_status = "MSS"
+    return spl_status
+
+def getSplConsensusStatusRatio(nb_by_status, args):
+    spl_status = "Undetermined"
+    if nb_by_status["MSI"] / (nb_by_status["MSI"] + nb_by_status["MSS"]) >= args.instability_ratio:
+        spl_status = "MSI"
+    else:
+        spl_status = "MSS"
+    return spl_status
+
+def getSplConsensusStatusMajority(nb_by_status, args):
+    spl_status = "Undetermined"
+    if nb_by_status["MSI"] > nb_by_status["MSS"]:
+        spl_status = "MSI"
+    elif nb_by_status["MSI"] < nb_by_status["MSS"]:
+        spl_status = "MSS"
+    # else nb_by_status["MSI"] == nb_by_status["MSS"]
     return spl_status
 
 def getFilteredObservation(row, locus, min_nb_support=None, min_score=None):
@@ -516,12 +534,20 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--random-seed', default=42, type=int, help='The random seed used to balance datasets. [Default: %(default)s]')
     parser.add_argument('-mr', '--min-reads-support', type=int, help='The prediction of all loci with a number of reads lower than this value are set to undetermined. [Default: no filter]')
     parser.add_argument('-ms', '--min-score', type=float, help='The prediction of all loci with a prediction score lower than this value are set to undetermined. [Default: no filter]')
-    parser.add_argument('-c', '--consensus-method', choices=["bethesda", "majority"], default="bethesda", help='The method used to predict sample status from these loci status. [Default: %(default)s]')
+    # parser.add_argument('-c', '--consensus-method', choices=["bethesda", "majority"], default="bethesda", help='The method used to predict sample status from these loci status. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
-    group_input = parser.add_argument_group('Inputs')  # Inputs
+    # Sample classification
+    group_spl = parser.add_argument_group('Sample classification')
+    group_spl.add_argument('--consensus-method', default='ratio', choices=['count', 'majority', 'odd', 'ratio'], help='Method used to determine the sample status from the loci status. Count: if the number of unstable is upper or equal than instability-count the sample will be unstable otherwise it will be stable ; Ratio: if the ratio of unstable/determined loci is upper or equal than instability-ratio the sample will be unstable otherwise it will be stable ; Majority: if the ratio of unstable/determined loci is upper than 0.5 the sample will be unstable, if it is lower than stable the sample will be stable. [Default: %(default)s]')
+    group_spl.add_argument('--min-voting-loci', default=3, type=int, help='Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined. [Default: %(default)s]')
+    group_spl.add_argument('--instability-ratio', default=0.2, type=float, help='[Only with consensus-method = ratio] If the ratio unstable/(stable + unstable) is superior than this value the status of the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
+    group_spl.add_argument('--instability-count', default=3, type=int, help='[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
+    # Inputs
+    group_input = parser.add_argument_group('Inputs')
     group_input.add_argument('-d', '--input-datasets', required=True, help='The path to the file describing datasets used in assessment (format: TSV).')
     group_input.add_argument('-r', '--input-results', required=True, help='The path to the file describing predictions results produced by assessment (format: TSV).')
-    group_output = parser.add_argument_group('Outputs')  # Outputs
+    # Outputs
+    group_output = parser.add_argument_group('Outputs')
     group_output.add_argument('-f', '--output-folder', default=".", help='The path to the output folder. [Default: %(default)s]')
     args = parser.parse_args()
 
@@ -541,7 +567,7 @@ if __name__ == "__main__":
     for locus in loci:
         results_df["{}_observed_status".format(locus)] = results_df.apply(lambda row: getFilteredObservation(row, locus, args.min_reads_support, args.min_score), axis=1)
         results_df["{}_pred_is_ok".format(locus)] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
-    results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensusStatus(row, args.consensus_method), axis=1)
+    results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensusStatus(row, args), axis=1)
     results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci), axis=1)
     results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
     results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "MIAmSClassif"], "majority")], sort=False)
