@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ../processAccuracy.py \
     --min-reads-support 100 \
     --consensus-method count \

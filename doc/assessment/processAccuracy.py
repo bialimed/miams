@@ -569,9 +569,11 @@ if __name__ == "__main__":
         results_df["{}_pred_is_ok".format(locus)] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
     results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensusStatus(row, args), axis=1)
     results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci), axis=1)
-    results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
+    results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, "spl"), axis=1)
     results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "MIAmSClassif"], "majority")], sort=False)
     results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "MIAmSClassif"], "agreement")], sort=False)
+    with open(os.path.join(args.output_folder, "cleaned_results.tsv"), "w") as FH_out:
+        results_df.to_csv(FH_out, sep='\t')
 
     # Datasets information
     execTime(dataset_df, os.path.join(args.output_folder, "exectimes.svg"))
