@@ -19,9 +19,9 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.3.0'
+__version__ = '1.0.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
-__status__ = 'dev'
+__status__ = 'prod'
 
 import os
 import re
@@ -501,7 +501,8 @@ def writeBalancedScorePredStatus(loci, results_df, out_path, random_seed=None):
         loci_balanced_df = loci_balanced_df.append(curr_locus_df, sort=False, ignore_index=True)
 
     # Plot scores
-    prediction_status_order = ["Valid", "Invalid", "Undetermined"]
+    loci_balanced_df = loci_balanced_df[loci_balanced_df["prediction_status"] != "Undetermined"]
+    prediction_status_order = ["Valid", "Invalid"]
     graph = sns.catplot(
         x="method",
         y="prediction_score",
@@ -534,7 +535,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--random-seed', default=42, type=int, help='The random seed used to balance datasets. [Default: %(default)s]')
     parser.add_argument('-mr', '--min-reads-support', type=int, help='The prediction of all loci with a number of reads lower than this value are set to undetermined. [Default: no filter]')
     parser.add_argument('-ms', '--min-score', type=float, help='The prediction of all loci with a prediction score lower than this value are set to undetermined. [Default: no filter]')
-    # parser.add_argument('-c', '--consensus-method', choices=["bethesda", "majority"], default="bethesda", help='The method used to predict sample status from these loci status. [Default: %(default)s]')
+    parser.add_argument('-ac', '--add-algorithm-consensus', default=False, action='store_true', help='Add agreement and consensus on algorithms prediction.')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     # Sample classification
     group_spl = parser.add_argument_group('Sample classification')
@@ -570,8 +571,9 @@ if __name__ == "__main__":
     results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensusStatus(row, args), axis=1)
     results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci), axis=1)
     results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, "spl"), axis=1)
-    results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "MIAmSClassif"], "majority")], sort=False)
-    results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "MIAmSClassif"], "agreement")], sort=False)
+    if args.add_algorithm_consensus:
+        results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "SVM"], "majority")], sort=False)
+        results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "SVM"], "agreement")], sort=False)
     with open(os.path.join(args.output_folder, "cleaned_results.tsv"), "w") as FH_out:
         results_df.to_csv(FH_out, sep='\t')
 
@@ -585,9 +587,10 @@ if __name__ == "__main__":
     writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"), 0.01)
     writePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci.svg"))
     writePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_spl.svg"))
-    writeScorePredStatus(["spl"] + loci, results_df, os.path.join(args.output_folder, "score_pred_status.svg"))
+    writeScorePredStatus(["spl"] + loci, results_df, os.path.join(args.output_folder, "pred_score_all.svg"))
 
     # Balanced predictions information
     writeBalancedPredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci_balanced.svg"), args.random_seed)
-    writeBalancedPredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_balanced.svg"), args.random_seed)
-    writeBalancedScorePredStatus(["spl"] + loci, results_df, os.path.join(args.output_folder, "score_pred_status_balanced.svg"), args.random_seed)
+    writeBalancedPredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_spl_balanced.svg"), args.random_seed)
+    writeBalancedScorePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_score_loci_balanced.svg"), args.random_seed)
+    writeBalancedScorePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_score_spl_balanced.svg"), args.random_seed)
