@@ -17,7 +17,7 @@
  *
  * @author  Frederic Escudie
  * @license  GNU General Public License
- * @version  1.0.0
+ * @version  1.1.0
  */
 
 function sortNumber(a,b) {
@@ -29,10 +29,22 @@ String.prototype.capitalize = function() {
 };
 
 
-function selectSample( spl_data, methods, pre_zoom_min=null, pre_zoom_max=null ){
+function getMethods(data) {
+    let methods = set()
+    data.forEach(curr_spl){
+        Object.keys(curr_spl.results).forEach(curr_method){
+            methods.add(curr_method)
+        }
+    }
+    methods = Array.from(methods)
+    methods.sort()
+    return methods
+}
+
+function selectSample( spl_data, methods, distrib_method, pre_zoom_min=null, pre_zoom_max=null ){
     drawSampleStatus('sample-status', spl_data, methods)
     drawSampleTable('sample-summary-table', spl_data, methods)
-    drawSizeGraph('length-graph', spl_data.loci, "MIAmSClassif", pre_zoom_min, pre_zoom_max)
+    drawSizeGraph('length-graph', spl_data.loci, distrib_method, pre_zoom_min, pre_zoom_max)
     drawLociTable('nb-seq-table', spl_data.loci, methods)
 }
 
@@ -271,20 +283,17 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
 
 function getNbReads(method, result){
     let nb_reads = null
-    if(method == "MIAmSClassif"){
+    if(resuls.data.hasOwnProperty("nb_reads")){
+        nb_reads = result.data["nb_reads"]
+    } else {
         nb_reads = 0
         const lengths = Object.keys(result.data["nb_by_length"])
         lengths.forEach(function (curr_length) {
             nb_reads += result.data["nb_by_length"][curr_length]
         })
-        nb_reads = nb_reads * 2
-    } else if(method == "MSINGS"){
-        nb_reads = 0
-        result.data["peaks"].forEach(function (curr_peak) {
-            nb_reads += curr_peak["DP"]
-        })
-    } else if(resuls.data.hasOwnProperty("nb_reads")){
-        nb_reads = result.data["nb_reads"]
+        if(result._class == "LocusResPairsCombi"){  // Method based on fragments instead of reads
+            nb_reads = nb_reads * 2
+        }
     }
     return nb_reads
 }

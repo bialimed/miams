@@ -18,7 +18,7 @@
     <head>
         <title>MSI profile</title>
         <meta charset="UTF-8">
-        <meta name="version" content="1.0.0">
+        <meta name="version" content="1.1.0">
         <!-- CSS -->
         <link rel="stylesheet" type="text/css" href="lib/dataTables_1.10.16/css/jquery.dataTables.min.css">
         <link rel="stylesheet" type="text/css" href="lib/bootstrap_4.0.0/css/bootstrap.min.css">
@@ -91,17 +91,20 @@
             </div>
         </div>
 		<script type="text/javascript">
-			const methods = ["MSINGS", "MIAmSClassif"]
 			const data_by_spl = ##DATA##
 			const models_peaks_by_locus = ##MODELS_HIGHER_PEAK##
+			const methods = getMethods(Object.keys(data_by_spl))
+            const distrib_method = methods.filter(function(method){return method != "MSINGS"})[0]
 			const locus_id_by_name = getLocusIdByName(data_by_spl)
-			addMethodsInTable(methods)
+
+            // Init template
+            addMethodsInTable(methods)
             let select_spl = $("#selected-spl")
             Object.keys(data_by_spl).sort().forEach(function( curr_path ){
                 select_spl.append(new Option(curr_path, curr_path))
             })
             $('.selectpicker').selectpicker()
-            selectSample(data_by_spl[select_spl.val()], methods)
+            selectSample(data_by_spl[select_spl.val()], methods, distrib_method)
             navButtonUpdate(select_spl)
 
             // Events
@@ -109,7 +112,7 @@
                 const select_spl = $("#selected-spl")
                 try {
                     $("#user-alert").addClass("d-none")
-                    selectSample(data_by_spl[select_spl.val()], methods)
+                    selectSample(data_by_spl[select_spl.val()], methods, distrib_method)
                     navButtonUpdate(select_spl)
                 } catch(error) {
                     $("#user-alert").text('Error when loading data.')

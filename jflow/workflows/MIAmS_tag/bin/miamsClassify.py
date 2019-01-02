@@ -3,7 +3,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '2.0.1'
+__version__ = '2.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -36,15 +36,15 @@ class MIAmSClassifier(LocusClassifier):
             clf_obj = SVC(**clf_params)
         elif clf == "LogisticRegression":
             clf_obj = LogisticRegression(**clf_params)
-        elif clf == "DecisionTreeClassifier":
+        elif clf == "DecisionTree":
             clf_obj = DecisionTreeClassifier(**clf_params)
-        elif clf == "KNeighborsClassifier":
+        elif clf == "KNeighbors":
             if "n_neighbors" in clf_params:
                 clf_params["n_neighbors"] = 2
             if "random_state" in clf_params:
                 del clf_params["random_state"]
             clf_obj = KNeighborsClassifier(**clf_params)
-        elif clf == "RandomForestClassifier":
+        elif clf == "RandomForest":
             clf_obj = RandomForestClassifier(**clf_params)
         else:
             raise Exception('The classifier "{}" is not implemented in MIAmSClassifier.'.format(clf))
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--method-name', default="MIAmS_combi", help='The name of the method storing locus metrics and where the status will be set. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_locus = parser.add_argument_group('Locus classifier')  # Locus status
-    group_locus.add_argument('-k', '--classifier', default="SVC", choices=["DecisionTreeClassifier", "KNeighborsClassifier", "LogisticRegression", "RandomForestClassifier", "SVC"], help='The classifier used to predict loci status.')
+    group_locus.add_argument('-k', '--classifier', default="SVC", choices=["DecisionTree", "KNeighbors", "LogisticRegression", "RandomForest", "SVC"], help='The classifier used to predict loci status.')
     group_locus.add_argument('-p', '--classifier-params', action=ClassifierParamsAction, default={}, help='Additional parameters provided to classifier in json string (example: {"n_estimators": 1000} for RandmForest).')
     group_locus.add_argument('-f', '--min-support-fragments', default=150, type=int, help='The minimum numbers of fragment (reads pairs) for determine the status. [Default: %(default)s]')
     group_locus.add_argument('-s', '--random-seed', default=None, type=int, help='The seed used by the random number generator in the classifier.')

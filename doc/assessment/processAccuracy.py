@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -535,6 +535,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--random-seed', default=42, type=int, help='The random seed used to balance datasets. [Default: %(default)s]')
     parser.add_argument('-mr', '--min-reads-support', type=int, help='The prediction of all loci with a number of reads lower than this value are set to undetermined. [Default: no filter]')
     parser.add_argument('-ms', '--min-score', type=float, help='The prediction of all loci with a prediction score lower than this value are set to undetermined. [Default: no filter]')
+    parser.add_argument('-k', '--default-classifier', default="SVCPairs", help='The classifier used in consensus between MSINGS and MIAmS default classifier. [Default: %(default)s]')
     parser.add_argument('-ac', '--add-algorithm-consensus', default=False, action='store_true', help='Add agreement and consensus on algorithms prediction.')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     # Sample classification
@@ -572,8 +573,8 @@ if __name__ == "__main__":
     results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci), axis=1)
     results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, "spl"), axis=1)
     if args.add_algorithm_consensus:
-        results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "SVM"], "majority")], sort=False)
-        results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", "SVM"], "agreement")], sort=False)
+        results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", args.default_classifier], "majority")], sort=False)
+        results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", args.default_classifier], "agreement")], sort=False)
     with open(os.path.join(args.output_folder, "cleaned_results.tsv"), "w") as FH_out:
         results_df.to_csv(FH_out, sep='\t')
 

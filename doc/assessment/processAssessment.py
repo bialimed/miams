@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '0.0.0'
+__version__ = '1.0.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -368,7 +368,7 @@ def launchAddClf(reports_path, args):
             clf_params = '{"n_estimators": ' + n_estimators + '}'
         # Copy combination produced by MIAmS in data of the new method
         reports = MSIReport.parse(out_reports_path)
-        lociInitData(reports, "MIAmSClassif", method_name)
+        lociInitData(reports, args.default_classifier, method_name)
         MSIReport.write(reports, out_reports_path)
         # Submit classification
         submitAddClf(models_path, out_reports_path, out_reports_path, args, method_name, clf_name, clf_params)
@@ -381,10 +381,11 @@ def launchAddClf(reports_path, args):
 ########################################################################
 if __name__ == "__main__":
     # Manage parameters
-    parser = argparse.ArgumentParser(description="Launch classification on *****************************************************.")
+    parser = argparse.ArgumentParser(description="Launch classification on evaluation datasets.")
     parser.add_argument('-i', '--start-dataset-id', type=int, default=0, help="This option allow you to skip the n first test. [Default: %(default)s]")
     parser.add_argument('-n', '--nb-test', type=int, default=200, help="The number of couple of test and train datasets created from the original dataset. [Default: %(default)s]")
     parser.add_argument('-m', '--reference-method', default="ngs", help="The prefix of the columns in status_by_spl.tsv used as expected values (example: ngs, electro). [Default: %(default)s]")
+    parser.add_argument('-k', '--default-classifier', default="SVCPairs", help='The classifier used in MIAmS. [Default: %(default)s]')
     parser.add_argument('-c', '--add-classifiers', default=[], nargs='+', help="The additional sklearn classifiers evaluates on MIAmS pairs combination results (example: DecisionTreeClassifier, KNeighborsClassifier, LogisticRegression, RandomForestClassifier, RandomForestClassifier:n).")
     parser.add_argument('-v', '--version', action='version', version=__version__)
     # Loci classification
@@ -399,7 +400,7 @@ if __name__ == "__main__":
     group_spl.add_argument('--instability-count', default=3, type=int, help='[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
     # Inputs
     group_input = parser.add_argument_group('Inputs')
-    group_input.add_argument('-d', '--data-folder', required=True, help="*************************************************************.")
+    group_input.add_argument('-d', '--data-folder', required=True, help="The folder containing data to process. It must contain design/, raw_by_run/ and status_by_spl.tsv.")
     group_input.add_argument('-w', '--work-folder', default=os.getcwd(), help="The working directory. [Default: %(default)s]")
     # Outputs
     group_output = parser.add_argument_group('Outputs')
@@ -480,7 +481,7 @@ if __name__ == "__main__":
             datasets_df = pd.DataFrame.from_records(datasets_df_rows, columns=getDatasetsInfoTitles(loci_id_by_name))
             with open(args.datasets_path, out_mode) as FH_out:
                 datasets_df.to_csv(FH_out, header=use_header, sep='\t')
-            res_df_rows = getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, ["MSINGS", "MIAmSClassif"] + args.add_classifiers)
+            res_df_rows = getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, ["MSINGS", args.default_classifier] + args.add_classifiers)
             res_df = pd.DataFrame.from_records(res_df_rows, columns=getResInfoTitles(loci_id_by_name))
             with open(args.results_path, out_mode) as FH_out:
                 res_df.to_csv(FH_out, header=use_header, sep='\t')
