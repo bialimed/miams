@@ -137,7 +137,7 @@ third described in *Workflows management* that must be processed for each analys
       --output ${APP_DIR}/test/out_model/msi_intervals.tsv
 
 ### Build MSI reference with *MIAmS Learn*
-The following command must be used on large number of stable and instable samples
+The following command must be used on large number of stable and unstable samples
 coming from your laboratory. Take in mind the sentence of mSINGS's authors:
 "_Baseline statistics vary markedly from assay-to-assay and lab-to-lab. It is
 CRITICAL that you prepare a baseline file that is specific for your analytic
@@ -181,8 +181,8 @@ The following command is the example used in installation test:
 
     source ${APP_DIR}/envs/miniconda3/bin/activate MIAmS
     ${APP_DIR}/jflow/bin/jflow_cli.py miamstag \
-      --R1-pattern ${APP_DIR}/test/data/instable/\*_L001_R1.fastq.gz \
-      --R2 ${APP_DIR}/test/data/instable/\*_L001_R2.fastq.gz \
+      --R1-pattern ${APP_DIR}/test/data/unstable/\*_L001_R1.fastq.gz \
+      --R2 ${APP_DIR}/test/data/unstable/\*_L001_R2.fastq.gz \
       --models ${APP_DIR}/test/data/models.json \
       --targets ${APP_DIR}/test/data/msi.bed \
       --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \

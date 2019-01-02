@@ -70,15 +70,15 @@ def datasetsComposition(dataset_df, out_path, mode="rate"):
     for idx, row in dataset_df.iterrows():
         for dataset_type in ["train", "test"]:
             for locus in ["spl", "BAT25", "BAT26", "HT17", "NR21", "NR22", "NR27"]:
-                nb_determined = row["{}_nb_{}_instable".format(dataset_type, locus)] + row["{}_nb_{}_stable".format(dataset_type, locus)]
+                nb_determined = row["{}_nb_{}_unstable".format(dataset_type, locus)] + row["{}_nb_{}_stable".format(dataset_type, locus)]
                 if nb_determined != 0:
-                    ratio_unstable = row["{}_nb_{}_instable".format(dataset_type, locus)] / nb_determined
+                    ratio_unstable = row["{}_nb_{}_unstable".format(dataset_type, locus)] / nb_determined
                     desc_rows.append([
                         dataset_type,
                         locus,
                         ratio_unstable,
                         row["{}_nb_{}_stable".format(dataset_type, locus)],
-                        row["{}_nb_{}_instable".format(dataset_type, locus)]
+                        row["{}_nb_{}_unstable".format(dataset_type, locus)]
                     ])
     desc_df = pd.DataFrame.from_records(desc_rows, columns=["dataset_type", "locus", "unstable_ratio", "nb_stable", "nb_unstable"])
     # Plot

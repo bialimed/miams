@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.4.0'
+__version__ = '1.5.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -44,7 +44,7 @@ class Status:
     """Status for samples (MSISplRes) and loci (LocusRes) in anacore.msi library."""
 
     stable = "MSS"
-    instable = "MSI"
+    unstable = "MSI"
     undetermined = "Undetermined"  # Cannot be determined
     none = None  # Not evaluated
 
@@ -411,17 +411,17 @@ class MSISample:
 
     def getNbUnstable(self, method):
         """
-        Return the number of loci predicted as instable with the selected method.
+        Return the number of loci predicted as unstable with the selected method.
 
         :param method: The selected method.
         :type method: str
-        :return: The number of instable loci.
+        :return: The number of unstable loci.
         :rtype: int
         """
         nb_unstable = 0
         status = self._getStatusByMethod(method)
         for curr_status in status:
-            if curr_status is not None and curr_status == Status.instable:
+            if curr_status is not None and curr_status == Status.unstable:
                 nb_unstable += 1
         return nb_unstable
 
@@ -528,7 +528,7 @@ class MSISample:
         """
         Calculate and return a confidence score for the sample status prediction. This score is calculation take into account each locus and his score with the following formula: sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight).
 
-        :param eval_status: The score is calculated for this status (msi.Status.stable or msi.Status.instable). Except for undetermined_weight equals to 0 the score of the complementary status CANNOT be calculated by 1 - complementary score.
+        :param eval_status: The score is calculated for this status (msi.Status.stable or msi.Status.unstable). Except for undetermined_weight equals to 0 the score of the complementary status CANNOT be calculated by 1 - complementary score.
         :type eval_status: msi.Status
         :param method: The status of the loci are extracted from the results of this method.
         :type method: str
@@ -597,7 +597,7 @@ class MSISample:
         result.status = Status.undetermined
         if nb_stable + nb_unstable >= min_voting_loci:
             if nb_unstable >= instability_threshold:
-                result.status = Status.instable
+                result.status = Status.unstable
             else:
                 result.status = Status.stable
         self.results[method] = result
@@ -626,7 +626,7 @@ class MSISample:
         result.status = Status.undetermined
         if nb_stable + nb_unstable >= min_voting_loci:
             if nb_unstable / (nb_stable + nb_unstable) >= instability_threshold:
-                result.status = Status.instable
+                result.status = Status.unstable
             else:
                 result.status = Status.stable
         self.results[method] = result
@@ -655,7 +655,7 @@ class MSISample:
             if nb_stable > nb_unstable:
                 result.status = Status.stable
             elif nb_stable < nb_unstable:
-                result.status = Status.instable
+                result.status = Status.unstable
         self.results[method] = result
         self.setScore(method)
 

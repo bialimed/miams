@@ -251,20 +251,20 @@ def getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, methods):
 def getDatasetsInfoTitles(loci_id_by_name):
     titles = ["dataset_id", "dataset_md5"]
     # Train dataset
-    titles.extend(["train_nb_spl", "train_nb_spl_stable", "train_nb_spl_instable", "train_nb_spl_undetermined"])
+    titles.extend(["train_nb_spl", "train_nb_spl_stable", "train_nb_spl_unstable", "train_nb_spl_undetermined"])
     for locus_name in sorted(loci_id_by_name):
         titles.extend([
             "train_nb_" + locus_name + "_stable",
-            "train_nb_" + locus_name + "_instable",
+            "train_nb_" + locus_name + "_unstable",
             "train_nb_" + locus_name + "_undetermined"
         ])
     titles.append("learn_exec_time")
     # Test dataset
-    titles.extend(["test_nb_spl", "test_nb_spl_stable", "test_nb_spl_instable", "test_nb_spl_undetermined"])
+    titles.extend(["test_nb_spl", "test_nb_spl_stable", "test_nb_spl_unstable", "test_nb_spl_undetermined"])
     for locus_name in sorted(loci_id_by_name):
         titles.extend([
             "test_nb_" + locus_name + "_stable",
-            "test_nb_" + locus_name + "_instable",
+            "test_nb_" + locus_name + "_unstable",
             "test_nb_" + locus_name + "_undetermined"
         ])
     titles.append("tag_exec_time")

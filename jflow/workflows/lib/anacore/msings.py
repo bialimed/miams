@@ -151,7 +151,7 @@ class MSINGSReport(object):
                 if elt == "NEG":
                     curr_status = Status.stable
                 elif elt == "POS":
-                    curr_status = Status.instable
+                    curr_status = Status.unstable
             status[idx] = curr_status
         for spl_idx, curr_spl in enumerate(samples):
             if status[spl_idx] == Status.stable:
@@ -176,7 +176,7 @@ class MSINGSReport(object):
                 if curr_val == "":
                     loci_res = LocusRes(Status.undetermined)
                 elif curr_val == "1":
-                    loci_res = LocusRes(Status.instable)
+                    loci_res = LocusRes(Status.unstable)
                 else:
                     loci_res = LocusRes(Status.stable)
                 self.samples[curr_spl].addLocus(

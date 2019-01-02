@@ -128,7 +128,7 @@ def pruneResults(msi_samples, result_id, min_support_fragments):
         nb_results = 0
         for locus_id, msi_locus in spl.loci.items():
             if result_id in msi_locus.results:
-                if msi_locus.results[result_id].status not in [Status.stable, Status.instable]:
+                if msi_locus.results[result_id].status not in [Status.stable, Status.unstable]:
                     msi_locus.delResult(result_id)
                 elif msi_locus.results[result_id].getNbFrag() < min_support_fragments:
                     msi_locus.delResult(result_id)
