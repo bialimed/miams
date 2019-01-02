@@ -17,7 +17,7 @@
  *
  * @author  Frederic Escudie
  * @license  GNU General Public License
- * @version  1.1.0
+ * @version  1.2.0
  */
 
 function sortNumber(a,b) {
@@ -30,7 +30,7 @@ String.prototype.capitalize = function() {
 
 
 function getMethods(data) {
-    let methods = set()
+    let methods = new Set()
     data.forEach(function(curr_spl){
         Object.keys(curr_spl.results).forEach(function(curr_method){
             methods.add(curr_method)
@@ -91,9 +91,14 @@ function drawSampleTable( container_id, sample_data, methods ){
     // Prepare data
     let rows_data = new Array()
     methods.forEach(function (curr_method) {
-        rows_data.push([
+		let score = displayedScore(sample_data.results[curr_method].score)
+		if( score !== null ){
+			const score_class = (score >= 0.85 ? "score" : "score score-warning")
+			score = '<span class="' + score_class + '">' + score + '</span>'
+		}
+		rows_data.push([
             curr_method,
-            displayedScore(sample_data.results[curr_method].score),
+            score,
             sample_data.results[curr_method].status
         ])
     })
@@ -114,22 +119,6 @@ function drawSampleTable( container_id, sample_data, methods ){
         .to$()
         .each( function (idx, td) {
             td.className = 'sticker status-' + td.textContent
-        })
-    // Add class on score cells
-    datatable.columns(1).nodes()
-        .flatten()
-        .to$()
-        .each( function (idx, td) {
-            const score = Number.parseFloat(td.textContent)
-            thresholds = {1: "good", 0.9: "valid", 0.5: "warning", 0: "error"}
-            category = "error"
-            const asc_thresholds = Object.keys(thresholds).sort(function (a, b) {  return parseFloat(a) - parseFloat(b) ;  });
-            asc_thresholds.forEach(function(curr_threshold){
-                if( Number.parseFloat(curr_threshold) <= score ){
-                    category = thresholds[curr_threshold] ;
-                }
-            });
-            td.className = 'sticker status-' + category
         })
     // Draw
     datatable.draw()
@@ -319,11 +308,16 @@ function drawLociTable( container_id, data, methods ){
     let rows_data = new Array()
     loci_ids.forEach(function (key) {
         const locus = data[key]
-        let curr_row = [locus.position, locus.name]
-        methods.forEach(function (curr_method) {
+			let curr_row = [locus.position, locus.name]
+			methods.forEach(function (curr_method) {
+			let score = displayedScore(locus.results[curr_method].score)
+			if( score !== null ){
+				const score_class = (score >= 0.90 ? "score" : "score score-warning")
+				score = '<span class="' + score_class + '">' + score + '</span>'
+			}
             curr_row = curr_row.concat([
                 getNbReads(curr_method, locus.results[curr_method]),
-                displayedScore(locus.results[curr_method].score),
+                score,
                 locus.results[curr_method].status
             ])
             status_columns.push(curr_row.length - 1)

@@ -76,14 +76,14 @@
     background-color: #007BFF;
     transform: skewX(-15deg);
 }
-.badge.status-MSS {
-    background-color: #28A745;
+.score {
+	padding: .25em .4em;
+	text-align: center;
+	white-space: nowrap;
+	border-radius: .25rem;
 }
-.badge.status-MSI {
-    background-color: #FF9800;
-}
-.badge.status-Undetermined {
-    background-color: #DC3545;
+.score-warning {
+    background-color: #F0AD4E;
 }
 .sticker {
   border: solid 0.3em transparent;
