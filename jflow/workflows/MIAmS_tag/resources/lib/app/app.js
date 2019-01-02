@@ -31,11 +31,11 @@ String.prototype.capitalize = function() {
 
 function getMethods(data) {
     let methods = set()
-    data.forEach(curr_spl){
-        Object.keys(curr_spl.results).forEach(curr_method){
+    data.forEach(function(curr_spl){
+        Object.keys(curr_spl.results).forEach(function(curr_method){
             methods.add(curr_method)
-        }
-    }
+        })
+    })
     methods = Array.from(methods)
     methods.sort()
     return methods
@@ -283,7 +283,7 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
 
 function getNbReads(method, result){
     let nb_reads = null
-    if(resuls.data.hasOwnProperty("nb_reads")){
+    if(result.data.hasOwnProperty("nb_reads")){
         nb_reads = result.data["nb_reads"]
     } else {
         nb_reads = 0

@@ -93,7 +93,7 @@
 		<script type="text/javascript">
 			const data_by_spl = ##DATA##
 			const models_peaks_by_locus = ##MODELS_HIGHER_PEAK##
-			const methods = getMethods(Object.keys(data_by_spl))
+			const methods = getMethods(Object.values(data_by_spl))
             const distrib_method = methods.filter(function(method){return method != "MSINGS"})[0]
 			const locus_id_by_name = getLocusIdByName(data_by_spl)
 
