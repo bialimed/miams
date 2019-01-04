@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -362,9 +362,9 @@ def launchAddClf(reports_path, args):
     for clf_name in args.add_classifiers:
         method_name = clf_name
         clf_params = None
-        if clf_name.startswith("RandomForestClassifier:"):
+        if clf_name.startswith("RandomForest:"):
             n_estimators = clf_name.split(":")[1]
-            clf_name = "RandomForestClassifier"
+            clf_name = "RandomForest"
             clf_params = '{"n_estimators": ' + n_estimators + '}'
         # Copy combination produced by MIAmS in data of the new method
         reports = MSIReport.parse(out_reports_path)
@@ -386,7 +386,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--nb-test', type=int, default=200, help="The number of couple of test and train datasets created from the original dataset. [Default: %(default)s]")
     parser.add_argument('-m', '--reference-method', default="ngs", help="The prefix of the columns in status_by_spl.tsv used as expected values (example: ngs, electro). [Default: %(default)s]")
     parser.add_argument('-k', '--default-classifier', default="SVCPairs", help='The classifier used in MIAmS. [Default: %(default)s]')
-    parser.add_argument('-c', '--add-classifiers', default=[], nargs='+', help="The additional sklearn classifiers evaluates on MIAmS pairs combination results (example: DecisionTreeClassifier, KNeighborsClassifier, LogisticRegression, RandomForestClassifier, RandomForestClassifier:n).")
+    parser.add_argument('-c', '--add-classifiers', default=[], nargs='+', help="The additional sklearn classifiers evaluates on MIAmS pairs combination results (example: DecisionTree, KNeighbors, LogisticRegression, RandomForest, RandomForest:n).")
     parser.add_argument('-v', '--version', action='version', version=__version__)
     # Loci classification
     group_loci = parser.add_argument_group('Loci classification')
