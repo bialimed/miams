@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.5.0'
+__version__ = '1.6.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -524,7 +524,7 @@ class MSISample:
         # Name
         return MSISample(**cleaned_data)
 
-    def _getScoreCalculation(self, eval_status, method, undetermined_weight=0.5):
+    def _getScoreCalculation(self, eval_status, method, undetermined_weight=0.5, locus_weight_is_score=True):
         """
         Calculate and return a confidence score for the sample status prediction. This score is calculation take into account each locus and his score with the following formula: sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight).
 
@@ -534,6 +534,8 @@ class MSISample:
         :type method: str
         :param undetermined_weight: The weight of the undetermined loci in score calculation.
         :type undetermined_weight: float
+        :param locus_weight_is_score: Use the prediction score of each locus as wheight of this locus in score calculation.
+        :type locus_weight_is_score: bool
         :return: The prediction score. This score has a value between 0 and 1.
         :rtype: float
         """
@@ -545,12 +547,12 @@ class MSISample:
                     nb_loci_undetermined += 1
                 else:
                     if locus.results[method].status == eval_status:
-                        if locus.results[method].score is not None:
+                        if locus_weight_is_score and locus.results[method].score is not None:
                             scores.append(locus.results[method].score)
                         else:
                             scores.append(1)
                     elif locus.results[method].status != Status.undetermined:
-                        if locus.results[method].score is not None:
+                        if locus_weight_is_score and locus.results[method].score is not None:
                             scores.append(1 - locus.results[method].score)
                         else:
                             scores.append(0)
@@ -559,7 +561,7 @@ class MSISample:
             score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight)
         return round(score, 5)
 
-    def setScore(self, method, undetermined_weight=0.5):
+    def setScore(self, method, undetermined_weight=0.5, locus_weight_is_score=True):
         """
         Calculate and set a confidence score for the sample status prediction. This score is calculation take into account each locus and his score with the following formula: sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight).
 
@@ -567,6 +569,8 @@ class MSISample:
         :type method: str
         :param undetermined_weight: The weight of the undetermined loci in score calculation.
         :type undetermined_weight: float
+        :param locus_weight_is_score: Use the prediction score of each locus as wheight of this locus in score calculation.
+        :type locus_weight_is_score: bool
         """
         spl_res = self.results[method]
         if spl_res.status == Status.undetermined or spl_res.status == Status.none:

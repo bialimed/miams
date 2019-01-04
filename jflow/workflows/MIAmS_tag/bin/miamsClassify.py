@@ -3,7 +3,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '2.1.0'
+__version__ = '2.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -85,7 +85,7 @@ def process(args):
             spl.setStatusByInstabilityRatio(args.method_name, args.min_voting_loci, args.instability_ratio)
         elif args.consensus_method == "count":
             spl.setStatusByInstabilityCount(args.method_name, args.min_voting_loci, args.instability_count)
-        spl.setScore(args.method_name, args.undetermined_weight)
+        spl.setScore(args.method_name, args.undetermined_weight, args.locus_weight_is_score)
 
     MSIReport.write(test_dataset, args.output_report)
 
@@ -117,7 +117,9 @@ if __name__ == "__main__":
     group_status.add_argument('-l', '--min-voting-loci', default=3, type=int, help='Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined. [Default: %(default)s]')
     group_status.add_argument('-i', '--instability-ratio', default=0.2, type=float, help='[Only with consensus-method = ratio] If the ratio unstable/(stable + unstable) is superior than this value the status of the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
     group_status.add_argument('-u', '--instability-count', default=3, type=int, help='[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
-    group_status.add_argument('-w', '--undetermined-weight', default=0.5, type=float, help='The weight of the undetermined loci in sample score calculation. [Default: %(default)s]')
+    group_score = parser.add_argument_group('Sample prediction score')  # Sample score
+    group_score.add_argument('-w', '--undetermined-weight', default=0.5, type=float, help='The weight of the undetermined loci in sample score calculation. [Default: %(default)s]')
+    group_score.add_argument('-s', '--locus-weight-is-score', action='store_true', help='Use the prediction score of each locus as wheight of this locus in sample prediction score calculation. [Default: %(default)s]')
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-r', '--input-references', required=True, help='Path to the file containing the references samples used in learn step (format: MSIReport).')
     group_input.add_argument('-e', '--input-evaluated', required=True, help='Path to the file containing the samples with loci to classify (format: MSIReport).')

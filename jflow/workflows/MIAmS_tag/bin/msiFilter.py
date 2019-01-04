@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -54,7 +54,7 @@ def process(args):
             spl.setStatusByInstabilityRatio(args.method_name, args.min_voting_loci, args.instability_ratio)
         elif args.consensus_method == "count":
             spl.setStatusByInstabilityCount(args.method_name, args.min_voting_loci, args.instability_count)
-        spl.setScore(args.method_name, args.undetermined_weight)
+        spl.setScore(args.method_name, args.undetermined_weight, args.locus_weight_is_score)
     # Write report
     MSIReport.write(reports, args.output_reports)
 
@@ -67,14 +67,17 @@ def process(args):
 if __name__ == "__main__":
     # Manage parameters
     parser = argparse.ArgumentParser(description='Filter loci usable for instability status prediction. Loci do not fitting criteria are set to undetermined and the score and the status of the sample are re-processed.')
-    parser.add_argument('-l', '--min-voting-loci', default=3, type=int, help='Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined. [Default: %(default)s]')
-    parser.add_argument('-m', '--consensus-method', default='ratio', choices=['count', 'majority', 'ratio'], help='Method used to determine the sample status from the loci status. Count: if the number of unstable is upper or equal than instability-count the sample will be unstable otherwise it will be stable ; Ratio: if the ratio of unstable/determined loci is upper or equal than instability-ratio the sample will be unstable otherwise it will be stable ; Majority: if the ratio of unstable/determined loci is upper than 0.5 the sample will be unstable, if it is lower than stable the sample will be stable. [Default: %(default)s]')
     parser.add_argument('-n', '--method-name', required=True, help='The name of the method storing locus metrics and where the status will be set. [Default: %(default)s]')
-    parser.add_argument('-r', '--instability-ratio', default=0.2, type=float, help='[Only with consensus-method = ratio] If the ratio unstable/(stable + unstable) is superior than this value the status of the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
     parser.add_argument('-s', '--min-distrib-support', default=100, type=int, help='The minimum numbers of reads (mSINGS) or reads pairs (classifiers based on pairs) to determine a locus status. [Default: %(default)s]')
-    parser.add_argument('-u', '--instability-count', default=3, type=int, help='[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
-    parser.add_argument('-w', '--undetermined-weight', default=0.5, type=float, help='The weight of the undetermined loci in sample score calculation. [Default: %(default)s]')
+    group_status = parser.add_argument_group('Sample consensus status')  # Sample status
+    group_status.add_argument('-m', '--consensus-method', default='ratio', choices=['count', 'majority', 'ratio'], help='Method used to determine the sample status from the loci status. Count: if the number of unstable is upper or equal than instability-count the sample will be unstable otherwise it will be stable ; Ratio: if the ratio of unstable/determined loci is upper or equal than instability-ratio the sample will be unstable otherwise it will be stable ; Majority: if the ratio of unstable/determined loci is upper than 0.5 the sample will be unstable, if it is lower than stable the sample will be stable. [Default: %(default)s]')
+    group_status.add_argument('-r', '--instability-ratio', default=0.2, type=float, help='[Only with consensus-method = ratio] If the ratio unstable/(stable + unstable) is superior than this value the status of the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
+    group_status.add_argument('-u', '--instability-count', default=3, type=int, help='[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
+    group_status.add_argument('-l', '--min-voting-loci', default=3, type=int, help='Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined. [Default: %(default)s]')
+    group_score = parser.add_argument_group('Sample prediction score')  # Sample score
+    group_score.add_argument('-w', '--undetermined-weight', default=0.5, type=float, help='The weight of the undetermined loci in sample score calculation. [Default: %(default)s]')
+    group_score.add_argument('-s', '--locus-weight-is-score', action='store_true', help='Use the prediction score of each locus as wheight of this locus in sample prediction score calculation. [Default: %(default)s]')
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-i', '--input-reports', required=True, help='The path to the input file containing samples reports (format: MSIReport).')
     group_output = parser.add_argument_group('Outputs')  # Outputs

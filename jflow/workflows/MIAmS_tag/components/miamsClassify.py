@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -29,12 +29,13 @@ from weaver.function import ShellFunction
 
 class MIAmSClassify (Component):
 
-    def define_parameters(self, references_samples, evaluated_samples, method_name="MIAmS_combi", classifier="SVC", random_seed=None, min_voting_loci=3, min_support_fragments=150, consensus_method="ratio", instability_ratio=0.2, instability_count=3, undetermined_weight=0.5):
+    def define_parameters(self, references_samples, evaluated_samples, method_name="MIAmS_combi", classifier="SVC", random_seed=None, min_voting_loci=3, min_support_fragments=150, consensus_method="ratio", instability_ratio=0.2, instability_count=3, undetermined_weight=0.5, locus_weight_is_score=True):
         # Parameters
         self.add_parameter("classifier", "The classifier used to predict loci status.", choices=["DecisionTree", "KNeighbors", "LogisticRegression", "RandomForest", "SVC"], default=classifier)
         self.add_parameter("consensus_method", "Method used to determine the sample status from the loci status. Count: if the number of unstable is upper or equal than instability-count the sample will be unstable otherwise it will be stable ; Ratio: if the ratio of unstable/determined loci is upper or equal than instability-ratio the sample will be unstable otherwise it will be stable ; Majority: if the ratio of unstable/determined loci is upper than 0.5 the sample will be unstable, if it is lower than stable the sample will be stable.", choices=['count', 'majority', 'ratio'], default=consensus_method)
         self.add_parameter("instability_count", "[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable.", default=instability_count, type=int)
         self.add_parameter("instability_ratio", "[Only with consensus-method = ratio] If the ratio of unstable/determined loci is upper or equal than this value the sample will be unstable otherwise it will be stable.", default=instability_ratio, type=float)
+        self.add_parameter("locus_weight_is_score", "Use the prediction score of each locus as wheight of this locus in sample prediction score calculation.", default=locus_weight_is_score, type=bool)
         self.add_parameter("method_name", "The name of the method storing locus metrics and where the status will be set.", default=method_name)
         self.add_parameter("min_support_fragments", "The minimum numbers of fragment (reads pairs) for determine the status.", default=min_support_fragments, type=int)
         self.add_parameter("min_voting_loci", "Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined.", default=min_voting_loci, type=int)
@@ -58,6 +59,7 @@ class MIAmSClassify (Component):
             " --min-voting-loci " + str(self.min_voting_loci) + \
             " --min-support-fragments " + str(self.min_support_fragments) + \
             " --undetermined-weight " + str(self.undetermined_weight) + \
+            (" --locus-weight-is-score" if self.locus_weight_is_score else "") + \
             (" --instability-ratio " + str(self.instability_ratio) if self.consensus_method == "ratio" else "") + \
             (" --instability-count " + str(self.instability_count) if self.consensus_method == "count" else "") + \
             " --input-references " + self.references_samples + \

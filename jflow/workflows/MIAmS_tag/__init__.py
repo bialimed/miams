@@ -129,6 +129,10 @@ class MIAmSTag (MIAmSWf):
         self.add_parameter("instability_ratio", 'Only if consensus-method is equal to "ratio". The threshold to determine if the sample is stable or unstable. If the ratio of unstable/determined loci is upper or equal than this value the sample will be unstable otherwise it will be stable.', default=0.5, type=float, group="Sample classification parameters")
         self.add_parameter("min_voting_loci", "Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined.", default=3, type=int, group="Sample classification parameters")
 
+        # Sample classification score
+        self.add_parameter("undetermined_weight", "[Used only for the sklearn classifier] The weight of undetermined loci in sample prediction score calculation.", default=0.0, type=float, group="Sample classification score")
+        self.add_parameter("locus_weight_is_score", "[Used only for the sklearn classifier] Use the prediction score of each locus as wheight of this locus in sample prediction score calculation.", type="bool", default=False, group="Sample classification score")
+
         # Locus classifier
         self.add_parameter("min_support_reads", "The minimum number of reads on locus for analyse the stability status of this locus in this sample.", default=300, type=int, group="Locus classification parameters")
         self.add_parameter("classifier", "The classifier used to predict loci status.", choices=["DecisionTree", "KNeighbors", "LogisticRegression", "RandomForest", "SVC"], default="SVC", group="Locus classification parameters")
@@ -206,7 +210,8 @@ class MIAmSTag (MIAmSWf):
             "instability_count": self.instability_count,
             "instability_ratio": self.instability_ratio,
             "min_voting_loci": self.min_voting_loci,
-            "undetermined_weight": 0
+            "undetermined_weight": 0,
+            "locus_weight_is_score": False
         })
 
         # Retrieve size profile for each MSI
@@ -223,7 +228,9 @@ class MIAmSTag (MIAmSWf):
             "instability_count": self.instability_count,
             "instability_ratio": self.instability_ratio,
             "min_voting_loci": self.min_voting_loci,
-            "random_seed": self.random_seed
+            "random_seed": self.random_seed,
+            "undetermined_weight": self.undetermined_weight,
+            "locus_weight_is_score": self.locus_weight_is_score
         })
 
         # Report

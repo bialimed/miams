@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -173,6 +173,8 @@ def predict(samples, design_folder, baseline, models, out_folder, args):
         "--min-voting-loci", args.min_voting_loci,
         "--instability-ratio", args.instability_ratio,
         "--instability-count", args.instability_count,
+        "--undetermined-weight", args.undetermined_weight,
+        ("--locus-weight-is-score" if args.locus_weight_is_score else ""),
         "--R1-end-adapter", os.path.join(design_folder, "trimmed_R1.fasta"),
         "--R2-end-adapter", os.path.join(design_folder, "trimmed_R2.fasta"),
         "--targets", os.path.join(design_folder, "targets.bed"),
@@ -344,6 +346,8 @@ def submitAddClf(train_path, test_path, res_path, args, method_name, clf, clf_pa
         "--min-voting-loci", args.min_voting_loci,
         "--instability-ratio", args.instability_ratio,
         "--instability-count", args.instability_count,
+        "--undetermined-weight", args.undetermined_weight,
+        ("--locus-weight-is-score" if args.locus_weight_is_score else ""),
         "--input-references", train_path,
         "--input-evaluated", test_path,
         "--output-report", res_path
@@ -383,7 +387,7 @@ if __name__ == "__main__":
     # Manage parameters
     parser = argparse.ArgumentParser(description="Launch classification on evaluation datasets.")
     parser.add_argument('-i', '--start-dataset-id', type=int, default=0, help="This option allow you to skip the n first test. [Default: %(default)s]")
-    parser.add_argument('-n', '--nb-test', type=int, default=200, help="The number of couple of test and train datasets created from the original dataset. [Default: %(default)s]")
+    parser.add_argument('-n', '--nb-tests', type=int, default=100, help="The number of couple of test and train datasets created from the original dataset. [Default: %(default)s]")
     parser.add_argument('-m', '--reference-method', default="ngs", help="The prefix of the columns in status_by_spl.tsv used as expected values (example: ngs, electro). [Default: %(default)s]")
     parser.add_argument('-k', '--default-classifier', default="SVCPairs", help='The classifier used in MIAmS. [Default: %(default)s]')
     parser.add_argument('-c', '--add-classifiers', default=[], nargs='+', help="The additional sklearn classifiers evaluates on MIAmS pairs combination results (example: DecisionTree, KNeighbors, LogisticRegression, RandomForest, RandomForest:n).")
@@ -398,6 +402,10 @@ if __name__ == "__main__":
     group_spl.add_argument('--min-voting-loci', default=3, type=int, help='Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined. [Default: %(default)s]')
     group_spl.add_argument('--instability-ratio', default=0.2, type=float, help='[Only with consensus-method = ratio] If the ratio unstable/(stable + unstable) is superior than this value the status of the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
     group_spl.add_argument('--instability-count', default=3, type=int, help='[Only with consensus-method = count] If the number of unstable loci is upper or equal than this value the sample will be unstable otherwise it will be stable. [Default: %(default)s]')
+    # Sample classification score
+    group_score = parser.add_argument_group('Sample prediction score')
+    group_score.add_argument('--undetermined-weight', default=0.0, type=float, help='[Used for all the classifiers different from MSINGS] The weight of undetermined loci in sample prediction score calculation. [Default: %(default)s]')
+    group_score.add_argument('--locus-weight-is-score', action='store_true', help='[Used for all the classifiers different from MSINGS] Use the prediction score of each locus as wheight of this locus in sample prediction score calculation. [Default: %(default)s]')
     # Inputs
     group_input = parser.add_argument_group('Inputs')
     group_input.add_argument('-d', '--data-folder', required=True, help="The folder containing data to process. It must contain design/, raw_by_run/ and status_by_spl.tsv.")
@@ -431,15 +439,15 @@ if __name__ == "__main__":
     # Process assessment
     annotations_path = os.path.join(args.work_folder, "annot.tsv")
     samplesToAnnot(samples, os.path.join(design_folder, "targets.bed"), annotations_path, args.reference_method)
-    cv = ShuffleSplit(n_splits=args.nb_test, test_size=0.4, random_state=42)
+    cv = ShuffleSplit(n_splits=args.nb_tests, test_size=0.4, random_state=42)
     dataset_id = 0
     spl_wout_replicates = list({getSplFromLibName(spl["name"]): spl for spl in samples}.values())  # All replicates of one sample will be managed in same content (train or test)
     for train_idx, test_idx in cv.split(spl_wout_replicates, groups=[spl["status"][args.reference_method]["sample"] for spl in spl_wout_replicates]):
         dataset_md5 = hashlib.md5(",".join(map(str, train_idx)).encode('utf-8')).hexdigest()
         if args.start_dataset_id > dataset_id:
-            log.info("Skip already processed dataset {}/{} ({}).".format(dataset_id, args.nb_test - 1, dataset_md5))
+            log.info("Skip already processed dataset {}/{} ({}).".format(dataset_id, args.nb_tests - 1, dataset_md5))
         else:
-            log.info("Start processing dataset {}/{} ({}).".format(dataset_id, args.nb_test - 1, dataset_md5))
+            log.info("Start processing dataset {}/{} ({}).".format(dataset_id, args.nb_tests - 1, dataset_md5))
             # Temp file
             baseline_path = os.path.join(args.work_folder, "baseline_dataset-{}.tsv".format(dataset_id))
             models_path = os.path.join(args.work_folder, "models_dataset-{}.tsv".format(dataset_id))

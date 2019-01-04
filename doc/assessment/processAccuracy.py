@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -93,9 +93,9 @@ def datasetsComposition(dataset_df, out_path, mode="rate"):
     plt.savefig(out_path)
     plt.close()
 
-def getSplConsensusScore(row, loci):
+def getSplConsensusScore(row, loci, undetermined_weight=0.5, locus_weight_is_score=True):
     eval_status = row["spl_expected_status"]
-    undetermined_weight = 0 if row["method_name"] == "MSINGS" else 0.5
+    undetermined_weight = 0 if row["method_name"] == "MSINGS" else undetermined_weight
     scores = list()
     nb_loci_undetermined = 0
     for locus in loci:
@@ -103,39 +103,20 @@ def getSplConsensusScore(row, loci):
             nb_loci_undetermined += 1
         else:
             if row["{}_observed_status".format(locus)] == eval_status:
-                scores.append(1)
+                if locus_weight_is_score and not pd.isnull(row["{}_pred_score".format(locus)]):
+                    scores.append(row["{}_pred_score".format(locus)])
+                else:
+                    scores.append(1)
             elif row["{}_observed_status".format(locus)] != "Undetermined":
-                scores.append(0)
+                if locus_weight_is_score and not pd.isnull(row["{}_pred_score".format(locus)]):
+                    scores.append(1 - row["{}_pred_score".format(locus)])
+                else:
+                    scores.append(0)
     score = None
     if len(scores) != 0:
         score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight)
         score = round(score, 5)
     return score
-
-# def getSplConsensusScore(row, loci):
-#     eval_status = row["spl_expected_status"]
-#     undetermined_weight = 0 if row["method_name"] == "MSINGS" else 0.5
-#     scores = list()
-#     nb_loci_undetermined = 0
-#     for locus in loci:
-#         if row["{}_observed_status".format(locus)] == "Undetermined":
-#             nb_loci_undetermined += 1
-#         else:
-#             if row["{}_observed_status".format(locus)] == eval_status:
-#                 if not pd.isnull(row["{}_pred_score".format(locus)]):
-#                     scores.append(row["{}_pred_score".format(locus)])
-#                 else:
-#                     scores.append(1)
-#             elif row["{}_observed_status".format(locus)] != "Undetermined":
-#                 if not pd.isnull(row["{}_pred_score".format(locus)]):
-#                     scores.append(1 - row["{}_pred_score".format(locus)])
-#                 else:
-#                     scores.append(0)
-#     score = None
-#     if len(scores) != 0:
-#         score = sum(scores) / (len(scores) + nb_loci_undetermined * undetermined_weight)
-#         score = round(score, 5)
-#     return score
 
 def getSplConsensusStatus(row, args):
     fct_by_method = {
@@ -538,6 +519,10 @@ if __name__ == "__main__":
     parser.add_argument('-k', '--default-classifier', default="SVCPairs", help='The classifier used in consensus between MSINGS and MIAmS default classifier. [Default: %(default)s]')
     parser.add_argument('-ac', '--add-algorithm-consensus', default=False, action='store_true', help='Add agreement and consensus on algorithms prediction.')
     parser.add_argument('-v', '--version', action='version', version=__version__)
+    # Sample classification score
+    group_score = parser.add_argument_group('Sample prediction score')
+    group_score.add_argument('--undetermined-weight', default=0.0, type=float, help='[Used for all the classifiers different from MSINGS] The weight of undetermined loci in sample prediction score calculation. [Default: %(default)s]')
+    group_score.add_argument('--locus-weight-is-score', action='store_true', help='[Used for all the classifiers different from MSINGS] Use the prediction score of each locus as wheight of this locus in sample prediction score calculation. [Default: %(default)s]')
     # Sample classification
     group_spl = parser.add_argument_group('Sample classification')
     group_spl.add_argument('--consensus-method', default='ratio', choices=['count', 'majority', 'odd', 'ratio'], help='Method used to determine the sample status from the loci status. Count: if the number of unstable is upper or equal than instability-count the sample will be unstable otherwise it will be stable ; Ratio: if the ratio of unstable/determined loci is upper or equal than instability-ratio the sample will be unstable otherwise it will be stable ; Majority: if the ratio of unstable/determined loci is upper than 0.5 the sample will be unstable, if it is lower than stable the sample will be stable. [Default: %(default)s]')
@@ -553,11 +538,7 @@ if __name__ == "__main__":
     group_output.add_argument('-f', '--output-folder', default=".", help='The path to the output folder. [Default: %(default)s]')
     args = parser.parse_args()
 
-    ############################################################################
-    import warnings
-    warnings.warn("The sample prediction score in MIAmS is calculated like MSINGS.")
-    ############################################################################
-
+    # Init data
     dataset_df = pd.read_csv(args.input_datasets, sep='\t')
     results_df = pd.read_csv(args.input_results, sep='\t')
     loci = getLoci(dataset_df)
@@ -570,7 +551,7 @@ if __name__ == "__main__":
         results_df["{}_observed_status".format(locus)] = results_df.apply(lambda row: getFilteredObservation(row, locus, args.min_reads_support, args.min_score), axis=1)
         results_df["{}_pred_is_ok".format(locus)] = results_df.apply(lambda row: getPredStatusEval(row, locus), axis=1)
     results_df["spl_observed_status"] = results_df.apply(lambda row: getSplConsensusStatus(row, args), axis=1)
-    results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci), axis=1)
+    results_df["spl_pred_score"] = results_df.apply(lambda row: getSplConsensusScore(row, loci, args.undetermined_weight, args.locus_weight_is_score), axis=1)
     results_df["spl_pred_is_ok"] = results_df.apply(lambda row: getPredStatusEval(row, "spl"), axis=1)
     if args.add_algorithm_consensus:
         results_df = pd.concat([results_df, getMethodsConsensusDf(results_df, loci, ["MSINGS", args.default_classifier], "majority")], sort=False)
