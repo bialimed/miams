@@ -1,16 +1,16 @@
 #
 # Copyright (C) 2015 INRA
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -27,7 +27,6 @@ import tempfile
 import urllib.parse
 import random
 
-from argparse import _ensure_value
 from urllib.request import urlopen
 import copy as _copy
 from urllib.parse import urlparse
@@ -42,6 +41,11 @@ from workflows.types import *
 from workflows.formats import *
 import collections
 
+# Replace imprt argparse._ensure_value by local function after remove of this function from argparse in python 3.7
+def _ensure_value(namespace, name, value):
+    if getattr(namespace, name, None) is None:
+        setattr(namespace, name, value)
+    return getattr(namespace, name)
 
 # define all input type available
 INPUTFILE_TYPES = ["inputfile", "localfile", "urlfile", "browsefile"]
@@ -135,7 +139,7 @@ def password(pwd):
 
 def create_test_function(itype):
     try:
-        ctype, csizel = itype.split(AbstractInputFile.SIZE_LIMIT_SPLITER)    
+        ctype, csizel = itype.split(AbstractInputFile.SIZE_LIMIT_SPLITER)
         def inner_function(ifile):
             # first eval the asked type
             returned_value = eval(ctype)(ifile)
@@ -169,7 +173,7 @@ def create_test_function(itype):
                         raise argparse.ArgumentTypeError("URL '" + file + "' is invalid!")
             # then test the type
             return returned_value
-        
+
         inner_function.__name__ = ctype+AbstractInputFile.SIZE_LIMIT_SPLITER+csizel
         return inner_function
     except:
@@ -207,7 +211,7 @@ class MultipleParameters(object):
                 value = self.types[parts[0]](parts[1])
             except:
                 raise argparse.ArgumentTypeError("invalid " + self.types[parts[0]].__name__ + " value: '" + parts[1] + "' for sub parameter '" + parts[0] + "'")
-            
+
             if self.choices[parts[0]] != None:
                 if value not in self.choices[parts[0]]:
                     raise argparse.ArgumentTypeError("argument " + parts[0] + ": invalid choice: '" + parts[1] + "' (choose from " + ", ".join(map(str,self.choices[parts[0]])) + ")")
@@ -241,7 +245,7 @@ class MiltipleAction(argparse.Action):
         except: pass
         if len(required) == 1: parser.error(", ".join(required) + " is a required parameter!")
         elif len(required) > 1: parser.error(", ".join(required) + " are required parameters!")
-        # then for exclude ones    
+        # then for exclude ones
         for exclude_group in values[0][3]:
             found = None
             for param in values[0][3][exclude_group]:
@@ -299,7 +303,7 @@ class MiltipleAppendAction(argparse.Action):
         except: pass
         if len(required) == 1: parser.error(", ".join(required) + " is a required parameter!")
         elif len(required) > 1: parser.error(", ".join(required) + " are required parameters!")
-        # then for exclude ones    
+        # then for exclude ones
         for exclude_group in values[0][3]:
             found = None
             for param in values[0][3][exclude_group]:
@@ -335,7 +339,7 @@ class MiltipleAppendAction(argparse.Action):
 class AbstractParameter(object):
 
     def __init__(self, name, help, default=None, type=str, choices=None, required=False,
-                 flag=None, action="store", sub_parameters=None, group="default", display_name=None, 
+                 flag=None, action="store", sub_parameters=None, group="default", display_name=None,
                  cmd_format="", argpos=-1, rules=None):
 
         self.name = name
@@ -357,7 +361,7 @@ class AbstractParameter(object):
         self.argpos = argpos
         self.cmd_format = cmd_format
         self.rules = rules
-        
+
         # Set parameter type
         if type == "date":
             self.type = date
@@ -379,10 +383,10 @@ class AbstractParameter(object):
 
     def export_to_argparse(self):
         if self.type == bool and str(self.default).lower() in (False, "false",  "f", "0"):
-            return {"help": self.help, "required": self.required, "dest": self.name, 
+            return {"help": self.help, "required": self.required, "dest": self.name,
                     "default": False, "action": "store_true"}
         elif self.type == bool:
-            return {"help": self.help, "required": self.required, "dest": self.name, 
+            return {"help": self.help, "required": self.required, "dest": self.name,
                     "default": True, "action": "store_false"}
         elif self.nargs != None:
             return {"type": self.get_test_function(), "help": self.help, "required": self.required,
@@ -423,21 +427,21 @@ class IOFile(str, AbstractIOFile):
 
     def __getnewargs__(self):
         return (str(self), self.file_format, self.linkTrace_nameid, self.parent_linkTrace_nameid)
-        
+
 
 class MultiParameter(dict, AbstractParameter):
 
     def __init__(self, name, help, required=False, flag=None, group="default", display_name=None, cmd_format="", argpos=-1, rules=None):
-        AbstractParameter.__init__(self, name, help, required=required, type="multiple", flag=flag, group=group, 
+        AbstractParameter.__init__(self, name, help, required=required, type="multiple", flag=flag, group=group,
                                    display_name=display_name, cmd_format=cmd_format, argpos=argpos, rules=rules)
         return dict.__init__(self, {})
 
     def add_sub_parameter(self, param):
         param_flag = param.flag[2:]
         if self.type == "multiple":
-            if param.required: req = [param_flag] 
+            if param.required: req = [param_flag]
             else: req = []
-            self.type = MultipleParameters({param_flag: param.type}, req, 
+            self.type = MultipleParameters({param_flag: param.type}, req,
                                            {param_flag: param.choices}, {}, {param_flag: param.default},
                                            {param_flag: param.action})
             if self.action == "append":
@@ -466,14 +470,14 @@ class MultiParameter(dict, AbstractParameter):
                 sub_params[sub_parameter.name] = []
             sub_params[sub_parameter.name].append(sub_parameter)
         return sub_params
-        
-        
+
+
 class MultiParameterList(list, AbstractParameter):
 
     def __init__(self, name, help, required=False, flag=None, group="default", display_name=None, cmd_format="",
                  argpos=-1, rules=None, paired_columns=None):
-        AbstractParameter.__init__(self, name, help, required=required, type="multiple", flag=flag, 
-                                   action="append", group=group, display_name=display_name, 
+        AbstractParameter.__init__(self, name, help, required=required, type="multiple", flag=flag,
+                                   action="append", group=group, display_name=display_name,
                                    cmd_format=cmd_format, argpos=argpos, rules=rules)
         self.paired_columns = paired_columns
         return list.__init__(self, [])
@@ -551,7 +555,7 @@ class ParameterFactory(object):
 
 
 def none_decorator(fn):
-    
+
     def new_func(*args, **kwargs):
         if args[0].is_None:
             print (fn)
@@ -566,13 +570,13 @@ class BoolParameter(int, AbstractParameter):
     def __new__(self, name, help, default=False, type=bool, choices=None, required=False,
                 flag=None, sub_parameters=None, group="default", display_name=None,  cmd_format="", argpos=-1,
                 rules=None):
-        
+
         bool_default = True
         if default == None or default in [False, 0]:
             bool_default = False
         elif default.__class__.__name__ == "str" and default in ["False", "F", "false", "f", 0, "0"]:
             bool_default = False
-            
+
         val = int.__new__(self, bool_default)
         val.is_None = False if default != None else True
         for attr in bool.__dict__:
@@ -585,7 +589,7 @@ class BoolParameter(int, AbstractParameter):
     def __init__(self, name, help, default=None, type=bool, choices=None, required=False,
                  flag=None, sub_parameters=None, group="default", display_name=None, cmd_format="", argpos=-1,
                  rules = None):
-        AbstractParameter.__init__(self, name, help, flag=flag, default=bool(default), type=type, choices=choices, required=required, 
+        AbstractParameter.__init__(self, name, help, flag=flag, default=bool(default), type=type, choices=choices, required=required,
                                    action="store", sub_parameters=sub_parameters, group=group, display_name=display_name,  cmd_format=cmd_format, argpos=argpos, rules=rules)
 
     def __getnewargs__(self):
@@ -679,7 +683,7 @@ class FloatParameter(float, AbstractParameter):
         val.is_None = False if default != None else True
         for attr in float.__dict__:
             func = getattr(float, attr)
-            if isinstance(func, collections.Callable) and attr not in ["__new__", "__init__", "__float__", "__getattribute__", "__setattribute__", 
+            if isinstance(func, collections.Callable) and attr not in ["__new__", "__init__", "__float__", "__getattribute__", "__setattribute__",
                                                "__eq__", "__ne__", "__bool__", "__str__", "__repr__", "__getnewargs__"]:
                 setattr(FloatParameter, attr, none_decorator(func))
         return val
@@ -687,7 +691,7 @@ class FloatParameter(float, AbstractParameter):
     def __init__(self, name, help, default=None, type=float, choices=None, required=False,
                  flag=None, sub_parameters=None, group="default", display_name=None, cmd_format="", argpos=-1,
                  rules=None):
-        AbstractParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required, 
+        AbstractParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required,
                                    action="store", sub_parameters=sub_parameters, group=group, display_name=display_name,cmd_format=cmd_format, argpos=argpos, rules=rules )
 
     def __getnewargs__(self):
@@ -731,16 +735,16 @@ class StrParameter(str, AbstractParameter):
         for attr in str.__dict__:
             func = getattr(str, attr)
             if isinstance(func, collections.Callable) and attr not in ["__new__", "__init__", "__str__", "__getattribute__", "__setattribute__",
-                                               "__eq__", "__ne__", "__bool__", "__repr__", "__getnewargs__"]:                
+                                               "__eq__", "__ne__", "__bool__", "__repr__", "__getnewargs__"]:
                 setattr(StrParameter, attr, none_decorator(func))
         return val
 
     def __init__(self, name, help, default=None, type=str, choices=None, required=False,
                  flag=None, sub_parameters=None, group="default", display_name=None, cmd_format="", argpos=-1,
                  rules=None):
-        AbstractParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required, 
+        AbstractParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required,
                                    action="store", sub_parameters=sub_parameters, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos, rules=rules)
-        
+
     def __getnewargs__(self):
         return (self.name, self.help, self.default, self.type, self.choices, self.required, self.flag,
                 self.sub_parameters, self.group, self.display_name, self.cmd_format, self.argpos)
@@ -783,7 +787,7 @@ class PasswordParameter(StrParameter):
     def __init__(self, name, help, default=None, type="password", choices=None, required=False,
                  flag=None, sub_parameters=None, group="default", display_name=None, cmd_format="", argpos=-1,
                  rules=None):
-        StrParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required, 
+        StrParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required,
                                    sub_parameters=sub_parameters, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos, rules=rules)
 
     @staticmethod
@@ -791,12 +795,12 @@ class PasswordParameter(StrParameter):
         S = list(range(256))
         j = 0
         out = []
-        
+
         #KSA Phase
         for i in range(256):
             j = (j + S[i] + ord( key[i % len(key)] )) % 256
             S[i] , S[j] = S[j] , S[i]
-        
+
         #PRGA Phase
         i = j = 0
         for char in data:
@@ -804,7 +808,7 @@ class PasswordParameter(StrParameter):
             j = ( j + S[i] ) % 256
             S[i] , S[j] = S[j] , S[i]
             out.append(chr(ord(char) ^ S[(S[i] + S[j]) % 256]))
-            
+
         return ''.join(out)
 
     @staticmethod
@@ -848,7 +852,7 @@ class DateParameter(datetime.datetime, AbstractParameter):
         if default != None and not issubclass(default.__class__, datetime.datetime):
             date_default = date(default)
             default = datetime.datetime(date_default.year, date_default.month, date_default.day)
-        AbstractParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required, 
+        AbstractParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, required=required,
                                    action="store", sub_parameters=sub_parameters, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos, rules=rules)
 
     def __getnewargs__(self):
@@ -893,16 +897,16 @@ def input_directory_get_files_fn(input):
 
 class InputDirectory(StrParameter, LinkTraceback):
 
-    def __new__(self, name, help, default="", choices=None, required=False, flag=None, 
+    def __new__(self, name, help, default="", choices=None, required=False, flag=None,
                 group="default", display_name=None, get_files_fn=None, cmd_format="", argpos=-1, rules=None):
-        return StrParameter.__new__(self, name, help, flag=flag, default=default, type="inputdirectory", choices=choices, 
+        return StrParameter.__new__(self, name, help, flag=flag, default=default, type="inputdirectory", choices=choices,
                            required=required, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos,
                                     rules=rules)
 
-    def __init__(self, name, help, default="", choices=None, required=False, flag=None, 
+    def __init__(self, name, help, default="", choices=None, required=False, flag=None,
                 group="default", display_name=None, get_files_fn=None, cmd_format="", argpos=-1, rules=None):
         LinkTraceback.__init__(self)
-        StrParameter.__init__(self, name, help, flag=flag, default=default, type="inputdirectory", choices=choices, 
+        StrParameter.__init__(self, name, help, flag=flag, default=default, type="inputdirectory", choices=choices,
                            required=required, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos,
                               rules=rules)
         if hasattr(get_files_fn, "__call__"):
@@ -918,24 +922,24 @@ class InputDirectory(StrParameter, LinkTraceback):
         if input == None:
             return None
         return os.path.abspath(input)
-    
+
     def get_files(self, *args):
         files = []
         for file in self.get_files_fn(self, *args):
             files.append( IOFile(os.path.join(self, file), "any", self.linkTrace_nameid, None) )
         return files
-    
+
 class AbstractInputFile(AbstractIOFile):
     """
      @summary : Parent of all InputFile(s) parameters.
     """
-    
+
     SIZE_LIMIT_SPLITER = "__sl"
-    
+
     def __init__(self, file_format="any", size_limit="0"):
         AbstractIOFile.__init__(self, file_format)
         self.size_limit = size_limit
-    
+
     def _download_urlfile(self, input):
         try:
             uri_object = urlparse(input)
@@ -943,7 +947,7 @@ class AbstractInputFile(AbstractIOFile):
             block_size = 8000
             jflowconf = JFlowConfigReader()
             tmp_directory = os.path.join(jflowconf.get_tmp_directory(), os.path.basename(tempfile.NamedTemporaryFile().name))
-            os.mkdir(tmp_directory) 
+            os.mkdir(tmp_directory)
             file_path = os.path.join(tmp_directory, os.path.basename(uri_object.path))
             if os.path.basename(uri_object.path) is not None and os.path.basename(uri_object.path) != "":
                 local_file = open(file_path, 'wb')
@@ -967,7 +971,7 @@ class AbstractInputFile(AbstractIOFile):
             function_exists = True
         except: function_exists = False
         if function_exists:
-            try: 
+            try:
                 eval(self.file_format)(ifile)
             except InvalidFormatError as e:
                 raise Exception (str(e))
@@ -983,7 +987,7 @@ class AbstractOutputFile(AbstractIOFile):
 
 class InputFile(StrParameter, AbstractInputFile):
 
-    def __new__(self, name, help, file_format="any", default="", type="localfile", choices=None, 
+    def __new__(self, name, help, file_format="any", default="", type="localfile", choices=None,
                 required=False, flag=None, group="default", display_name=None, size_limit="0",  cmd_format="", argpos=-1,
                 rules=None):
         if hasattr(type, '__call__'):
@@ -991,25 +995,25 @@ class InputFile(StrParameter, AbstractInputFile):
         else: type2test = type
 
         if type2test not in INPUTFILE_TYPES:
-            raise ValueError("InputFile.__new__: wrong type provided: '"+type2test+"', this should be choosen between '" 
+            raise ValueError("InputFile.__new__: wrong type provided: '"+type2test+"', this should be choosen between '"
                              + "', '".join(INPUTFILE_TYPES)+"'")
 
-        return StrParameter.__new__(self, name, help, flag=flag, default=default, type=type, choices=choices, 
+        return StrParameter.__new__(self, name, help, flag=flag, default=default, type=type, choices=choices,
                            required=required, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos,
                                     rules=rules)
 
-    def __init__(self, name, help, file_format="any", default="", type="localfile", choices=None, 
+    def __init__(self, name, help, file_format="any", default="", type="localfile", choices=None,
                 required=False, flag=None, group="default", display_name=None, size_limit="0",  cmd_format="", argpos=-1,
                 rules=None):
         AbstractInputFile.__init__(self, file_format, size_limit)
         if issubclass(default.__class__, list):
             raise Exception( "The parameter '" + name + "' cannot be set with a list." )
-        StrParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, 
+        StrParameter.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices,
                            required=required, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos,
                               rules=rules)
 
     def __getnewargs__(self):
-        return (self.name, self.help, self.file_format, self.default, self.type, self.choices, self.required, 
+        return (self.name, self.help, self.file_format, self.default, self.type, self.choices, self.required,
                 self.flag, self.group, self.display_name, self.size_limit, self.cmd_format, self.argpos, self.rules)
 
     def get_type(self):
@@ -1060,7 +1064,7 @@ class OutputDirectory(StrParameter, LinkTraceback):
 class OutputFile(StrParameter, AbstractOutputFile):
 
     def __new__(self, name, help, file_format="any", default="", choices=None,
-                required=False, flag=None, group="default", display_name=None, 
+                required=False, flag=None, group="default", display_name=None,
                 cmd_format="", argpos=-1):
         return StrParameter.__new__(self, name, help, flag=flag, default=default, type="localfile", choices=choices,
                            required=required, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos)
@@ -1071,13 +1075,13 @@ class OutputFile(StrParameter, AbstractOutputFile):
         AbstractIOFile.__init__(self, file_format)
         if issubclass(default.__class__, list):
             raise Exception( "The parameter '" + name + "' cannot be set with a list." )
-        StrParameter.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices, 
+        StrParameter.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices,
                            required=required, group=group, display_name=display_name, cmd_format=cmd_format, argpos=argpos)
-    
+
     def __getnewargs__(self):
-        return (self.name, self.help, self.file_format, self.default, self.choices, self.required, 
+        return (self.name, self.help, self.file_format, self.default, self.choices, self.required,
                 self.flag, self.group, self.display_name, self.cmd_format, self.argpos)
-        
+
 
 class ParameterList(list, AbstractParameter):
 
@@ -1091,13 +1095,13 @@ class ParameterList(list, AbstractParameter):
         liste = []
         if isinstance( default, list ):
             for val in default :
-                liste.append(ParameterFactory.factory( name, help, default=val, type=type, choices=choices, 
+                liste.append(ParameterFactory.factory( name, help, default=val, type=type, choices=choices,
                       required=required, flag=flag, group=group, display_name=display_name, rules=rules ))
         else :
-            liste.append(ParameterFactory.factory( name, help, default=default, type=type, choices=choices, 
+            liste.append(ParameterFactory.factory( name, help, default=default, type=type, choices=choices,
                       required=required, flag=flag, group=group, display_name=display_name, rules=rules ))
         return list.__init__(self, liste)
-        
+
     def append(self, item):
         raise TypeError('A parameter is immutable.')
 
@@ -1107,7 +1111,7 @@ class ParameterList(list, AbstractParameter):
 
 class InputFileList(ParameterList, AbstractInputFile):
 
-    def __init__(self, name, help, file_format="any", default=None, type="localfile", choices=None, 
+    def __init__(self, name, help, file_format="any", default=None, type="localfile", choices=None,
                  required=False, flag=None, group="default", display_name=None, size_limit="0",
                  cmd_format="", argpos=-1, rules=None):
 
@@ -1121,11 +1125,11 @@ class InputFileList(ParameterList, AbstractInputFile):
                 type = "inputfiles"
             type2test = type
         if type2test not in INPUTFILES_TYPES:
-            raise ValueError("InputFile.__new__: wrong type provided: '"+type2test+"', this should be choosen between '" 
+            raise ValueError("InputFile.__new__: wrong type provided: '"+type2test+"', this should be choosen between '"
                              + "', '".join(INPUTFILE_TYPES)+"'")
 
         AbstractInputFile.__init__(self, file_format, size_limit)
-        ParameterList.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices, 
+        ParameterList.__init__(self, name, help, flag=flag, default=default, type=type, choices=choices,
                                required=required, group=group, display_name=display_name,
                                cmd_format=cmd_format, argpos=argpos, rules=rules)
 
@@ -1141,10 +1145,10 @@ class InputFileList(ParameterList, AbstractInputFile):
             return list.__init__(self, [default])
         elif issubclass( default.__class__, AbstractOutputFile ):
             return list.__init__(self, default)
-    
+
     def get_type(self):
         return self.type.__name__+AbstractInputFile.SIZE_LIMIT_SPLITER+self.size_limit
-    
+
     def get_test_function(self):
         if (self.size_limit == "0"): ctype = self.type
         else: ctype = self.get_type()
@@ -1181,12 +1185,12 @@ class InputFileList(ParameterList, AbstractInputFile):
 
 class OutputFileList(ParameterList, AbstractOutputFile):
 
-    def __init__(self, name, help, file_format="any", default=None, choices=None, 
+    def __init__(self, name, help, file_format="any", default=None, choices=None,
                  required=False, flag=None, group="default", display_name=None,
                  cmd_format="", argpos=-1):
         if default == None: default = []
         AbstractIOFile.__init__(self, file_format)
-        ParameterList.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices, 
+        ParameterList.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices,
                                required=required, group=group, display_name=display_name,
                                cmd_format=cmd_format, argpos=argpos)
         if default.__class__.__name__ == "str":
@@ -1208,7 +1212,7 @@ class DynamicOutput(ParameterList, AbstractOutputFile):
 
 class OutputFilesEndsWith(DynamicOutput):
 
-    def __init__(self, name, help, output_directory, end_str, include=True, file_format="any", choices=None, 
+    def __init__(self, name, help, output_directory, end_str, include=True, file_format="any", choices=None,
                  required=False, flag=None, group="default", display_name=None, cmd_format="", argpos=-1):
         """
          @warning : with this class of output, the component become dynamic.
@@ -1219,8 +1223,8 @@ class OutputFilesEndsWith(DynamicOutput):
         """
         AbstractIOFile.__init__(self, file_format)
         default = []
-        ParameterList.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices, 
-                               required=required, group=group, display_name=display_name, cmd_format=cmd_format, 
+        ParameterList.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices,
+                               required=required, group=group, display_name=display_name, cmd_format=cmd_format,
                                argpos=argpos)
         self.output_directory = output_directory
         self.end_str = end_str
@@ -1239,7 +1243,7 @@ class OutputFilesEndsWith(DynamicOutput):
 
 class OutputFilesPattern(DynamicOutput):
 
-    def __init__(self, name, help, output_directory, pattern, include=True, file_format="any", choices=None, 
+    def __init__(self, name, help, output_directory, pattern, include=True, file_format="any", choices=None,
                   required=False, flag=None, group="default", display_name=None, cmd_format="", argpos=-1):
         """
          @warning : with this class of output, the component become dynamic.
@@ -1250,8 +1254,8 @@ class OutputFilesPattern(DynamicOutput):
         """
         AbstractIOFile.__init__(self, file_format)
         default = []
-        ParameterList.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices, 
-                               required=required, group=group, display_name=display_name, cmd_format=cmd_format, 
+        ParameterList.__init__(self, name, help, flag=flag, default=default, type="localfile", choices=choices,
+                               required=required, group=group, display_name=display_name, cmd_format=cmd_format,
                                argpos=argpos)
         self.output_directory = output_directory
         self.pattern = pattern
@@ -1266,13 +1270,13 @@ class OutputFilesPattern(DynamicOutput):
             elif not self.include and re.search( self.pattern, file ) is None:
                 output_files.append( IOFile(os.path.join(self.output_directory, file), self.file_format, self.linkTrace_nameid, None) )
         return list.__init__(self, output_files)
-    
-    
-    
+
+
+
 class IOObject(object):
-    
+
     IOOBJECT_EXT = ".ioobj"
-    
+
     @staticmethod
     def add_required_attributs(obj):
         jflowconf = JFlowConfigReader()
@@ -1282,21 +1286,21 @@ class IOObject(object):
         obj.includes = []
         obj.linkTrace_nameid = None
         obj.parent_linkTrace_nameid = []
-    
+
     def __init__(self):
         IOObject.add_required_attributs(self)
-    
-    
+
+
 class IObjectList(list, IOObject):
-    
+
     def __new__(self, value):
         val = list.__new__(self)
         val.extend(value)
         return val
-    
+
     def __init__(self, value):
         IOObject.__init__(self)
-        
+
         for cobj in value:
             if isinstance(cobj, OObject):
                 self.includes.append(cobj.dump_path)
@@ -1314,18 +1318,18 @@ class IObjectList(list, IOObject):
                         self.includes.extend(cval)
                     elif issubclass(cval.__class__, AbstractIOFile) :
                         self.includes.append(cval)
-            
+
     def __getnewargs__(self):
         return (self)
-    
-        
+
+
 class IObjectDict(dict, IOObject):
-    
+
     def __new__(self, value):
         val = dict.__new__(self, value)
         for ckey in list(value.keys()): val[ckey] = value[ckey]
         return val
-    
+
     def __init__(self, value):
         IOObject.__init__(self)
         for ckey,value in list(value.items()):
@@ -1350,7 +1354,7 @@ class IObjectDict(dict, IOObject):
 
 
 class IObjectFactory(object):
-    
+
     @staticmethod
     def factory(obj):
         new_obj = None
@@ -1365,15 +1369,15 @@ class IObjectFactory(object):
         else:
             new_obj = obj
             IOObject.add_required_attributs(new_obj)
-            
+
         if to_pickle:
             ioobjh = open(new_obj.dump_path, "wb")
             pickle.dump(new_obj, ioobjh)
             ioobjh.close()
-            
+
         return new_obj
 
-class OObject(IOObject): 
+class OObject(IOObject):
     def load(self):
         if os.path.exists(self.dump_path):
             fh = open(self.dump_path, 'rb')
@@ -1382,16 +1386,16 @@ class OObject(IOObject):
             return o
 
 class InputObject(AbstractParameter, LinkTraceback):
-    
+
     def __init__( self, name, help, default=None, required=False):
         new_object = IObjectFactory.factory(default)
         AbstractParameter.__init__(self, name, help, default=new_object, type="object", required=required, action="store")
         LinkTraceback.__init__(self)
 
 class InputObjectList(ParameterList, LinkTraceback) :
-    
+
     def __init__ (self, name, help, default=None, required=False) :
-        
+
         new_default = []
         if isinstance(default, list):
             if len(default)>0 :
@@ -1399,7 +1403,7 @@ class InputObjectList(ParameterList, LinkTraceback) :
                 for cobj in default:
                     if objects_class != cobj.__class__.__name__:
                         raise Exception('All object in an InputObjectList should have the same type!')
-                        
+
             for obj in default:
                 new_obj = IObjectFactory.factory(obj)
                 new_default.append(new_obj)
@@ -1410,13 +1414,13 @@ class InputObjectList(ParameterList, LinkTraceback) :
         LinkTraceback.__init__(self)
 
 class OutputObject(AbstractParameter, LinkTraceback):
-    
+
     def __init__( self, name, help, required=False):
         AbstractParameter.__init__(self, name, help, default=OObject(), type="object", required=required, action="store")
         LinkTraceback.__init__(self)
 
 class OutputObjectList(ParameterList, LinkTraceback) :
-    
+
     def __init__ (self, name, help, nb_items=0, required=False) :
         new_default = [ OObject() for i in range(nb_items) ]
         ParameterList.__init__(self, name, help, default=new_default, type="object", required=required)
