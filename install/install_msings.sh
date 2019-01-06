@@ -16,6 +16,8 @@ then
 fi
 
 # Install msings
+alias python=python2.7
+
 cd ${INSTALL_DIR} && \
 git clone https://bitbucket.org/uwlabmed/msings.git && \
 cd msings && \

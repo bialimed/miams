@@ -22,21 +22,21 @@ function submit {
 }
 
 # Create environment
-submit conda create --yes --name ${ENV_NAME} > /dev/null
+submit conda create --yes --quiet --name ${ENV_NAME} python=3.6 > /dev/null
 submit source activate ${ENV_NAME}
 
 submit conda config --add channels conda-forge > /dev/null
 submit conda config --add channels bioconda > /dev/null
-submit conda install --yes --quiet git > /dev/null
+submit conda install --yes --quiet scipy==1.2.0 > /dev/null
+submit conda install --yes --quiet scikit-learn==0.20.0 > /dev/null
+submit conda install --yes --quiet cherrypy==14.0.1 > /dev/null
+submit conda install --yes --quiet pysam==0.14.1 > /dev/null
+submit conda install --yes --quiet git==2.20.1 > /dev/null
 submit conda install --yes --quiet make > /dev/null
 submit conda install --yes --quiet bwa==0.7.17 > /dev/null
 submit conda install --yes --quiet samtools==1.8 > /dev/null
-submit conda install --yes --quiet cutadapt==1.9.1 > /dev/null
-submit conda install --yes --quiet scipy==1.0.1 > /dev/null
-submit conda install --yes --quiet scikit-learn==0.19.1 > /dev/null
-submit conda install --yes --quiet cherrypy==14.0.1 > /dev/null
-submit conda install --yes --quiet pysam==0.14.1 > /dev/null
-submit conda install --yes --quiet openjdk==8.0.152 > /dev/null
+submit conda install --yes --quiet cutadapt==1.16 > /dev/null
 submit ${SCRIPT_DIR}/install_makeflow.sh ${ENV_BIN} > /dev/null
+submit conda install --yes --quiet openjdk==8.0.152 > /dev/null
 
 source deactivate

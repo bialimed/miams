@@ -7,7 +7,7 @@ then
     exit 1
 fi
 INSTALL_DIR=$1
-SOFT_VERSION="6.1.6"
+SOFT_VERSION="6.2.8"
 USER_PWD=$PWD
 
 # Clean previous install
