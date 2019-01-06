@@ -77,7 +77,7 @@ if __name__ == "__main__":
     group_status.add_argument('-l', '--min-voting-loci', default=3, type=int, help='Minimum number of voting loci (stable + unstable) to determine the sample status. If the number of voting loci is lower than this value the status for the sample will be undetermined. [Default: %(default)s]')
     group_score = parser.add_argument_group('Sample prediction score')  # Sample score
     group_score.add_argument('-w', '--undetermined-weight', default=0.5, type=float, help='The weight of the undetermined loci in sample score calculation. [Default: %(default)s]')
-    group_score.add_argument('-s', '--locus-weight-is-score', action='store_true', help='Use the prediction score of each locus as wheight of this locus in sample prediction score calculation. [Default: %(default)s]')
+    group_score.add_argument('-p', '--locus-weight-is-score', action='store_true', help='Use the prediction score of each locus as wheight of this locus in sample prediction score calculation. [Default: %(default)s]')
     group_input = parser.add_argument_group('Inputs')  # Inputs
     group_input.add_argument('-i', '--input-reports', required=True, help='The path to the input file containing samples reports (format: MSIReport).')
     group_output = parser.add_argument_group('Outputs')  # Outputs
