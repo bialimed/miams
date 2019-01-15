@@ -35,7 +35,7 @@ submit conda install --yes --quiet git==2.20.1 > /dev/null
 submit conda install --yes --quiet make > /dev/null
 submit conda install --yes --quiet bwa==0.7.17 > /dev/null
 submit conda install --yes --quiet samtools==1.8 > /dev/null
-submit conda install --yes --quiet cutadapt==1.16 > /dev/null
+submit conda install --yes --quiet cutadapt==1.18 > /dev/null
 submit ${SCRIPT_DIR}/install_makeflow.sh ${ENV_BIN} > /dev/null
 submit conda install --yes --quiet openjdk==8.0.152 > /dev/null
 
