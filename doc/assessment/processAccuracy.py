@@ -178,9 +178,9 @@ def getPredStatusEval(row, locus):
     status = "Undetermined"
     if row["{}_observed_status".format(locus)] != "Undetermined":
         if row["{}_expected_status".format(locus)] == row["{}_observed_status".format(locus)]:
-            status = "concordant"
+            status = "right"
         else:
-            status = "discordant"
+            status = "wrong"
     return status
 
 def getAccuracyDf(loci, results_df):
@@ -194,7 +194,7 @@ def getAccuracyDf(loci, results_df):
                 (results_df["method_name"] == method_name)
             ]
             ct_status_by_locus = {
-                locus: {"concordant": 0, "discordant": 0, "Undetermined": 0} for locus in loci
+                locus: {"right": 0, "wrong": 0, "Undetermined": 0} for locus in loci
             }
             for idx, row in dataset.iterrows():
                 for locus in loci:
@@ -202,17 +202,17 @@ def getAccuracyDf(loci, results_df):
                         status = getPredStatusEval(row, locus)
                         ct_status_by_locus[locus][status] += 1
             for locus in loci:
-                nb_determined = ct_status_by_locus[locus]["concordant"] + ct_status_by_locus[locus]["discordant"]
+                nb_determined = ct_status_by_locus[locus]["right"] + ct_status_by_locus[locus]["wrong"]
                 accuracy_rows.append([
                     dataset_id,
                     locus,
                     method_name,
-                    (None if nb_determined == 0 else ct_status_by_locus[locus]["concordant"] / nb_determined),
-                    ct_status_by_locus[locus]["concordant"],
-                    ct_status_by_locus[locus]["discordant"],
+                    (None if nb_determined == 0 else ct_status_by_locus[locus]["right"] / nb_determined),
+                    ct_status_by_locus[locus]["right"],
+                    ct_status_by_locus[locus]["wrong"],
                     ct_status_by_locus[locus]["Undetermined"]
                 ])
-    accuracy_df = pd.DataFrame.from_records(accuracy_rows, columns=["dataset_id", "locus", "method", "accuracy", "nb_concordant_prediction", "nb_discordant_prediction", "nb_without_prediction"])
+    accuracy_df = pd.DataFrame.from_records(accuracy_rows, columns=["dataset_id", "locus", "method", "accuracy", "nb_right_prediction", "nb_wrong_prediction", "nb_without_prediction"])
     return accuracy_df
 
 def writeAccuracy(loci, results_df, out_path, label_margin=0.01):
@@ -245,21 +245,32 @@ def writePredStatus(loci, results_df, out_path, nb_col=1, subplots_adjust=0.9, o
     accuracy_df = getAccuracyDf(loci, results_df)
     status_rows = []
     for idx, row in accuracy_df.iterrows():
-        nb_evaluated = row["nb_concordant_prediction"] + row["nb_discordant_prediction"] + row["nb_without_prediction"]
-        for status in ["nb_concordant_prediction", "nb_discordant_prediction", "nb_without_prediction"]:
+        nb_evaluated = row["nb_right_prediction"] + row["nb_wrong_prediction"] + row["nb_without_prediction"]
+        for status in ["nb_right_prediction", "nb_wrong_prediction", "nb_without_prediction"]:
+            prediction_status = prediction_status = status.split("_")[1] + "_classif"
             status_rows.append([
                 row["dataset_id"],
                 row["locus"],
                 row["method"],
-                status.split("_")[1],
+                prediction_status,
                 row[status] * 100 / nb_evaluated
             ])
     status_df = pd.DataFrame.from_records(status_rows, columns=["dataset_id", "locus", "method", "prediction_status", "% of samples"])
 
     # Plot status
-    prediction_status_order = ["discordant", "without"]
-    status_df = status_df[status_df["prediction_status"] != "concordant"]
-    g = sns.catplot(y="% of samples", x="prediction_status", hue="method", col="locus", col_wrap=nb_col, data=status_df, kind="box", order=prediction_status_order)
+    prediction_status_order = ["wrong_classif", "without_classif"]
+    status_df = status_df[status_df["prediction_status"] != "right_classif"]
+    g = sns.catplot(
+        y="% of samples",
+        x="prediction_status",
+        hue="method",
+        col="locus",
+        col_wrap=nb_col,
+        data=status_df,
+        kind="box",
+        order=prediction_status_order,
+        medianprops=dict(linewidth=2, color='firebrick')
+    )
     for ax in g.axes.flat:
         _ = plt.setp(ax.get_xticklabels(), visible=True)
         locus_name = ax.get_title().split(" ")[-1]
@@ -321,21 +332,32 @@ def writeBalancedPredStatus(loci, results_df, out_path, nb_col=1, subplots_adjus
     # Agglomerate dataset info
     status_rows = []
     for idx, row in accuracy_df.iterrows():
-        nb_evaluated = row["nb_concordant_prediction"] + row["nb_discordant_prediction"] + row["nb_without_prediction"]
-        for status in ["nb_concordant_prediction", "nb_discordant_prediction", "nb_without_prediction"]:
+        nb_evaluated = row["nb_right_prediction"] + row["nb_wrong_prediction"] + row["nb_without_prediction"]
+        for status in ["nb_right_prediction", "nb_wrong_prediction", "nb_without_prediction"]:
+            prediction_status = prediction_status = status.split("_")[1] + "_classif"
             status_rows.append([
                 row["dataset_id"],
                 row["locus"],
                 row["method"],
-                status.split("_")[1],
+                prediction_status,
                 row[status] * 100 / nb_evaluated
             ])
     status_df = pd.DataFrame.from_records(status_rows, columns=["dataset_id", "locus", "method", "prediction_status", "% of samples"])
 
     # Plot status
-    prediction_status_order = ["discordant", "without"]
-    status_df = status_df[status_df["prediction_status"] != "concordant"]
-    g = sns.catplot(y="% of samples", x="prediction_status", hue="method", col="locus", col_wrap=nb_col, data=status_df, kind="box", order=prediction_status_order)
+    prediction_status_order = ["wrong_classif", "without_classif"]
+    status_df = status_df[status_df["prediction_status"] != "right"]
+    g = sns.catplot(
+        y="% of samples",
+        x="prediction_status",
+        hue="method",
+        col="locus",
+        col_wrap=nb_col,
+        data=status_df,
+        kind="box",
+        order=prediction_status_order,
+        medianprops=dict(linewidth=2, color='firebrick')
+    )
     for ax in g.axes.flat:
         _ = plt.setp(ax.get_xticklabels(), visible=True)
         locus_name = ax.get_title().split(" ")[-1]
@@ -428,7 +450,7 @@ def getLociDf(loci, results_df):
                     locus,
                     row["method_name"],
                     row["{}_pred_score".format(locus)],
-                    getPredStatusEval(row, locus)
+                    getPredStatusEval(row, locus) + "_classif"
                 ])
     loci_df = pd.DataFrame.from_records(loci_rows, columns=["dataset_id", "locus", "method", "prediction_score", "prediction_status"])
     return loci_df
@@ -455,9 +477,9 @@ def addCount(df, graph, x_column, y_column, hue_column, x_order=None, hue_order=
 
 def writeScorePredStatus(loci, results_df, out_path, nb_col=1, subplots_adjust=0.9):
     loci_df = getLociDf(loci, results_df)
-    loci_df = loci_df[loci_df["prediction_status"] != "Undetermined"]
+    loci_df = loci_df[loci_df["prediction_status"] != "Undetermined_classif"]
     loci_df = loci_df[loci_df["method"] != "agreement"]
-    prediction_status_order = ["concordant", "discordant"]
+    prediction_status_order = ["right_classif", "wrong_classif"]
     graph = sns.catplot(
         x="method",
         y="prediction_score",
@@ -471,12 +493,13 @@ def writeScorePredStatus(loci, results_df, out_path, nb_col=1, subplots_adjust=0
         hue_order=prediction_status_order
     )
     for ax in graph.axes.flat:
-        _ = plt.setp(ax.get_xticklabels(), visible=True)
-        locus_name = ax.get_title().split(" ")[-1]
-        curr_locus_df = loci_df[loci_df["locus"] == locus_name]
-        addCount(curr_locus_df, ax, "method", "prediction_score", "prediction_status", None, prediction_status_order, 2)
+        # _ = plt.setp(ax.get_xticklabels(), visible=True)
+        # locus_name = ax.get_title().split(" ")[-1]
+        # curr_locus_df = loci_df[loci_df["locus"] == locus_name]
+        # addCount(curr_locus_df, ax, "method", "prediction_score", "prediction_status", None, prediction_status_order, 2)
+        ax.set(xlabel='Methods', ylabel='Prediction score')
     plt.subplots_adjust(top=subplots_adjust, hspace=0.2)
-    plt.gcf().suptitle("Confidence score evaluation")
+    plt.gcf().suptitle("Confidence scores evaluation")
     plt.savefig(out_path)
     plt.close()
 
@@ -490,9 +513,9 @@ def writeBalancedScorePredStatus(loci, results_df, out_path, nb_col=1, subplots_
         loci_balanced_df = loci_balanced_df.append(curr_locus_df, sort=False, ignore_index=True)
 
     # Plot scores
-    loci_balanced_df = loci_balanced_df[loci_balanced_df["prediction_status"] != "Undetermined"]
+    loci_balanced_df = loci_balanced_df[loci_balanced_df["prediction_status"] != "Undetermined_classif"]
     loci_balanced_df = loci_balanced_df[loci_balanced_df["method"] != "agreement"]
-    prediction_status_order = ["concordant", "discordant"]
+    prediction_status_order = ["right_classif", "wrong_classif"]
     graph = sns.catplot(
         x="method",
         y="prediction_score",
@@ -506,12 +529,13 @@ def writeBalancedScorePredStatus(loci, results_df, out_path, nb_col=1, subplots_
         hue_order=prediction_status_order
     )
     for ax in graph.axes.flat:
-        _ = plt.setp(ax.get_xticklabels(), visible=True)
-        locus_name = ax.get_title().split(" ")[-1]
-        curr_locus_df = loci_balanced_df[loci_balanced_df["locus"] == locus_name]
-        addCount(curr_locus_df, ax, "method", "prediction_score", "prediction_status", None, prediction_status_order, 2)
+        # _ = plt.setp(ax.get_xticklabels(), visible=True)
+        # locus_name = ax.get_title().split(" ")[-1]
+        # curr_locus_df = loci_balanced_df[loci_balanced_df["locus"] == locus_name]
+        # addCount(curr_locus_df, ax, "method", "prediction_score", "prediction_status", None, prediction_status_order, 2)
+        ax.set(xlabel='Methods', ylabel='Prediction score')
     plt.subplots_adjust(top=subplots_adjust, hspace=0.2)
-    plt.gcf().suptitle("Confidence score evaluation")
+    plt.gcf().suptitle("Confidence scores evaluation")
     plt.savefig(out_path)
     plt.close()
 
@@ -581,7 +605,7 @@ if __name__ == "__main__":
     writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"), 0.01)
     writePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci.svg"), 2, 0.92, 2)
     writePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_spl.svg"), 1, 0.85, 0.5)
-    writeScorePredStatus(["spl"] + loci, results_df, os.path.join(args.output_folder, "pred_score_all.svg"), 2, 0.92)
+    writeScorePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_score_all.svg"), 2, 0.92)
     writeScorePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_score_spl.svg"), 1, 0.85)
 
     # Balanced predictions information
