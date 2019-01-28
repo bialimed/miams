@@ -19,11 +19,12 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
 import os
+import re
 import sys
 import json
 import shutil
@@ -52,17 +53,29 @@ def getLogInfo(log_path):
                 log_info[tag] = int(float(value))
     return log_info
 
+def getSplFromLibName(lib_name):
+    return lib_name.split("_")[0]
+
+def getLibNamefromFileName(filename):
+    libname = None
+    match = re.match("^([^_]+_S\d+)_.+.fastq.gz$", filename)
+    if match is not None:  # spl-1_S1_L001_R1_001.fastq.gz
+        libname = match.group(1)
+    else:  # spl-1_R1.fastq.gz
+        libname = filename.split("_")[0]
+    return libname
+
 def getSammplesFromDataFolder(data_folder):
     samples = []
     for run_folder_name in os.listdir(data_folder):
         run_folder_path = os.path.join(data_folder, run_folder_name)
         for filename in os.listdir(run_folder_path):
-            if filename.endswith("_R1_001.fastq.gz"):
+            if filename.endswith(".fastq.gz") and "_R1" in filename:
                 filepath = os.path.join(run_folder_path, filename)
                 samples.append({
-                    "name": filename.replace("_L001_R1_001.fastq.gz", ""),
+                    "name": getLibNamefromFileName(filename),
                     "R1": filepath,
-                    "R2": filepath.replace("_R1_001.fastq.gz", "_R2_001.fastq.gz"),
+                    "R2": filepath.replace("_R1", "_R2"),
                     "status": {}
                 })
     return samples
@@ -190,9 +203,6 @@ def predict(samples, design_folder, baseline, models, out_folder, args):
             "--R2", spl["R2"]
         ])
     execCommand(predict_cmd)
-
-def getSplFromLibName(lib_name):
-    return lib_name.split("_")[0]
 
 def getResInfoTitles(loci_id_by_name):
     titles = [
