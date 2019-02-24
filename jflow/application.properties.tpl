@@ -74,7 +74,7 @@ msings_venv = ###APP_FOLDER###/envs/msings/msings-env/bin/python
 [components]
 # BamAreasToFastq.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
 # BAMIndex.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
-# BWAmem.batch_options = -V -l h_vmem=10G -l mem=10G -q normal
+# BWAmem.batch_options = -V -l h_vmem=15G -l mem=15G -q normal
 # CombinePairs.batch_options = -V -l h_vmem=2G -l mem=2G -q normal
 # CreateMSIRef.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
 # Cutadapt.batch_options = -V -l h_vmem=5G -l mem=5G -q normal
