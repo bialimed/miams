@@ -106,7 +106,32 @@ The parameters show components properties:
 * On SGE the queue can control priority, limit execution time and ressources.
 (*-q X*).
 
-### 3. Launch installer
+### 3. Install dependencies
+#### [virtualenv](https://virtualenv.pypa.io/en/latest/installation/)
+
+    pip install --user virtualenv
+
+#### zlib
+
+On CentOS / Fedora / RHEL
+
+    yum install zlib zlib-devel
+
+On Debian
+
+    sudo apt-get install zlib zlibc zlib1-g zlib1g
+
+#### ncurses
+
+On CentOS / Fedora / RHEL
+
+    yum install ncurses-devel ncurses
+
+On Debian
+
+    sudo apt-get install libncurses5-dev
+
+### 4. Launch installer
 
     ${APP_DIR}/install/install_app.sh
 
