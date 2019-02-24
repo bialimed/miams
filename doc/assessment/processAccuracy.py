@@ -601,8 +601,8 @@ if __name__ == "__main__":
     datasetsComposition(dataset_df, os.path.join(args.output_folder, "datasets_composition_count.svg"), "count")
 
     # Predictions information
-    writeAccuracy(loci, results_df, os.path.join(args.output_folder, "accuracy_loci.svg"), 0.01)
-    writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"), 0.01)
+    writeAccuracy(loci, results_df, os.path.join(args.output_folder, "accuracy_loci.svg"), 0.05)
+    writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"), 0.005)
     writePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci.svg"), 2, 0.92, 2)
     writePredStatus(["spl"], results_df, os.path.join(args.output_folder, "pred_status_spl.svg"), 1, 0.85, 0.5)
     writeScorePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_score_all.svg"), 2, 0.92)
