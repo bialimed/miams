@@ -11,8 +11,8 @@ on amplicons.
 ### 1. Download code
 Use one of the following:
 
-* [user way] Downloads the latest released versions from `https://bitbucket.org/toulousemontpellier/miams/downloads/?tab=tags`.
-* [developper way] Clones the repository from the latest unreleased version: `git clone --recursive https://bitbucket.org/toulousemontpellier/miams.git`.
+* [user way] Downloads the latest released versions from `https://github.com/bialimed/miams/releases`.
+* [developper way] Clones the repository from the latest unreleased version: `git clone --recursive https://github.com/bialimed/miams.git`.
 
 The application folder has the following structure:
 
