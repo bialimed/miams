@@ -22,4 +22,4 @@ cd ${INSTALL_DIR} && \
 git clone https://bitbucket.org/uwlabmed/msings.git && \
 cd msings && \
 git checkout ${SOFT_VERSION} && \
-bash dev/bootstrap.sh
+PYTHON=`which python2` dev/bootstrap.sh
