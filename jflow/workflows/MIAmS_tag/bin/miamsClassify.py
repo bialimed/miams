@@ -109,7 +109,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--version', action='version', version=__version__)
     group_locus = parser.add_argument_group('Locus classifier')  # Locus status
     group_locus.add_argument('-k', '--classifier', default="SVC", choices=["DecisionTree", "KNeighbors", "LogisticRegression", "RandomForest", "SVC"], help='The classifier used to predict loci status.')
-    group_locus.add_argument('-p', '--classifier-params', action=ClassifierParamsAction, default={}, help='Additional parameters provided to classifier in json string (example: {"n_estimators": 1000} for RandmForest).')
+    group_locus.add_argument('-p', '--classifier-params', action=ClassifierParamsAction, default={}, help='By default the classifier is used with these default parameters defined in scikit-learn. If you want change these parameters you use this option to provide them as json string. Example: {"n_estimators": 1000, "criterion": "entropy"} for RandmForest.')
     group_locus.add_argument('-f', '--min-support-fragments', default=150, type=int, help='The minimum numbers of fragment (reads pairs) for determine the status. [Default: %(default)s]')
     group_locus.add_argument('-s', '--random-seed', default=None, type=int, help='The seed used by the random number generator in the classifier.')
     group_status = parser.add_argument_group('Sample consensus status')  # Sample status

@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -41,14 +41,14 @@ from anacore.msi import MSIReport, Status
 
 def getHigherPeakByLocus(models, min_support_reads):
     """
-    Returns length of the higher peak of each model by locus.
+    Return length of the higher peak of each model by locus.
 
     :param models: The list of MSIReport representing the models (status known and stored in Expected result).
     :type models: list
     :param min_support_reads: The minimum number of reads on locus to use the stability status of the current model.
     :type min_support_reads: int
     :return: By locus the list of higher peak length.
-    :rtype
+    :rtype: dict
     """
     higher_by_locus = {}
     models_samples = MSIReport.parse(models)
@@ -70,7 +70,7 @@ def getHigherPeakByLocus(models, min_support_reads):
 
 def commonSubStr(str_a, str_b):
     """
-    Returns the longer common substring from the left of the two strings.
+    Return the longer common substring from the left of the two strings.
 
     :param str_a: The first string to process.
     :type str_a: str
@@ -91,7 +91,7 @@ def commonSubStr(str_a, str_b):
 
 def commonSubPathes(pathes_a, pathes_b, use_basename=False):
     """
-    Returns the longer common substring from the left of the two strings.
+    Return the longer common substring from the left of the two strings.
 
     :param pathes_a: The first string to process.
     :type pathes_a: list
@@ -136,6 +136,7 @@ class MIAmSTag (MIAmSWf):
         # Locus classifier
         self.add_parameter("min_support_reads", "The minimum number of reads on locus for analyse the stability status of this locus in this sample.", default=300, type=int, group="Locus classification parameters")
         self.add_parameter("classifier", "The classifier used to predict loci status.", choices=["DecisionTree", "KNeighbors", "LogisticRegression", "RandomForest", "SVC"], default="SVC", group="Locus classification parameters")
+        self.add_parameter("classifier_params", 'By default the MIAmSClassifier is used with these default parameters defined in scikit-learn. If you want change these parameters you use this option to provide them as json string. Example: {"n_estimators": 1000, "criterion": "entropy"} for RandmForest.', group="Locus classification parameters")
         self.add_parameter("random_seed", "The seed used by the random number generator in MIAmSClassifier.", type=int, group="Locus classification parameters")
 
         # Combine reads method
@@ -223,6 +224,7 @@ class MIAmSTag (MIAmSWf):
             "evaluated_samples": gather.out_report,
             "method_name": self.classifier + "Pairs",
             "classifier": self.classifier,
+            "classifier_params": self.classifier_params,
             "min_support_fragments": self.min_support_reads / 2,
             "consensus_method": self.loci_consensus_method,
             "instability_count": self.instability_count,
