@@ -181,23 +181,19 @@ process, and for which data have been generated using the same protocols._"
       --output-log ${APP_DIR}/test/out_model/baseline_log.txt
     source ${APP_DIR}/envs/miniconda3/bin/deactivate
 
-The annotations file describe the status of all loci in all samples in TSV
-format.
+The annotations file (format TSV) describes the status of each locus for all the
+samples used in model creation.
 
-    sample	locus_position	method_id	key	value	type
-    splA	1:102-500	model	status	MSS
-    splA	1:9005-9105	model	status	Undetermined
-    splB	1:102-500	model	status	MSI
-    splB	1:9005-9105	model	status	MSI
+    sample	B25	B26	N21
+    splA	MSI	MSI	Undetermined
+    splB	MSS	MSS	MSI
 
-One row correspond to one locus in one sample and contains:
+The title line contains "sample" in first column and in others the names of the
+locus present in the fourth column of the BED file. Each other row corresponds
+to one sample and contains:
 
 * The sample name.
-* The locus position.
-* The name of the method storing information. In reference creation we use `model`.
-* The name used to index the annotation. In reference creation we add the MSI `status`.
-* The value for the annotation. In reference creation `MSS` or `MSI` or `Undetermined`.
-* The type of value.
+* For each locus the stability status: `MSS` or `MSI` or `Undetermined`.
 
 
 ## Workflows management

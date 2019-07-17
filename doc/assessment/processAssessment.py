@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -36,7 +36,7 @@ import pandas as pd
 from sklearn.model_selection import ShuffleSplit
 
 from anacore.msi import MSIReport, MSISample, LocusResPairsCombi, Status
-from anacore.msiannot import MSIAnnot
+from anacore.sv import HashedSVIO
 from anacore.bed import getAreas
 
 
@@ -111,18 +111,13 @@ def addExpectedStatus(samples, status_by_spl, ref_method="ngs"):
 
 def samplesToAnnot(samples, loci_path, annot_path, ref_method="ngs"):
     loci = getAreas(loci_path)
-    with MSIAnnot(annot_path, "w") as FH_out:
+    with HashedSVIO(annot_path, "w") as FH_out:
+        FH_out.titles = ["sample"] + [locus.name for locus in loci]
         for spl in samples:
+            record = {"sample": spl["name"]}
             for locus in loci:
-                record = {
-                    "sample": spl["name"],
-                    "locus_position": "{}:{}-{}".format(locus.chrom, locus.start - 1, locus.end),
-                    "method_id": "model",
-                    "key": "status",
-                    "value": spl["status"][ref_method][locus.name],
-                    "type": "str"
-                }
-                FH_out.write(record)
+                record[locus.name] = spl["status"][ref_method][locus.name]
+            FH_out.write(record)
 
 def execCommand(cmd):
     app_folder = "../.."
