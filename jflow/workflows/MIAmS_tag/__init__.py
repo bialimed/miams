@@ -33,7 +33,7 @@ from workflows.src.miamsWorkflows import MIAmSWf
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 LIB_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "lib")
-sys.path.append(LIB_DIR)
+sys.path.insert(0, LIB_DIR)
 
 from anacore.illumina import getLibNameFromReadsPath
 from anacore.msi import MSIReport, Status

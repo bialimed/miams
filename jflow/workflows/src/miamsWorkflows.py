@@ -18,7 +18,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2017 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -30,7 +30,7 @@ from jflow.workflow import Workflow
 
 class MIAmSWf(Workflow):
     def write_log(self, log_path, version):
-        """Writes a tiny log for user.
+        """Write a tiny log for user.
 
         :param log_path: Path to the log file.
         :type log_path: str
@@ -49,13 +49,13 @@ class MIAmSWf(Workflow):
 
     def pre_restart(self):
         if "PYTHONPATH" in os.environ:
-            os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + self.lib_dir
+            os.environ["PYTHONPATH"] = self.lib_dir + os.pathsep + os.environ['PYTHONPATH']
         else:
             os.environ["PYTHONPATH"] = self.lib_dir
 
 
     def pre_process(self):
         if "PYTHONPATH" in os.environ:
-            os.environ["PYTHONPATH"] = os.environ['PYTHONPATH'] + os.pathsep + self.lib_dir
+            os.environ["PYTHONPATH"] = self.lib_dir + os.pathsep + os.environ['PYTHONPATH']
         else:
             os.environ["PYTHONPATH"] = self.lib_dir
