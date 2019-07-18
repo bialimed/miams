@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -36,6 +36,7 @@ LIB_DIR = os.path.join(os.path.dirname(CURRENT_DIR), "lib")
 sys.path.insert(0, LIB_DIR)
 
 from anacore.msiannot import MSIAnnot
+from anacore.msi import getIncompleteModels
 
 
 class MIAmSLearn (MIAmSWf):
@@ -48,6 +49,7 @@ class MIAmSLearn (MIAmSWf):
 
     def define_parameters(self, parameters_section=None):
         self.add_parameter("min_support_reads", "Minimum number of reads in size distribution to keep the locus result of a sample in reference distributions.", default=400, type=int)
+        self.add_parameter("min_support_samples", "Minimum number of samples in MSS models and in MSI models.", default=20, type=int)
 
         # Combine reads method
         self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
@@ -151,9 +153,16 @@ class MIAmSLearn (MIAmSWf):
         on_targets = self.add_component("BamAreasToFastq", [idx_aln.out_aln, self.targets, self.min_zoi_overlap, True, cleaned_R1, cleaned_R2])
         combine = self.add_component("CombinePairs", [on_targets.out_R1, on_targets.out_R2, None, self.max_mismatch_ratio, self.min_pair_overlap])
         gather_locus = self.add_component("GatherLocusRes", [combine.out_report, self.targets, self.samples_names, "model", "LocusResPairsCombi"])
-        self.training_cmpt = self.add_component("CreateMSIRef", [gather_locus.out_report, self.targets, self.converted_annotations, self.min_support_reads/2])
+        self.training_cmpt = self.add_component("CreateMSIRef", [gather_locus.out_report, self.targets, self.converted_annotations, self.min_support_reads / 2])
 
     def post_process(self):
+        # Check number of samples supporting all models
+        incomplete_models = getIncompleteModels(self.training_cmpt.out_references, self.min_support_samples)
+        if len(incomplete_models) != 0:
+            incomplete_tags = ["{}_{}: {} samples".format(elt["locus_name"], elt["status"], elt["support"]) for elt in incomplete_models]
+            raise Exception("Unsufficient number of samples in model: ".format(", ".join(incomplete_tags)))
+        # Trace execution
         self.write_log(self.output_log, __version__)
+        # Copy final results
         shutil.copy(self.baseline_cmpt.baseline, self.output_baseline)
         shutil.copy(self.training_cmpt.out_references, self.output_training)

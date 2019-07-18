@@ -43,6 +43,7 @@ submit ${APP_DIR}/jflow/bin/jflow_cli.py miamslearn \
   --R2 ${APP_DIR}/test/data/stable/spl001_S19_L001_R2.fastq.gz \
   --R1 ${APP_DIR}/test/data/unstable/spl002_S13_L001_R1.fastq.gz \
   --R2 ${APP_DIR}/test/data/unstable/spl002_S13_L001_R2.fastq.gz \
+  --min-support-samples 1 \
   --annotations ${APP_DIR}/test/data/learn_annot.tsv \
   --targets ${APP_DIR}/test/data/targets.bed \
   --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \

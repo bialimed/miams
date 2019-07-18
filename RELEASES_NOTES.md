@@ -2,6 +2,7 @@
 
 ### New functions:
   * Add possibility to use scikit-learn parameters of the selected MIAmSClassifier.
+  * Add check on number of samples supporting each class (MSI/MSS) of loci after model creation in MIAmS_learn.
 
 ### Changes:
   * The parameter `--annotations` of MIAmS_learn has changed his input format. New format example below:
