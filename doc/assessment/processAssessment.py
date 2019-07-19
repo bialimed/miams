@@ -111,7 +111,7 @@ def addExpectedStatus(samples, status_by_spl, ref_method="ngs"):
 
 def samplesToAnnot(samples, loci_path, annot_path, ref_method="ngs"):
     loci = getAreas(loci_path)
-    with HashedSVIO(annot_path, "w") as FH_out:
+    with HashedSVIO(annot_path, "w", title_starter="") as FH_out:
         FH_out.titles = ["sample"] + [locus.name for locus in loci]
         for spl in samples:
             record = {"sample": spl["name"]}
@@ -430,7 +430,7 @@ if __name__ == "__main__":
 
     # Logger
     logging.basicConfig(format='%(asctime)s - %(name)s [%(levelname)s] %(message)s')
-    log = logging.getLogger("autoRunWf")
+    log = logging.getLogger()
     log.setLevel(logging.INFO)
     log.info("Command: " + " ".join(sys.argv))
 

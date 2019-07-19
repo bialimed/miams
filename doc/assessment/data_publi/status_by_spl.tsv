@@ -165,7 +165,7 @@ spl-163	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
 spl-164	uterus		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
 spl-165	uterus		MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
 spl-166	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
-spl-167	endometrium		MSI	loss	MSI	Undetermined	Undetermined	MSI	MSI		Undetermined	yes	yes
+spl-167	endometrium		MSI	loss	MSI	Undetermined	Undetermined	MSI	MSI	Undetermined	Undetermined	yes	yes
 spl-168	lung				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
 spl-169	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
 spl-170	gist				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
