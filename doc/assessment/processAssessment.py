@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.3.0'
+__version__ = '1.4.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -35,12 +35,29 @@ import subprocess
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit
 
+APP_FOLDER = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+LIB_DIR = os.path.join(APP_FOLDER, "jflow", "workflows", "lib")
+sys.path.insert(0, LIB_DIR)
+
 from anacore.msi import MSIReport, MSISample, LocusResPairsCombi, Status
 from anacore.sv import HashedSVIO
 from anacore.bed import getAreas
 
 
+########################################################################
+#
+# FUNCTIONS
+#
+########################################################################
 def getLogInfo(log_path):
+    """
+    Return information form MIAmS_tag logging file.
+
+    :param log_path: Path to the MIAmS_tag logging file.
+    :type log_path: str
+    :return: The logging information.
+    :rtype: dict
+    """
     log_info = dict()
     with open(log_path) as FH_in:
         for line in FH_in:
@@ -53,10 +70,28 @@ def getLogInfo(log_path):
                 log_info[tag] = int(float(value))
     return log_info
 
+
 def getSplFromLibName(lib_name):
+    """
+    Return sample name from library name.
+
+    :param lib_name: The library name.
+    :type lib_name: str
+    :return: The sample name.
+    :rtype: str
+    """
     return lib_name.split("_")[0]
 
+
 def getLibNamefromFileName(filename):
+    """
+    Return library name from fastq filename.
+
+    :param filename: The fastq filename.
+    :type filename: str
+    :return: The library name.
+    :rtype: str
+    """
     libname = None
     match = re.match("^([^_]+_S\d+)_.+.fastq.gz$", filename)
     if match is not None:  # spl-1_S1_L001_R1_001.fastq.gz
@@ -65,71 +100,73 @@ def getLibNamefromFileName(filename):
         libname = filename.split("_")[0]
     return libname
 
-def getSammplesFromDataFolder(data_folder):
-    samples = []
+
+def getLibFromDataFolder(data_folder):
+    """
+    Return libraries information from folder containing fastq.
+
+    :param data_folder: Path to the folder containing fastq.
+    :type data_folder: str
+    :return: The list of libraries. Each element is a dictionary containing the following keys: name, spl_name, R1, R2.
+    :rtype: list
+    """
+    libraries = []
     for run_folder_name in os.listdir(data_folder):
         run_folder_path = os.path.join(data_folder, run_folder_name)
         for filename in os.listdir(run_folder_path):
             if filename.endswith(".fastq.gz") and "_R1" in filename:
                 filepath = os.path.join(run_folder_path, filename)
-                samples.append({
-                    "name": getLibNamefromFileName(filename),
+                lib_name = getLibNamefromFileName(filename)
+                libraries.append({
+                    "name": lib_name,
+                    "spl_name": getSplFromLibName(lib_name),
                     "R1": filepath,
-                    "R2": filepath.replace("_R1", "_R2"),
-                    "status": {}
+                    "R2": filepath.replace("_R1", "_R2")
                 })
-    return samples
+    return libraries
 
-def getStatusFromFile(status_file, in_separator="\t"):
-    status_by_spl = dict()
-    with open(status_file) as FH_status:
-        titles = [elt.strip() for elt in FH_status.readline().split(in_separator)]
-        if titles[0].startswith("#"):
-            titles[0] = titles[0][1:]
-        for line in FH_status:
-            fields = {titles[idx]: elt.strip() for idx, elt in enumerate(line.split(in_separator))}
-            if fields["sample_id"] in status_by_spl:
-                raise Exception("Duplicated sample {} in {}.".format(fields["sample_id"], status_file))
-            status_by_spl[fields["sample_id"]] = {"ngs": {}, "electro": {}, "MMR": {}}
-            electro_res = status_by_spl[fields["sample_id"]]["electro"]
-            ngs_res = status_by_spl[fields["sample_id"]]["ngs"]
-            for locus_name in ["BAT25", "BAT26", "NR21", "NR22", "NR24", "NR27", "HT17"]:
-                tag = "electro_" + locus_name + "_status"
-                electro_res[locus_name] = (None if tag not in fields or fields[tag] == "" else fields[tag])
-                tag = "ngs_" + locus_name + "_status"
-                ngs_res[locus_name] = (None if tag not in fields or fields[tag] == "" else fields[tag])
-            electro_res["sample"] = (None if fields["electro_sample_status"] == "" else fields["electro_sample_status"])
-            ngs_res["sample"] = (None if fields["ngs_sample_status"] == "" else fields["ngs_sample_status"])
+
+def getStatus(in_annotations, samples):
+    """
+    Return status by locus by sample.
+
+    :param in_annotations: Path to the file containing status by locus by sample (format: TSV).
+    :type in_annotations: str
+    :param samples: List of samples names.
+    :type samples: list
+    :return: Status by locus by sample.
+    :rtype: dict
+    """
+    status_by_spl = {}
+    samples = set(samples)
+    with HashedSVIO(in_annotations, title_starter="") as FH:
+        for record in FH:
+            spl_name = getSplFromLibName(record["sample"])
+            if spl_name in samples:
+                status_by_spl[spl_name] = {key: value for key, value in record.items() if key not in ["sample", "sample_status"]}
+                status_by_spl[spl_name]["sample"] = record["sample_status"]
+    for spl in samples:
+        if spl not in status_by_spl:
+            raise Exception("Sample {} has no expected data.".format(spl))
     return status_by_spl
 
-def addExpectedStatus(samples, status_by_spl, ref_method="ngs"):
-    for spl in samples:
-        status_by_elt = status_by_spl[getSplFromLibName(spl["name"])]
-        if status_by_elt[ref_method]["sample"] is None:
-            raise Exception("Sample {} has no expected data.".format(getSplFromLibName(spl["name"])))
-        spl["status"] = status_by_spl[getSplFromLibName(spl["name"])]
-
-def samplesToAnnot(samples, loci_path, annot_path, ref_method="ngs"):
-    loci = getAreas(loci_path)
-    with HashedSVIO(annot_path, "w", title_starter="") as FH_out:
-        FH_out.titles = ["sample"] + [locus.name for locus in loci]
-        for spl in samples:
-            record = {"sample": spl["name"]}
-            for locus in loci:
-                record[locus.name] = spl["status"][ref_method][locus.name]
-            FH_out.write(record)
 
 def execCommand(cmd):
-    app_folder = "../.."
+    """
+    Execute command in MIAmS environment.
+
+    :param cmd: The command to execute.
+    :type cmd: list
+    """
     # Manage virtualenv
     env_activate_cmd = [
         "source",
-        os.path.join(app_folder, "envs", "miniconda3", "bin", "activate"),
+        os.path.join(APP_FOLDER, "envs", "miniconda3", "bin", "activate"),
         "MIAmS"
     ]
     env_deactivate_cmd = [
         "source",
-        os.path.join(app_folder, "envs", "miniconda3", "bin", "deactivate")
+        os.path.join(APP_FOLDER, "envs", "miniconda3", "bin", "deactivate")
     ]
     # Create command
     cmd = " && ".join([
@@ -143,16 +180,32 @@ def execCommand(cmd):
         shell=True
     )
 
-def train(samples, annotations_file, design_folder, out_baseline, out_models, out_log, args):
-    app_folder = "../.."
+
+def train(libraries, annotations_file, design_folder, out_baseline, out_models, out_log, args):
+    """
+    Execute MIAmS_learn.
+
+    :param libraries: The list of libraries. Each element is a dictionary containing the following keys: name, spl_name, R1, R2.
+    :type libraries: list
+    :param annotations_file: Path to the file containing status by locus by sample (format: TSV).
+    :type annotations_file: str
+    :param design_folder: Path to the folder containing targets.bed, intervales.tsv and genome.fa.
+    :type design_folder: str
+    :param out_baseline: Path to the ouputted baseline.
+    :type out_baseline: str
+    :param out_models: Path to the ouputted model.
+    :type out_models: str
+    :param out_log: Path to the ouputted log.
+    :type out_log: str
+    :param args: Arguments of the script.
+    :type args: argparse.NameSpace
+    """
     train_cmd = list(map(str, [
-        os.path.join(app_folder, "jflow", "bin", "jflow_cli.py"), "miamslearn",
+        os.path.join(APP_FOLDER, "jflow", "bin", "jflow_cli.py"), "miamslearn",
         "--min-support-reads", args.learn_min_support_reads,
         "--max-mismatch-ratio", 0.25,
         "--min-pair-overlap", 40,
         "--min-zoi-overlap", 12,
-        "--R1-end-adapter", os.path.join(design_folder, "trimmed_R1.fasta"),
-        "--R2-end-adapter", os.path.join(design_folder, "trimmed_R2.fasta"),
         "--targets", os.path.join(design_folder, "targets.bed"),
         "--intervals", os.path.join(design_folder, "intervals.tsv"),
         "--genome-seq", os.path.join(design_folder, "genome.fa"),
@@ -161,17 +214,40 @@ def train(samples, annotations_file, design_folder, out_baseline, out_models, ou
         "--output-log", out_log,
         "--annotations", annotations_file
     ]))
-    for spl in samples:
+    if os.path.exists(os.path.join(design_folder, "trimmed_R1.fasta")):
         train_cmd.extend([
-            "--R1", spl["R1"],
-            "--R2", spl["R2"]
+            "--R1-end-adapter", os.path.join(design_folder, "trimmed_R1.fasta"),
+            "--R2-end-adapter", os.path.join(design_folder, "trimmed_R2.fasta")
+        ])
+    for lib in libraries:
+        train_cmd.extend([
+            "--R1", lib["R1"],
+            "--R2", lib["R2"]
         ])
     execCommand(train_cmd)
 
-def predict(samples, design_folder, baseline, models, out_folder, args):
-    app_folder = "../.."
+
+def predict(libraries, design_folder, in_baseline, in_models, out_folder, args):
+    """
+    Execute MIAmS_tag.
+
+    :param libraries: The list of libraries. Each element is a dictionary containing the following keys: name, spl_name, R1, R2.
+    :type libraries: list
+    :param annotations_file: Path to the file containing status by locus by sample (format: TSV).
+    :type annotations_file: str
+    :param design_folder: Path to the folder containing targets.bed, intervales.tsv and genome.fa.
+    :type design_folder: str
+    :param in_baseline: Path to the baseline (format: TSV).
+    :type in_baseline: str
+    :param in_models: Path to the model (format: JSON).
+    :type in_models: str
+    :param out_folder: Path to the outputted folder.
+    :type out_folder: str
+    :param args: Arguments of the script.
+    :type args: argparse.NameSpace
+    """
     predict_cmd = list(map(str, [
-        os.path.join(app_folder, "jflow", "bin", "jflow_cli.py"), "miamstag",
+        os.path.join(APP_FOLDER, "jflow", "bin", "jflow_cli.py"), "miamstag",
         "--min-support-reads", args.tag_min_support_reads,
         "--random-seed", 42,
         "--max-mismatch-ratio", 0.25,
@@ -183,23 +259,35 @@ def predict(samples, design_folder, baseline, models, out_folder, args):
         "--instability-count", args.instability_count,
         "--undetermined-weight", args.undetermined_weight,
         ("--locus-weight-is-score" if args.locus_weight_is_score else ""),
-        "--R1-end-adapter", os.path.join(design_folder, "trimmed_R1.fasta"),
-        "--R2-end-adapter", os.path.join(design_folder, "trimmed_R2.fasta"),
         "--targets", os.path.join(design_folder, "targets.bed"),
         "--intervals", os.path.join(design_folder, "intervals.tsv"),
-        "--baseline", baseline,
-        "--models", models,
+        "--baseline", in_baseline,
+        "--models", in_models,
         "--genome-seq", os.path.join(design_folder, "genome.fa"),
         "--output-dir", out_folder
     ]))
-    for spl in samples:
+    if os.path.exists(os.path.join(design_folder, "trimmed_R1.fasta")):
         predict_cmd.extend([
-            "--R1", spl["R1"],
-            "--R2", spl["R2"]
+            "--R1-end-adapter", os.path.join(design_folder, "trimmed_R1.fasta"),
+            "--R2-end-adapter", os.path.join(design_folder, "trimmed_R2.fasta")
+        ])
+    for lib in libraries:
+        predict_cmd.extend([
+            "--R1", lib["R1"],
+            "--R2", lib["R2"]
         ])
     execCommand(predict_cmd)
 
+
 def getResInfoTitles(loci_id_by_name):
+    """
+    Return titles for the result dataframe.
+
+    :param loci_id_by_name: List of locus names.
+    :type loci_id_by_name: dict
+    :return: Titles for results dataframe.
+    :rtype: list
+    """
     titles = [
         "dataset_id",
         "lib_name",
@@ -217,12 +305,31 @@ def getResInfoTitles(loci_id_by_name):
         ])
     return titles
 
-def getMethodResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, method_name, res_method_name=None):
+
+def getMethodResInfo(dataset_id, loci_id_by_name, reports, status_by_spl, method_name, res_method_name=None):
+    """
+    Return rows from the specified method for the results dataframe.
+
+    :param dataset_id: Dataset ID.
+    :type dataset_id: str
+    :param loci_id_by_name: List of locus names.
+    :type loci_id_by_name: dict
+    :param reports: List of MSISample.
+    :type reports: list
+    :param status_by_spl: Status by locus by name.
+    :type status_by_spl: dict
+    :param method_name: Name of the processed method.
+    :type method_name: str
+    :param res_method_name: Name stored in results dataframe for the processed method.
+    :type res_method_name: str
+    :return: Rows for results dataframe.
+    :rtype: list
+    """
     if res_method_name is None:
         res_method_name = method_name
     dataset_res = []
     for curr_report in reports:
-        expected = samples_by_name[curr_report.name.replace("_L001", "")]
+        expected = status_by_spl[curr_report.name.replace("_L001", "")]
         row = [dataset_id, curr_report.name, res_method_name]  # Dataset id, sample name and method
         row.extend([
             expected["sample"],  # expected
@@ -247,15 +354,41 @@ def getMethodResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, meth
         dataset_res.append(row)
     return dataset_res
 
-def getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, methods):
+
+def getResInfo(dataset_id, loci_id_by_name, reports, status_by_spl, methods):
+    """
+    Return rows for the results dataframe.
+
+    :param dataset_id: Dataset ID.
+    :type dataset_id: str
+    :param loci_id_by_name: List of locus names.
+    :type loci_id_by_name: dict
+    :param reports: List of MSISample.
+    :type reports: list
+    :param status_by_spl: Status by locus by name.
+    :type status_by_spl: dict
+    :param methods: Name of the processed methods.
+    :type methods: list
+    :return: Rows for results dataframe.
+    :rtype: list
+    """
     dataset_res = []
     for method_name in methods:
         dataset_res.extend(
-            getMethodResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, method_name)
+            getMethodResInfo(dataset_id, loci_id_by_name, reports, status_by_spl, method_name)
         )
     return dataset_res
 
+
 def getDatasetsInfoTitles(loci_id_by_name):
+    """
+    Return titles for datasets dataframe.
+
+    :param loci_id_by_name: List of locus names.
+    :type loci_id_by_name: dict
+    :return: Titles for datasets dataframe.
+    :rtype: list
+    """
     titles = ["dataset_id", "dataset_md5"]
     # Train dataset
     titles.extend(["train_nb_spl", "train_nb_spl_stable", "train_nb_spl_unstable", "train_nb_spl_undetermined"])
@@ -278,6 +411,7 @@ def getDatasetsInfoTitles(loci_id_by_name):
     # Samples
     titles.extend(["train_samples", "test_samples"])
     return titles
+
 
 def getDatasetsInfo(dataset_id, dataset_md5, loci_id_by_name, models, reports, learn_log, tag_log, samples_by_name):
     train_status = [samples_by_name[spl.name.replace("_L001", "")] for spl in models]
@@ -322,7 +456,16 @@ def getDatasetsInfo(dataset_id, dataset_md5, loci_id_by_name, models, reports, l
     ])
     return row
 
+
 def getMSISamples(in_folder):
+    """
+    Return MSIReport from data output folder of MIAmS_tag.
+
+    :param in_folder: Path to the data output folder of MIAmS_tag.
+    :type in_folder: str
+    :return: List of MSISample objects.
+    :rtype: list
+    """
     samples_res = list()
     for filename in os.listdir(in_folder):
         filepath = os.path.join(in_folder, filename)
@@ -333,16 +476,45 @@ def getMSISamples(in_folder):
         samples_res.append(curr_spl)
     return samples_res
 
+
 def lociInitData(reports, src_method, dest_method):
+    """
+    Copy lengths distributions data from src_method to dest_method and set status to None.
+
+    :param reports: MSI reports of samples.
+    :type reports: MSIReport
+    :param src_method: Name of the source method.
+    :type src_method: str
+    :param dest_method: Name of the destination method.
+    :type dest_method: str
+    """
     for curr_report in reports:
         for locus_id, locus in curr_report.loci.items():
             src_data = locus.results[src_method].data
             locus.results[dest_method] = LocusResPairsCombi(Status.none, None, src_data)
 
+
 def submitAddClf(train_path, test_path, res_path, args, method_name, clf, clf_params=None):
-    app_folder = "../.."
+    """
+    Launch second classification and update reports file.
+
+    :param train_path: Path to the models file (format: MSIReport).
+    :type train_path: str
+    :param test_path: Path to the report file containing lengths distributions for the evaluated method (format: MSIReport).
+    :type test_path: str
+    :param res_path: Path to the outputted report file (format: MSIReport).
+    :type res_path: str
+    :param args: Arguments of the script.
+    :type args: argparse.NameSpace
+    :param method_name: Method used to store lengths distributions and to store results of this function.
+    :type method_name: str
+    :param clf: Classifier name.
+    :type clf: str
+    :param clf_params: Classifier parameters in JSON format.
+    :type clf_params: str
+    """
     cmd = list(map(str, [
-        os.path.join(app_folder, "jflow", "workflows", "MIAmS_tag", "bin", "miamsClassify.py"),
+        os.path.join(APP_FOLDER, "jflow", "workflows", "MIAmS_tag", "bin", "miamsClassify.py"),
         "--classifier", clf,
         "--random-seed", 42,
         "--method-name", method_name,
@@ -367,7 +539,18 @@ def submitAddClf(train_path, test_path, res_path, args, method_name, clf, clf_pa
         os.environ["PYTHONPATH"] = os.path.dirname(__file__)
     execCommand(cmd)
 
-def launchAddClf(reports_path, args):
+
+def launchAddClf(args, models_path, reports_path):
+    """
+    Launch second classification with a list of classifiers and update reports file.
+
+    :param args: Arguments of the script.
+    :type args: argparse.NameSpace
+    :param models_path: Path to the models file (format: MSIReport).
+    :type models_path: str
+    :param reports_path: Path to the report file obtained with first classification (format: MSIReport).
+    :type reports_path: str
+    """
     for clf_name in args.add_classifiers:
         method_name = clf_name
         clf_params = None
@@ -393,7 +576,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Launch classification on evaluation datasets.")
     parser.add_argument('-i', '--start-dataset-id', type=int, default=0, help="This option allow you to skip the n first test. [Default: %(default)s]")
     parser.add_argument('-n', '--nb-tests', type=int, default=100, help="The number of couple of test and train datasets created from the original dataset. [Default: %(default)s]")
-    parser.add_argument('-m', '--reference-method', default="ngs", help="The prefix of the columns in status_by_spl.tsv used as expected values (example: ngs, electro). [Default: %(default)s]")
     parser.add_argument('-k', '--default-classifier', default="SVCPairs", help='The classifier used in MIAmS. [Default: %(default)s]')
     parser.add_argument('-c', '--add-classifiers', default=[], nargs='+', help="The additional sklearn classifiers evaluates on MIAmS pairs combination results (example: DecisionTree, KNeighbors, LogisticRegression, RandomForest, RandomForest:n).")
     parser.add_argument('-v', '--version', action='version', version=__version__)
@@ -422,32 +604,30 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Parameters
-    status_path = os.path.join(args.data_folder, "status_by_spl.tsv")
+    annotation_path = os.path.join(args.data_folder, "status_by_spl.tsv")
     raw_folder = os.path.join(args.data_folder, "raw_by_run")
     design_folder = os.path.join(args.data_folder, "design")
     if not os.path.exists(args.work_folder):
         os.makedirs(args.work_folder)
 
     # Logger
-    logging.basicConfig(format='%(asctime)s - %(name)s [%(levelname)s] %(message)s')
+    logging.basicConfig(format='%(asctime)s -- [%(filename)s][pid:%(process)d][%(levelname)s] %(message)s')
     log = logging.getLogger()
     log.setLevel(logging.INFO)
     log.info("Command: " + " ".join(sys.argv))
 
     # Load data
+    librairies = getLibFromDataFolder(raw_folder)
+    status_by_spl = getStatus(annotation_path, [lib["spl_name"] for lib in librairies])
+    for lib in librairies:
+        lib["status"] = status_by_spl[lib["spl_name"]]
     loci_id_by_name = {locus.name: "{}:{}-{}".format(locus.chrom, locus.start - 1, locus.end) for locus in getAreas(os.path.join(design_folder, "targets.bed"))}
-    status_by_spl = getStatusFromFile(status_path)
-    samples = getSammplesFromDataFolder(raw_folder)
-    addExpectedStatus(samples, status_by_spl, args.reference_method)
-    samples_by_name = {spl["name"]: spl["status"][args.reference_method] for spl in samples}
 
     # Process assessment
-    annotations_path = os.path.join(args.work_folder, "annot.tsv")
-    samplesToAnnot(samples, os.path.join(design_folder, "targets.bed"), annotations_path, args.reference_method)
     cv = ShuffleSplit(n_splits=args.nb_tests, test_size=0.4, random_state=42)
     dataset_id = 0
-    spl_wout_replicates = list({getSplFromLibName(spl["name"]): spl for spl in samples}.values())  # All replicates of one sample will be managed in same content (train or test)
-    for train_idx, test_idx in cv.split(spl_wout_replicates, groups=[spl["status"][args.reference_method]["sample"] for spl in spl_wout_replicates]):
+    lib_wout_replicates = list({lib["spl_name"]: lib for lib in librairies}.values())  # All replicates of one sample will be managed in same content (train or test)
+    for train_idx, test_idx in cv.split(lib_wout_replicates, groups=[lib["status"]["sample"] for lib in lib_wout_replicates]):
         dataset_md5 = hashlib.md5(",".join(map(str, train_idx)).encode('utf-8')).hexdigest()
         if args.start_dataset_id > dataset_id:
             log.info("Skip already processed dataset {}/{} ({}).".format(dataset_id, args.nb_tests - 1, dataset_md5))
@@ -455,23 +635,24 @@ if __name__ == "__main__":
             log.info("Start processing dataset {}/{} ({}).".format(dataset_id, args.nb_tests - 1, dataset_md5))
             # Temp file
             baseline_path = os.path.join(args.work_folder, "baseline_dataset-{}.tsv".format(dataset_id))
-            models_path = os.path.join(args.work_folder, "models_dataset-{}.tsv".format(dataset_id))
+            models_path = os.path.join(args.work_folder, "models_dataset-{}.json".format(dataset_id))
             learn_log_path = os.path.join(args.work_folder, "log_dataset-{}.tsv".format(dataset_id))
             out_folder = os.path.join(args.work_folder, "out_dataset-{}".format(dataset_id))
             out_reports_path = os.path.join(args.work_folder, "out_reports_dataset-{}.json".format(dataset_id))
             # Create datasets
-            train_names = {getSplFromLibName(spl["name"]): 0 for idx, spl in enumerate(spl_wout_replicates) if idx in train_idx}
-            test_names = {getSplFromLibName(spl["name"]): 0 for idx, spl in enumerate(spl_wout_replicates) if idx in test_idx}
-            train_samples = [spl for spl in samples if getSplFromLibName(spl["name"]) in train_names]
-            test_samples = [spl for spl in samples if getSplFromLibName(spl["name"]) in test_names]
+            train_names = {lib["spl_name"]: 0 for idx, lib in enumerate(lib_wout_replicates) if idx in train_idx}
+            test_names = {lib["spl_name"]: 0 for idx, lib in enumerate(lib_wout_replicates) if idx in test_idx}
+            train_samples = [lib for lib in librairies if lib["spl_name"] in train_names]  # Select all libraries corresponding to the train samples
+            test_samples = [lib for lib in librairies if lib["spl_name"] in test_names]  # Select all libraries corresponding to the test samples
             # Process learn and tag
-            train(train_samples, annotations_path, design_folder, baseline_path, models_path, learn_log_path, args)
+            train(train_samples, annotation_path, design_folder, baseline_path, models_path, learn_log_path, args)
             predict(test_samples, design_folder, baseline_path, models_path, out_folder, args)
             models = MSIReport.parse(models_path)
             reports = getMSISamples(os.path.join(out_folder, "data"))
             if len(args.add_classifiers) > 0:
+                log.info("Process {} additionnal classifiers on dataset {}/{} ({}).".format(len(args.add_classifiers), dataset_id, args.nb_tests - 1, dataset_md5))
                 MSIReport.write(reports, out_reports_path)
-                launchAddClf(out_reports_path, args)
+                launchAddClf(args, models_path, out_reports_path)
                 reports = MSIReport.parse(out_reports_path)
             # Write results and dataset
             use_header = False
@@ -488,21 +669,24 @@ if __name__ == "__main__":
                     reports,
                     getLogInfo(learn_log_path),
                     getLogInfo(os.path.join(out_folder, "MIAmSTag_log.txt")),
-                    samples_by_name
+                    status_by_spl
                 )
             ]
             datasets_df = pd.DataFrame.from_records(datasets_df_rows, columns=getDatasetsInfoTitles(loci_id_by_name))
             with open(args.datasets_path, out_mode) as FH_out:
                 datasets_df.to_csv(FH_out, header=use_header, sep='\t')
-            res_df_rows = getResInfo(dataset_id, loci_id_by_name, reports, samples_by_name, ["MSINGS", args.default_classifier] + args.add_classifiers)
+            res_df_rows = getResInfo(dataset_id, loci_id_by_name, reports, status_by_spl, ["MSINGS", args.default_classifier] + args.add_classifiers)
             res_df = pd.DataFrame.from_records(res_df_rows, columns=getResInfoTitles(loci_id_by_name))
             with open(args.results_path, out_mode) as FH_out:
                 res_df.to_csv(FH_out, header=use_header, sep='\t')
             # Clean tmp
             for tmp_file in [baseline_path, models_path, learn_log_path, out_folder, out_reports_path]:
-                if os.path.isdir(tmp_file):
-                    shutil.rmtree(tmp_file)
-                else:
-                    os.remove(tmp_file)
+                if os.path.exists(tmp_file):
+                    if os.path.isdir(tmp_file):
+                        shutil.rmtree(tmp_file)
+                    else:
+                        os.remove(tmp_file)
         # Next dataset
         dataset_id += 1
+
+    log.info("End of job")

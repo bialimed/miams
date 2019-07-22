@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -65,11 +65,12 @@ def execTime(dataset_df, out_path):
     plt.close()
 
 def datasetsComposition(dataset_df, out_path, mode="rate"):
+    loci = set([title.replace("train_nb", "").replace("_unstable", "") for title in dataset_df.columns if title.startswith("train_nb") and title.startswith("_unstable")])
     # Datasets descriptions
     desc_rows = []
     for idx, row in dataset_df.iterrows():
         for dataset_type in ["train", "test"]:
-            for locus in ["spl", "BAT25", "BAT26", "HT17", "NR21", "NR22", "NR27"]:
+            for locus in loci:
                 nb_determined = row["{}_nb_{}_unstable".format(dataset_type, locus)] + row["{}_nb_{}_stable".format(dataset_type, locus)]
                 if nb_determined != 0:
                     ratio_unstable = row["{}_nb_{}_unstable".format(dataset_type, locus)] / nb_determined
@@ -214,6 +215,30 @@ def getAccuracyDf(loci, results_df):
                 ])
     accuracy_df = pd.DataFrame.from_records(accuracy_rows, columns=["dataset_id", "locus", "method", "accuracy", "nb_right_prediction", "nb_wrong_prediction", "nb_without_prediction"])
     return accuracy_df
+
+def writeInstabilityRatio(results_df, out_path):
+    def getInstabilityRatio(row, min_support=300):
+        valid_loci_MSI = 0
+        valid_loci = 0
+        if row["method_name"] != "agreement":
+            for key, val in row.items():
+                if key.endswith("_pred_support") and key != "spl_pred_support":
+                    if val >= min_support:
+                        locus = key.replace("_pred_support", "")
+                        valid_loci += 1
+                        if row[locus + "_observed_status"] == "MSI":
+                            valid_loci_MSI += 1
+        instability = np.nan
+        if valid_loci != 0:
+            instability = round(valid_loci_MSI / valid_loci, 5)
+        return instability
+
+    results_df["instability_ratio"] = results_df.apply(getInstabilityRatio, axis=1)
+    sns.swarmplot(x="method_name", y="instability_ratio", hue="spl_expected_status", dodge=True, data=results_df[results_df["method_name"] != "agreement"])
+    plt.subplots_adjust(top=0.9)
+    plt.gcf().suptitle("Instability ratio")
+    plt.savefig(out_path)
+    plt.close()
 
 def writeAccuracy(loci, results_df, out_path, label_margin=0.01):
     accuracy_df = getAccuracyDf(loci, results_df)
@@ -601,6 +626,7 @@ if __name__ == "__main__":
     datasetsComposition(dataset_df, os.path.join(args.output_folder, "datasets_composition_count.svg"), "count")
 
     # Predictions information
+    writeInstabilityRatio(results_df, os.path.join(args.output_folder, "instability_ratio.svg"))
     writeAccuracy(loci, results_df, os.path.join(args.output_folder, "accuracy_loci.svg"), 0.05)
     writeAccuracy(["spl"], results_df, os.path.join(args.output_folder, "accuracy_spl.svg"), 0.005)
     writePredStatus(loci, results_df, os.path.join(args.output_folder, "pred_status_loci.svg"), 2, 0.92, 2)
