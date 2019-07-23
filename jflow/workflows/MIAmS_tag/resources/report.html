@@ -18,7 +18,7 @@
     <head>
         <title>MSI profile</title>
         <meta charset="UTF-8">
-        <meta name="version" content="1.1.0">
+        <meta name="version" content="1.2.0">
         <!-- CSS -->
         <link rel="stylesheet" type="text/css" href="lib/dataTables_1.10.16/css/jquery.dataTables.min.css">
         <link rel="stylesheet" type="text/css" href="lib/bootstrap_4.0.0/css/bootstrap.min.css">
@@ -76,18 +76,24 @@
             </div>
             <div class="block">
                 <h1 class="title">Loci</h1>
-                <div id="length-graph"></div>
-                <div>
-                    <table id="nb-seq-table" class="d-none table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Position</th>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+				<div>
+					<div id="length-graph"></div>
+					<div class="row">
+						<div class="col text-center">
+							<button type="button" id="select-all-series" class="btn btn-primary"> Select all </button>
+							<button type="button" id="unselect-all-series" class="btn btn-primary">Unselect all</button>
+						</div>
+					</div>
+				</div>
+				<table id="nb-seq-table" class="d-none table table-striped">
+					<thead>
+						<tr>
+							<th>Position</th>
+							<th>Name</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
             </div>
         </div>
 		<script type="text/javascript">
@@ -96,6 +102,7 @@
 			const methods = getMethods(Object.values(data_by_spl))
             const distrib_method = methods.filter(function(method){return method != "MSINGS"})[0]
 			const locus_id_by_name = getLocusIdByName(data_by_spl)
+            let lengths_chart = null  // Global variable
 
             // Init template
             addMethodsInTable(methods)
@@ -132,6 +139,26 @@
                 if(curr_idx > 0){
                     select_spl.prop('selectedIndex', curr_idx - 1).change()
                 }
+            })
+            $("#unselect-all-series").on("click", function(){
+				if( lengths_chart !== null ){
+					lengths_chart.series.forEach(function( curr_series ){
+						if (curr_series.visible === true) {
+							curr_series.setVisible(false, false)
+						}
+					})
+					lengths_chart.redraw()
+				}
+            })
+            $("#select-all-series").on("click", function(){
+				if( lengths_chart !== null ){
+					lengths_chart.series.forEach(function( curr_series ){
+						if (curr_series.visible === false) {
+							curr_series.setVisible(true, false)
+						}
+					})
+					lengths_chart.redraw()
+				}
             })
         </script>
     </body>

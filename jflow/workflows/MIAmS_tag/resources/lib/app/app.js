@@ -17,7 +17,7 @@
  *
  * @author  Frederic Escudie
  * @license  GNU General Public License
- * @version  1.2.0
+ * @version  1.3.0
  */
 
 function sortNumber(a,b) {
@@ -180,7 +180,7 @@ function drawSizeGraph( container_id, data, method, pre_zoom_min=null, pre_zoom_
         })
     })
     // Draws graph
-    Highcharts.chart(
+    lengths_chart = Highcharts.chart(
         container_id,
         {
             chart: {
