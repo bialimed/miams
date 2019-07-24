@@ -49,7 +49,7 @@ class MIAmSLearn (MIAmSWf):
 
     def define_parameters(self, parameters_section=None):
         self.add_parameter("min_support_reads", "Minimum number of reads in size distribution to keep the locus result of a sample in reference distributions.", default=400, type=int)
-        self.add_parameter("min_support_samples", "Minimum number of samples in MSS models and in MSI models.", default=20, type=int)
+        self.add_parameter("min_support_samples", "Minimum number of samples in MSS models and in MSI models.", default=10, type=int)
 
         # Combine reads method
         self.add_parameter("max_mismatch_ratio", "Maximum allowed ratio between the number of mismatched base pairs and the overlap length. Two reads will not be combined with a given overlap if that overlap results in a mismatched base density higher than this value.", default=0.25, type=float, group="Combine reads method")
@@ -160,7 +160,7 @@ class MIAmSLearn (MIAmSWf):
         incomplete_models = getIncompleteModels(self.training_cmpt.out_references, self.min_support_samples)
         if len(incomplete_models) != 0:
             incomplete_tags = ["{}_{}: {} samples".format(elt["locus_name"], elt["status"], elt["support"]) for elt in incomplete_models]
-            raise Exception("Unsufficient number of samples in model: ".format(", ".join(incomplete_tags)))
+            raise Exception("Unsufficient number of samples in model: {}".format(", ".join(incomplete_tags)))
         # Trace execution
         self.write_log(self.output_log, __version__)
         # Copy final results
