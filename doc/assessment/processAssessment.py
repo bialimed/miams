@@ -203,6 +203,7 @@ def train(libraries, annotations_file, design_folder, out_baseline, out_models, 
     train_cmd = list(map(str, [
         os.path.join(APP_FOLDER, "jflow", "bin", "jflow_cli.py"), "miamslearn",
         "--min-support-reads", args.learn_min_support_reads,
+        "--min-support-samples", 9,
         "--max-mismatch-ratio", 0.25,
         "--min-pair-overlap", 40,
         "--min-zoi-overlap", 12,
@@ -316,7 +317,7 @@ def getMethodResInfo(dataset_id, loci_id_by_name, reports, status_by_spl, method
     :type loci_id_by_name: dict
     :param reports: List of MSISample.
     :type reports: list
-    :param status_by_spl: Status by locus by name.
+    :param status_by_spl: Status by locus by sample name.
     :type status_by_spl: dict
     :param method_name: Name of the processed method.
     :type method_name: str
@@ -365,7 +366,7 @@ def getResInfo(dataset_id, loci_id_by_name, reports, status_by_spl, methods):
     :type loci_id_by_name: dict
     :param reports: List of MSISample.
     :type reports: list
-    :param status_by_spl: Status by locus by name.
+    :param status_by_spl: Status by locus by sample name.
     :type status_by_spl: dict
     :param methods: Name of the processed methods.
     :type methods: list
@@ -413,9 +414,31 @@ def getDatasetsInfoTitles(loci_id_by_name):
     return titles
 
 
-def getDatasetsInfo(dataset_id, dataset_md5, loci_id_by_name, models, reports, learn_log, tag_log, samples_by_name):
-    train_status = [samples_by_name[spl.name.replace("_L001", "")] for spl in models]
-    test_status = [samples_by_name[spl.name.replace("_L001", "")] for spl in reports]
+def getDatasetsInfo(dataset_id, dataset_md5, loci_id_by_name, models, reports, learn_log, tag_log, status_by_spl):
+    """
+    Return rows for datasets dataframe.
+
+    :param dataset_id: Dataset ID.
+    :type dataset_id: str
+    :param dataset_md5: Checksum of the trainning samples indexes.
+    :type dataset_md5: str
+    :param loci_id_by_name: List of locus names.
+    :type loci_id_by_name: dict
+    :param models: List of MSISample used as models.
+    :type models: list
+    :param reports: List of MSISample classified.
+    :type reports: list
+    :param learn_log: Logging information from MIAmS_learn.
+    :type learn_log: dict
+    :param tag_log: Logging information from MIAmS_tag.
+    :type tag_log: dict
+    :param status_by_spl: Status by locus by sample name.
+    :type status_by_spl: dict
+    :return: Rows for datasets dataframe.
+    :rtype: list
+    """
+    train_status = [status_by_spl[spl.name.replace("_L001", "")] for spl in models]
+    test_status = [status_by_spl[spl.name.replace("_L001", "")] for spl in reports]
     row = [dataset_id, dataset_md5]
     # Train dataset
     spl_status = [spl_status["sample"] for spl_status in train_status]
