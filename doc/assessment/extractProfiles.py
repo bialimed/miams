@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2019 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -48,6 +48,7 @@ from anacore.sv import HashedSVIO
 if __name__ == "__main__":
     # Manage parameters
     parser = argparse.ArgumentParser(description='Write lengths distributions profiles from the MIAmS_tag outputs.')
+    parser.add_argument('-r', '--reference-method', default="SVCPairs", help='The method used to store locus results. [Default: %(default)s]')
     parser.add_argument('-v', '--version', action='version', version=__version__)
     # Inputs
     group_input = parser.add_argument_group('Inputs')
@@ -79,8 +80,8 @@ if __name__ == "__main__":
             for locus_id, locus in spl.loci.items():
                 if locus_id not in range_by_locus:
                     range_by_locus[locus_id] = {"min": 300, "max": 0}
-                range_by_locus[locus_id]["min"] = min(locus.results["SVCPairs"].getMinLength(), range_by_locus[locus_id]["min"])
-                range_by_locus[locus_id]["max"] = max(locus.results["SVCPairs"].getMaxLength(), range_by_locus[locus_id]["max"])
+                range_by_locus[locus_id]["min"] = min(locus.results[args.reference_method].getMinLength(), range_by_locus[locus_id]["min"])
+                range_by_locus[locus_id]["max"] = max(locus.results[args.reference_method].getMaxLength(), range_by_locus[locus_id]["max"])
 
     # Write lengths distributions
     for filename in os.listdir(args.input_data):
@@ -93,11 +94,21 @@ if __name__ == "__main__":
                 end = range_by_locus[locus_id]["max"]
                 if not os.path.exists(os.path.join(args.output_folder, locus.name)):
                     os.makedirs(os.path.join(args.output_folder, locus.name))
-                data = [{"length": idx + start, "count": val} for idx, val in enumerate(locus.results["SVCPairs"].getDensePrct(start, end))]
+                data = [{"length": idx + start, "abundance": val} for idx, val in enumerate(locus.results[args.reference_method].getDensePrct(start, end))]
+                second_peak_prct = 0
+                if len(data) > 1:
+                    rvs_ordered_prct = sorted([elt["abundance"] for elt in data], reverse=True)
+                    second_peak_prct = rvs_ordered_prct[1]  # abundancy of the second most abundant
                 df = pd.DataFrame(data)
                 plt.figure(figsize=(18, 5))
-                sns.barplot(data=df, x="length", y="count")
-                plt.title(spl.name + "  " + locus.name + "  " + status_by_spl[spl.name][locus.name])
+                sns.barplot(data=df, x="length", y="abundance")
+                plt.suptitle("{} {} {}".format(spl.name, locus.name, status_by_spl[spl.name][locus.name]))
+                plt.title(
+                    "nb elements: {}; second peak: {:.1f}%".format(locus.results[args.reference_method].getCount(), second_peak_prct),
+                    fontstyle="italic"
+                )
+                plt.ylim(0, 100)
+                plt.yticks(range(0, 101, 10))
                 plt.xticks(rotation=90)
                 plt.savefig(os.path.join(args.output_folder, locus.name, status_by_spl[spl.name][locus.name] + "_" + spl.name + ".png"))
                 plt.close()
