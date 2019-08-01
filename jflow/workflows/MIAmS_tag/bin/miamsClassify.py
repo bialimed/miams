@@ -10,10 +10,10 @@ __status__ = 'prod'
 import json
 import argparse
 from anacore.msi import LocusClassifier, MSIReport, Status
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier as DecisionTree
+from sklearn.neighbors import KNeighborsClassifier as KNeighbors
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier as RandomForest
 from sklearn.svm import SVC
 
 
@@ -41,7 +41,7 @@ class MIAmSClassifier(LocusClassifier):
                 clf_params["n_neighbors"] = 2
             if "random_state" in clf_params:
                 del clf_params["random_state"]
-            clf_obj = KNeighborsClassifier(**clf_params)
+            clf_obj = KNeighbors(**clf_params)
         else:
             try:
                 clf_obj = globals()[clf](**clf_params)
