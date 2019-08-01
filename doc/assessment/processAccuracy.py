@@ -65,7 +65,7 @@ def execTime(dataset_df, out_path):
     plt.close()
 
 def datasetsComposition(dataset_df, out_path, mode="rate"):
-    loci = set([title.replace("train_nb", "").replace("_unstable", "") for title in dataset_df.columns if title.startswith("train_nb") and title.startswith("_unstable")])
+    loci = set([title.replace("train_nb_", "").replace("_unstable", "") for title in dataset_df.columns if title.startswith("train_nb_") and title.endswith("_unstable")])
     # Datasets descriptions
     desc_rows = []
     for idx, row in dataset_df.iterrows():
@@ -402,7 +402,7 @@ def writeBalancedPredStatus(loci, results_df, out_path, nb_col=1, subplots_adjus
                     (locus_df['prediction_status'] == curr_pred_status) &
                     (locus_df['method'] == curr_method)
                 ]["% of samples"])
-                ax.text(x_pos + box_width / 2, max + 2, '{:.1f}'.format(median * 100), horizontalalignment='center', size='x-small', color='gray', weight='semibold')
+                ax.text(x_pos + box_width / 2, max + 2, '{:.1f}'.format(median), horizontalalignment='center', size='x-small', color='gray', weight='semibold')
     plt.subplots_adjust(top=subplots_adjust, hspace=0.2)
     plt.gcf().suptitle("Classification accuracy")
     plt.savefig(out_path)
