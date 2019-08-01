@@ -3,7 +3,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '2.2.0'
+__version__ = '2.3.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -11,10 +11,11 @@ import json
 import argparse
 from anacore.msi import LocusClassifier, MSIReport, Status
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+
 
 
 ########################################################################
@@ -31,23 +32,21 @@ class MIAmSClassifier(LocusClassifier):
 
     def _getClassifier(self, clf, clf_params):
         clf_obj = None
-        if clf == "SVC":
+        if clf == "SVC":  # The argument "probability" must be set to True to use predict_proba()
             clf_params["probability"] = True
+            clf_params["gamma"] = "auto"
             clf_obj = SVC(**clf_params)
-        elif clf == "LogisticRegression":
-            clf_obj = LogisticRegression(**clf_params)
-        elif clf == "DecisionTree":
-            clf_obj = DecisionTreeClassifier(**clf_params)
-        elif clf == "KNeighbors":
+        elif clf == "KNeighbors":  # The KNeighbors does not accept the argument "random_state"
             if "n_neighbors" in clf_params:
                 clf_params["n_neighbors"] = 2
             if "random_state" in clf_params:
                 del clf_params["random_state"]
             clf_obj = KNeighborsClassifier(**clf_params)
-        elif clf == "RandomForest":
-            clf_obj = RandomForestClassifier(**clf_params)
         else:
-            raise Exception('The classifier "{}" is not implemented in MIAmSClassifier.'.format(clf))
+            try:
+                clf_obj = globals()[clf](**clf_params)
+            except Exception:
+                raise Exception('The classifier "{}" is not implemented in MIAmSClassifier.'.format(clf))
         return clf_obj
 
 def process(args):
