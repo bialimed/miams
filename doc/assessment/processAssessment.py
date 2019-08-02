@@ -111,9 +111,9 @@ def getLibFromDataFolder(data_folder):
     :rtype: list
     """
     libraries = []
-    for run_folder_name in os.listdir(data_folder):
+    for run_folder_name in sorted(os.listdir(data_folder)):
         run_folder_path = os.path.join(data_folder, run_folder_name)
-        for filename in os.listdir(run_folder_path):
+        for filename in sorted(os.listdir(run_folder_path)):
             if filename.endswith(".fastq.gz") and "_R1" in filename:
                 filepath = os.path.join(run_folder_path, filename)
                 lib_name = getLibNamefromFileName(filename)
