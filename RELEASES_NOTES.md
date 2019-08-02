@@ -7,6 +7,7 @@
 
 ### Changes:
   * The default value for the parameter `--instability-ratio` of MIAmS_tag has been changed from 0.5 to 0.4.
+  * The default value for the parameter `--min-support-reads` of MIAmS_learn has been changed from 400 to 300.
   * The parameter `--annotations` of MIAmS_learn has changed his input format. New format example below:
 
         sample	B25	B26	N21

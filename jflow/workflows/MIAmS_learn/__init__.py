@@ -48,7 +48,7 @@ class MIAmSLearn (MIAmSWf):
         return "Build distribution model for stable microsatellites used as reference for MIAmS Tag workflow."
 
     def define_parameters(self, parameters_section=None):
-        self.add_parameter("min_support_reads", "Minimum number of reads in size distribution to keep the locus result of a sample in reference distributions.", default=400, type=int)
+        self.add_parameter("min_support_reads", "Minimum number of reads in size distribution to keep the locus result of a sample in reference distributions.", default=300, type=int)
         self.add_parameter("min_support_samples", "Minimum number of samples in MSS models and in MSI models.", default=10, type=int)
 
         # Combine reads method
