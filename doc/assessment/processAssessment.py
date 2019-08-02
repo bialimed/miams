@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.4.0'
+__version__ = '1.4.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -649,8 +649,8 @@ if __name__ == "__main__":
     # Process assessment
     cv = ShuffleSplit(n_splits=args.nb_tests, test_size=0.4, random_state=42)
     dataset_id = 0
-    lib_wout_replicates = list({lib["spl_name"]: lib for lib in librairies}.values())  # All replicates of one sample will be managed in same content (train or test)
-    for train_idx, test_idx in cv.split(lib_wout_replicates, groups=[lib["status"]["sample"] for lib in lib_wout_replicates]):
+    ordered_spl_names = sorted(list(set(lib["spl_name"] for lib in librairies)))  # All replicates of one sample will be managed in same content (train or test)
+    for train_idx, test_idx in cv.split(ordered_spl_names, groups=[status_by_spl[spl_name]["sample"] for spl_name in ordered_spl_names]):
         dataset_md5 = hashlib.md5(",".join(map(str, train_idx)).encode('utf-8')).hexdigest()
         if args.start_dataset_id > dataset_id:
             log.info("Skip already processed dataset {}/{} ({}).".format(dataset_id, args.nb_tests - 1, dataset_md5))
@@ -663,8 +663,8 @@ if __name__ == "__main__":
             out_folder = os.path.join(args.work_folder, "out_dataset-{}".format(dataset_id))
             out_reports_path = os.path.join(args.work_folder, "out_reports_dataset-{}.json".format(dataset_id))
             # Create datasets
-            train_names = {lib["spl_name"]: 0 for idx, lib in enumerate(lib_wout_replicates) if idx in train_idx}
-            test_names = {lib["spl_name"]: 0 for idx, lib in enumerate(lib_wout_replicates) if idx in test_idx}
+            train_names = {spl_name for idx, spl_name in enumerate(ordered_spl_names) if idx in train_idx}
+            test_names = {spl_name for idx, spl_name in enumerate(ordered_spl_names) if idx in test_idx}
             train_samples = [lib for lib in librairies if lib["spl_name"] in train_names]  # Select all libraries corresponding to the train samples
             test_samples = [lib for lib in librairies if lib["spl_name"] in test_names]  # Select all libraries corresponding to the test samples
             # Process learn and tag
