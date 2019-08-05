@@ -12,8 +12,9 @@ mkdir -p ${res_dir}
 source ${app_dir}/doc/assessment/venv/bin/activate
 ${app_dir}/doc/assessment/processAccuracy.py \
   --min-reads-support 300 \
-  --consensus-method ratio \
-  --instability-ratio 0.21 \
+  --consensus-method count \
+  --min-voting-loci 3 \
+  --instability-count 3 \
   --process-balanced-metrics \
   --add-algorithm-consensus \
   --input-datasets ${res_dir}/datasets.tsv \

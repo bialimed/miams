@@ -14,8 +14,8 @@ ${app_dir}/doc/assessment/processAssessment.py \
   --nb-tests 20 \
   --tag-min-support-reads 100 \
   --learn-min-support-reads 400 \
-  --consensus-method ratio \
-  --instability-ratio 0.21 \
+  --consensus-method count \
+  --instability-count 3 \
   --add-classifiers DecisionTree KNeighbors LogisticRegression RandomForest RandomForest:50 RandomForest:500 \
   --data-folder ${data_dir} \
   --work-folder ${data_dir}/work \

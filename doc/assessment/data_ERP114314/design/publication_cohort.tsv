@@ -1,0 +1,287 @@
+#sample_id	tissue	tumor_prct	electro_sample_status	MMR_sample_status	ngs_sample_status	ngs_BAT25_status	ngs_BAT26_status	ngs_NR21_status	ngs_NR22_status	ngs_NR27_status	ngs_HT17_status	in_electro	in_ngs
+spl-001	duodenum	70	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-002	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-003	colon		MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-004	colon	90	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-005	colon	90	MSI	loss	MSI	MSS	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-006	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-007	colon	70	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-008	endometrium	95	MSI	loss	MSI	MSI	MSI	Undetermined	MSI	MSI	MSI	yes	yes
+spl-009	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-010	colon	70	MSI	loss	MSI	Undetermined	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-011	uterus	80	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-012	colon	70	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-013		70	Undetermined	loss	MSS	MSI	MSS	MSS	MSS	MSI	Undetermined	yes	yes
+spl-014	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-015	small_intestine	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-016	colon	75	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-017	stomach	60	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-018	colon	90	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-019	colon	20	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-020	endometrium	60	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-021	colon	80	MSI	standard	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-022	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-023	kidney	100	MSI	loss	MSS	MSI	Undetermined	MSS	MSS	MSI	MSS	yes	yes
+spl-024	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-025	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-026	colon	70	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-027	colon	80	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-028	colon	65	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSS	yes	yes
+spl-029	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-030	colon	100	MSI	loss	MSI	MSI	MSI	MSI	MSS	MSI	MSS	yes	yes
+spl-031	pancreas	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-032	colon	80	MSI		MSI	MSI	MSI	MSS	MSI	MSI	MSI	yes	yes
+spl-033	colon	40	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSS	yes	yes
+spl-034	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-035	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-036	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-037	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-038	colon	60	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-039	colon	90	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-040	colon	70	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-041	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSS	yes	yes
+spl-042	endometrium	80	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-043	rectum	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-044	colon	70	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-045	colon	70	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-046	endometrium	70	MSI		MSS	MSS	MSS	MSS	MSI	MSS	MSS	yes	yes
+spl-047	colon	90	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-048	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-049	colon	75	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-050	lung	10			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-051	colon	60	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-052	colon	90	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-053	colon	90	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-054	colon	90	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-055	colon	80	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-056	endometrium		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-057	endometrium		MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-058	colon	75	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-059	colon	70	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-060	endometrium	60	MSI	loss	MSI	MSI	MSI	MSS	MSI	MSI	MSS	yes	yes
+spl-061	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-062	colon	90	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-063	endometrium	90	MSI	loss	MSS	MSS	MSI	MSI	MSS	MSS	MSS	yes	yes
+spl-064	endometrium	90	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-065	colon		MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-066	lung	50			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-067	colon	70	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-068	colon	90	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-069	ganglion	90			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-070	bronchus	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-071	colon	50	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-072	endometrium	60	MSS		MSS	MSS	MSS	MSS	MSS	MSI	MSS	yes	yes
+spl-073	endometrium		MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-074	endometrium	60	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-075	lung	10			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-076	small_intestine	100			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-077	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-078	colon	50	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-079	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-080	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-081	ovary	80	MSI	loss	MSI	MSI	MSI	MSI	MSS	MSI	MSS	yes	yes
+spl-082	endometrium	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-083	colon	30	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-084	lung	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-085	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-086	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-087	lung	100			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-088	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-089	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-090	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-091	lung				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-092	lung	30			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-093	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-094	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-095	skin				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-096	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-097	colon	50	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-098	lung	22			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-099	colon	30	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-100	colon	50	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-101	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-102	colon	80	MSI	loss	MSI	MSI	MSS	MSI	MSI	MSI	MSI	yes	yes
+spl-103	colon	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-104	colon	100	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-105	colon	50	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-106	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-107	lung	50			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-108	lung	50			MSS	MSS	MSS	MSS	MSS	Undetermined	MSS	no	yes
+spl-109	skin	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-110	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-111	lung	17			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-112	brain		MSI		MSI	MSS	MSS	MSI	MSI	MSI	MSS	yes	yes
+spl-113	colon	80	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-114	colon	80	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-115	colon	80	MSI	standard	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-116	stomach	80	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-117	stomach	80	MSI	unknown	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-118	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-119	lung				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-120	lung				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-121	endometrium	80	MSS	loss	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-122	endometrium	80	MSI	loss	MSI	MSI	MSS	Undetermined	MSI	MSI	MSS	yes	yes
+spl-123	colon	100	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-124	colon	50	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-125	endometrium	80	MSI	loss	MSS	MSS	MSI	MSS	MSI	MSS	MSS	yes	yes
+spl-126	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-127	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-128	endometrium	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-129	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-130		100	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-131	lung	30			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-132	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-133	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-134	lung	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-135	lung				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-136	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-137	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-138	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-139	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-140	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-141	colon	50	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-142	colon	100	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-143	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-144	duodenum	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-145	lung	100			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-146	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-147	colon	80	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-148	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-149	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-150	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-151	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-152	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-153	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-154	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-155	ovary		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-156	skin				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-157	colon		MSI	loss	MSI	MSS	MSI	MSI	MSS	MSI	MSS	yes	yes
+spl-158	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-159	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-160	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-161	duodenum+colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-162	duodenum+colon		MSI	loss	MSI	Undetermined	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-163	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-164	uterus		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-165	uterus		MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-166	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-167	endometrium		MSI	loss	MSI	Undetermined	Undetermined	MSI	MSI	Undetermined	Undetermined	yes	yes
+spl-168	lung				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-169	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-170	gist				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-171	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-172	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-173	duodenum	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-174	stomach				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-175	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-176	colon		MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-177	lung	50			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-178	gist	100			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-179	gist	100			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-180	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-181	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-182	colon	50	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-183	colon	50	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-184	colon	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-185	colon	10			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-186	colon	50	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSS	yes	yes
+spl-187	colon	50	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-188	rectum	60	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-189	colon	30	MSS		MSS	MSS	MSS	MSI	MSS	MSS	MSS	yes	yes
+spl-190	endometrium		MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-191	melanome_meta_cutane	70			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-192	melanome_meta_ganglionaire	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-193	lung	70			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-194	lung_meta_osseuse	60			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-195	endometrium	60	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-196	small_intestine				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-197	lung	17			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-198	skin	100			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-199	lung	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-200	skin	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-201	lung	50			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-202	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-203	lung	17			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-204	lung	12			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-205	skin	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-206	lung	12			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-207	skin	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-208	colon	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-209	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-210	colon	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-211	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-212	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-213	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-214	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-215	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-216	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-217	colon				MSS	MSS	MSS	MSI	MSS	MSS	MSS	no	yes
+spl-218	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-219	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-220	rectum				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-221	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-222	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-223	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-224	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-225	colon				MSS	MSS	MSS	MSI	MSS	MSS	MSS	no	yes
+spl-226	small_intestine				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-227	rectum				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-228	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-229	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-230	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-231	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-232	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-233	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-234	rectum	30			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-235	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-236	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-237	colon				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-238	rectum	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-239	ganglion	80			MSS	MSS	MSS	MSI	MSS	MSS	MSS	no	yes
+spl-240	lung	100			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-241	rectum	22			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-242	colon	12	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-243	colon	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-244	colon	80	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-245	colon	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-246	colon	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-247	colon	80	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-248	intestine	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-249	colon	22	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-250	colon		MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-251	colon	80	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-252	colon	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-253	colon	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-254	rectum	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-255	colon	80	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-256	colon	50	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-257	colon	80	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-258	colon	17	MSS	standard	MSS	MSI	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-259	rectum	50	MSS	standard	MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-260	colon	80	MSI	loss	MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-261	pos_control				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-262	rectum	50	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-263	colon	70	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-264	colon	50	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-265	colon	70	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-266	colon	50	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-267	uterus	40	MSS		MSS	MSS	MSS	MSS	MSS	Undetermined	MSS	yes	yes
+spl-268	colon	60	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-269	colon	60	MSS		MSS	MSS	MSS	MSS	MSS	MSS	MSS	yes	yes
+spl-270	colon	70	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-271	colon	70	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-272	colon	60	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-273	endometrium	60	MSI		MSI	Undetermined	MSI	Undetermined	MSI	Undetermined	MSI	yes	yes
+spl-274	stomach	70	MSI		MSI	Undetermined	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-275	colon	80	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-276	colon	60	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-277	colon	70	MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-278	pos_control		MSI		MSI	MSI	MSI	MSI	MSI	MSI	MSI	yes	yes
+spl-279	lung	90			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-280	lung	90			MSS	MSS	MSS	MSI	MSS	MSS	MSS	no	yes
+spl-281	brain				MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-282	brain	60			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-283	brain	80			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
+spl-284	brain	80			MSS	MSI	Undetermined	MSS	MSS	MSS	MSS	no	yes
+spl-285	brain	70			MSS	MSS	MSS	MSI	MSS	MSS	MSS	no	yes
+spl-286	brain	70			MSS	MSS	MSS	MSS	MSS	MSS	MSS	no	yes
