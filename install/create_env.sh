@@ -27,16 +27,16 @@ submit source activate ${ENV_NAME}
 
 submit conda config --add channels conda-forge > /dev/null
 submit conda config --add channels bioconda > /dev/null
-submit conda install --yes --quiet scipy==1.2.0 > /dev/null
-submit conda install --yes --quiet scikit-learn==0.20.0 > /dev/null
-submit conda install --yes --quiet cherrypy==14.0.1 > /dev/null
-submit conda install --yes --quiet pysam==0.14.1 > /dev/null
-submit conda install --yes --quiet git==2.20.1 > /dev/null
-submit conda install --yes --quiet make > /dev/null
-submit conda install --yes --quiet bwa==0.7.17 > /dev/null
-submit conda install --yes --quiet samtools==1.8 > /dev/null
-submit conda install --yes --quiet cutadapt==1.18 > /dev/null
+submit conda install --yes --quiet scipy=1.2.0=py36he2b7bc3_0 > /dev/null
+submit conda install --yes --quiet scikit-learn=0.20.0=py36h22eb022_1 > /dev/null
+submit conda install --yes --quiet cherrypy=14.0.1=py36_0 > /dev/null
+submit conda install --yes --quiet pysam=0.14.1=py36hae42fb6_1 > /dev/null
+submit conda install --yes --quiet git=2.20.1=pl526hc122a05_1001 > /dev/null
+submit conda install --yes --quiet make=4.2.1=h14c3975_2004 > /dev/null
+submit conda install --yes --quiet bwa=0.7.17=h84994c4_5 > /dev/null
+submit conda install --yes --quiet samtools=1.8=h46bd0b3_5 > /dev/null
+submit conda install --yes --quiet cutadapt=1.18=py36h14c3975_1 > /dev/null
 submit ${SCRIPT_DIR}/install_makeflow.sh ${ENV_BIN} > /dev/null
-submit conda install --yes --quiet openjdk==8.0.152 > /dev/null
+submit conda install --yes --quiet openjdk=8.0.152=h46b5887_1 > /dev/null
 
 source deactivate
