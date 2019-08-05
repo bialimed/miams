@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2019 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -344,12 +344,12 @@ if __name__ == "__main__":
     log.info("Get the number of nucleotids by sample")
     for spl in librairies:
         spl["nb_nt"] = 0
-        spl["nb_frag"] = 0
+        spl["nb_reads"] = 0
         for fastq in [spl["R1"], spl["R2"]]:
             with FastqIO(fastq) as FH_in:
                 for rec in FH_in:
                     spl["nb_nt"] += len(rec.string)
-                    spl["nb_frag"] += 1
+                    spl["nb_reads"] += 1
 
     # Process assessment
     app_config = os.path.join(APP_FOLDER, "jflow", "application.properties")
@@ -392,8 +392,8 @@ if __name__ == "__main__":
                             nb_spl,
                             median([spl["nb_nt"] for spl in test_samples]),
                             sum([spl["nb_nt"] for spl in test_samples]),
-                            median([spl["nb_frag"] * 2 for spl in test_samples]),
-                            sum([spl["nb_frag"] * 2 for spl in test_samples]),
+                            median([spl["nb_reads"] for spl in test_samples]),
+                            sum([spl["nb_reads"] for spl in test_samples]),
                             nb_jobs,
                             (end_time - start_time) / 60
                         ])
