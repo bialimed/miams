@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.4.1'
+__version__ = '1.5.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -599,6 +599,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Launch classification on evaluation datasets.")
     parser.add_argument('-i', '--start-dataset-id', type=int, default=0, help="This option allow you to skip the n first test. [Default: %(default)s]")
     parser.add_argument('-n', '--nb-tests', type=int, default=100, help="The number of couple of test and train datasets created from the original dataset. [Default: %(default)s]")
+    parser.add_argument('-a', '--test-ratio', type=float, default=0.4, help="The sample ratio for testing versus samples for learning. [Default: %(default)s]")
     parser.add_argument('-k', '--default-classifier', default="SVCPairs", help='The classifier used in MIAmS. [Default: %(default)s]')
     parser.add_argument('-c', '--add-classifiers', default=[], nargs='+', help="The additional sklearn classifiers evaluates on MIAmS pairs combination results (example: DecisionTree, KNeighbors, LogisticRegression, RandomForest, RandomForest:n).")
     parser.add_argument('-v', '--version', action='version', version=__version__)
@@ -647,7 +648,7 @@ if __name__ == "__main__":
     loci_id_by_name = {locus.name: "{}:{}-{}".format(locus.chrom, locus.start - 1, locus.end) for locus in getAreas(os.path.join(design_folder, "targets.bed"))}
 
     # Process assessment
-    cv = ShuffleSplit(n_splits=args.nb_tests, test_size=0.4, random_state=42)
+    cv = ShuffleSplit(n_splits=args.nb_tests, test_size=args.test_ratio, random_state=42)
     dataset_id = 0
     ordered_spl_names = sorted(list(set(lib["spl_name"] for lib in librairies)))  # All replicates of one sample will be managed in same content (train or test)
     for train_idx, test_idx in cv.split(ordered_spl_names, groups=[status_by_spl[spl_name]["sample"] for spl_name in ordered_spl_names]):
