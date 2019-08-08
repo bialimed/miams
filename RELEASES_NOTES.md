@@ -1,4 +1,4 @@
-# v1.1.0 [dev]
+# v1.1.0 [2019-08-08]
 
 ### New functions:
   * Add possibility to use scikit-learn parameters of the selected MIAmSClassifier.
@@ -15,6 +15,6 @@
         splB	MSS	MSS	MSI
 
 
-# v1.0.0 [2019-07-16]
+# v1.0.0 [2019-02-24]
 
   First version usable in production.
