@@ -117,7 +117,6 @@ class ResultKeysAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         res_by_metrics = dict()
-        print(values)
         for curr in values:
             metrics_key, result_key = curr.rsplit("=", 1)
             res_by_metrics[metrics_key] = result_key
