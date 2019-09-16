@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2019 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -359,22 +359,27 @@ if __name__ == "__main__":
         is_first = True
         for nb_spl in args.nb_samples:  # [1, 50, 100]
             for eval_idx in range(args.nb_tests):  # 10
+                log.info("Create datasets for  test #{} on {} samples".format(eval_idx + 1, nb_spl))
                 samples = shuffle(librairies, random_state=args.random_state + eval_idx + nb_spl)
+                # Create datasets
+                train_idx = range(nb_spl + 1, nb_spl + 1 + args.nb_in_train)
+                test_idx = range(nb_spl + 1)
+                train_samples = [spl for idx, spl in enumerate(samples) if idx in train_idx]
+                test_samples = [spl for idx, spl in enumerate(samples) if idx in test_idx]
+                dataset_id = hashlib.md5(",".join([spl["name"] for spl in test_samples]).encode('utf-8')).hexdigest()
+                # Temp file
+                baseline_path = os.path.join(args.work_folder, "baseline_dataset-{}.tsv".format(dataset_id))
+                models_path = os.path.join(args.work_folder, "models_dataset-{}.tsv".format(dataset_id))
+                learn_log_path = os.path.join(args.work_folder, "log_dataset-{}.tsv".format(dataset_id))
+                # Process learn
+                shutil.copyfile(app_config_bck, app_config)
+                train(train_samples, annotation_path, design_folder, baseline_path, models_path, learn_log_path, args)
+                # Process tag with for each nb_jobs evaluated
                 for nb_jobs in args.nb_jobs:  # [1, 50, 100]
                     log.info("Process test #{} on {} samples with {} jobs".format(eval_idx + 1, nb_spl, nb_jobs))
-                    # Create datasets
-                    train_idx = range(nb_spl + 1, nb_spl + 1 + args.nb_in_train)
-                    test_idx = range(nb_spl + 1)
-                    train_samples = [spl for idx, spl in enumerate(samples) if idx in train_idx]
-                    test_samples = [spl for idx, spl in enumerate(samples) if idx in test_idx]
-                    dataset_id = hashlib.md5(",".join([spl["name"] for spl in test_samples]).encode('utf-8')).hexdigest()
                     # Temp file
-                    baseline_path = os.path.join(args.work_folder, "baseline_dataset-{}.tsv".format(dataset_id))
-                    models_path = os.path.join(args.work_folder, "models_dataset-{}.tsv".format(dataset_id))
-                    learn_log_path = os.path.join(args.work_folder, "log_dataset-{}.tsv".format(dataset_id))
                     out_folder = os.path.join(args.work_folder, "out_dataset-{}".format(dataset_id))
-                    # Process learn and tag
-                    train(train_samples, annotation_path, design_folder, baseline_path, models_path, learn_log_path, args)
+                    # Process tag
                     with open(app_config_bck) as FH_in:
                         with open(app_config, "w") as FH_out:
                             for line in FH_in:
@@ -399,11 +404,13 @@ if __name__ == "__main__":
                         ])
                     is_first = False
                     # Clean tmp
-                    for tmp_file in [baseline_path, models_path, learn_log_path, out_folder]:
-                        if os.path.isdir(tmp_file):
-                            shutil.rmtree(tmp_file)
-                        else:
-                            os.remove(tmp_file)
+                    shutil.rmtree(out_folder)
+                # Clean tmp
+                for tmp_file in [baseline_path, models_path, learn_log_path]:
+                    if os.path.isdir(tmp_file):
+                        shutil.rmtree(tmp_file)
+                    else:
+                        os.remove(tmp_file)
     finally:
         if os.path.exists(app_config_bck):
             shutil.move(app_config_bck, app_config)
