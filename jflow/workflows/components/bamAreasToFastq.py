@@ -18,7 +18,7 @@
 __author__ = 'Charles Van Goethem and Frederic Escudie'
 __copyright__ = 'Copyright (C) 2018 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.3.0'
+__version__ = '2.0.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -38,8 +38,8 @@ class BamAreasToFastq (Component):
 
         # Input Files
         self.add_input_file_list("aln", "Pathes to alignment files (format: BAM).", default=aln, required=True)
-        self.add_input_file_list("R1", "The path to the inputted reads file (format: fastq). If this option and the option R2 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).", default=R1)
-        self.add_input_file_list("R2", "The path to the inputted reads file (format: fastq). If this option and the option R1 are used the reads sequences are extracted from the fastq instead of the BAM (this can be interesting for keep whole the sequence of an hard clipped read).", default=R2)
+        self.add_input_file_list("R1", "The path to the inputted reads file (format: fastq).", default=R1)
+        self.add_input_file_list("R2", "The path to the inputted reads file (format: fastq).", default=R2)
         self.add_input_file("targets", "The locations of areas to extract (format: BED). The position of the interests areas are extracted from column 7 (thickStart) and column 8 (thickEnd) if they exist otherwise they are extracted from column 2 (Start) and column 3 (End).", default=targets, required=True)
         if len(self.R1) != len(self.R2):
             raise Exception("R1 and R2 list must have the same length.")
