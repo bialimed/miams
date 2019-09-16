@@ -19,7 +19,7 @@
 __author__ = 'Frederic Escudie'
 __copyright__ = 'Copyright (C) 2017 IUCT-O'
 __license__ = 'GNU General Public License'
-__version__ = '1.2.0'
+__version__ = '1.4.0'
 __email__ = 'escudie.frederic@iuct-oncopole.fr'
 __status__ = 'prod'
 
@@ -138,7 +138,7 @@ def process(args, log):
                             R2_ov_s = R2.string[R2_start:R2_start + curr_overlap_len]
                             for nt_R1, nt_R2, in zip(R1_ov_s, R2_ov_s):  # For each nt in overlap
                                 if nt_R1 == nt_R2:
-                                    nb_support += 1
+                                    nb_support = nb_support + 1
                             nb_contradict = curr_overlap_len - nb_support
                             # Filter consensus and select the best
                             if nb_support >= max_nb_support:
@@ -153,12 +153,12 @@ def process(args, log):
                                     }
                             # Next shift
                             if R1_start == 0:
-                                R2_start -= 1
-                                if R2_start == -1:
-                                    R2_start = 0
+                                if R2_start == 0:
                                     R1_start = 1
+                                else:
+                                    R2_start = R2_start - 1
                             else:
-                                R1_start += 1
+                                R1_start = R1_start + 1
                                 if R1_len - R1_start < args.min_overlap:
                                     is_valid = False
                     if best_overlap is not None:  # Current pair has valid combination
