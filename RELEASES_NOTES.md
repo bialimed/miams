@@ -1,3 +1,9 @@
+# v1.2.0 [DEV]
+
+### Changes:
+  * Increase execution speed.
+
+
 # v1.1.0 [2019-08-08]
 
 ### New functions:
