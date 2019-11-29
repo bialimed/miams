@@ -283,12 +283,20 @@ GNU GPL v3
 ## Copyright
 2018 IUC Toulouse Oncopole and CHU de Montpellier.
 
+
 ## Authors
 * Charles Van Goethem Laboratoire de Biologie des Tumeurs Solides Hôpital Arnaud
 de Villeneuve CHU de Montpellier
 * Frédéric Escudié Laboratoire d'Anatomo-Cytopathologie de l'Institut
 Universitaire du Cancer Toulouse - Oncopole
 
+## Citation
+If you use MIAmS in a scientific publication, we would appreciate citations:
+
+Frédéric Escudié, Charles Van Goethem, David Grand, Julie Vendrell, Anna Vigier,
+Pierre Brousset, Solène M Evrard, Jérôme Solassol, Janick Selves, MIAmS:
+microsatellite instability detection on NGS amplicons data, Bioinformatics, ,
+btz797, https://doi.org/10.1093/bioinformatics/btz797
 
 ## Contact
 escudie.frederic@iuct-oncopole.fr
