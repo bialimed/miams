@@ -181,6 +181,10 @@ process, and for which data have been generated using the same protocols._"
       --output-log ${APP_DIR}/test/out_model/baseline_log.txt
     source ${APP_DIR}/envs/miniconda3/bin/deactivate
 
+*For the test dataset, add the argument `--min-support-samples` to reduce the
+number of samples required in the model. By default, this value is set to 10:
+10 unstable and 10 stable.*
+
 The annotations file (format TSV) describes the status of each locus for all the
 samples used in model creation.
 
@@ -203,7 +207,7 @@ The following command is the example used in installation test:
     source ${APP_DIR}/envs/miniconda3/bin/activate MIAmS
     ${APP_DIR}/jflow/bin/jflow_cli.py miamstag \
       --R1-pattern ${APP_DIR}/test/data/unstable/\*_L001_R1.fastq.gz \
-      --R2 ${APP_DIR}/test/data/unstable/\*_L001_R2.fastq.gz \
+      --R2-pattern ${APP_DIR}/test/data/unstable/\*_L001_R2.fastq.gz \
       --models ${APP_DIR}/test/data/models.json \
       --targets ${APP_DIR}/test/data/msi.bed \
       --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
