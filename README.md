@@ -12,7 +12,7 @@ on amplicons.
 Use one of the following:
 
 * [user way] Downloads the latest released versions from `https://github.com/bialimed/miams/releases`.
-* [developper way] Clones the repository from the latest unreleased version: `git clone --recursive https://github.com/bialimed/miams.git`.
+* [developper way] Clones the repository from the latest unreleased version: `git clone https://github.com/bialimed/miams.git`.
 
 The application folder has the following structure:
 
@@ -172,16 +172,16 @@ process, and for which data have been generated using the same protocols._"
     ${APP_DIR}/jflow/bin/jflow_cli.py miamslearn \
       --R1-pattern ${APP_DIR}/test/data/stable/\*_L001_R1.fastq.gz \
       --R2-pattern ${APP_DIR}/test/data/stable/\*_L001_R2.fastq.gz \
-      --annotations ${APP_DIR}/test/data/loci_annot.tsv \
-      --targets ${APP_DIR}/test/data/msi.bed \
+      --annotations ${APP_DIR}/test/data/learn_annot.tsv \
+      --targets ${APP_DIR}/test/data/targets.bed \
       --genome-seq ${APP_DIR}/test/bank/Homo_sapiens.GRCh37.75.dna.chromosome.14.fa \
-      --intervals ${APP_DIR}/test/data/msi_intervals.tsv \
+      --intervals ${APP_DIR}/test/data/intervals.tsv \
       --output-baseline ${APP_DIR}/test/out_model/baseline.tsv \
       --output-training ${APP_DIR}/test/out_model/models.json \
       --output-log ${APP_DIR}/test/out_model/baseline_log.txt
     source ${APP_DIR}/envs/miniconda3/bin/deactivate
 
-*For the test dataset, add the argument `--min-support-samples` to reduce the
+*For the test dataset, add the argument `--min-support-samples 1` to reduce the
 number of samples required in the model. By default, this value is set to 10:
 10 unstable and 10 stable.*
 
